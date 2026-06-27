@@ -1,0 +1,37 @@
+// Auto-split from the old js/data.js. Edit this file to expand danceChallenges.
+window.GAME_DATA = window.GAME_DATA || {};
+window.GAME_DATA.danceChallenges = [
+  // --- Originais ---
+  "Vegas showgirl choreography",
+  "TikTok dance battle",
+  "music video shoot",
+  "vogue performance",
+  "pop concert opening number",
+  "aerobic diva challenge",
+
+  "death drop marathon",
+  "uncomfortable tango with a mop",
+  "underwater synchronized swimming simulation",
+  "ballet but in 10-inch platform heels",
+  "aggressively chaotic pole dancing",
+  "country line dance but make it slutty",
+  "80s breakdancing in a heavy gown",
+  "mosh pit elegance",
+  "Disco dancing",
+  "cheerleading routine",
+  "interpretive dance about tax season",
+  "slow-motion runway tumble",
+  "bollywood extravaganza on ice",
+  "zumba class",
+  "hypnotic snake charmer choreography",
+  "disco inferno wearing flammable wigs",
+  "sci-fi robot popping and locking",
+  "flamenco but everyone is furious",
+  "twerking in corsets",
+  "just walking in time with the beat",
+  "brunch show with a tiny stage",
+  "clapping on the right count",
+  "local gay bar classic routine",
+  "Let the hair do the work",
+  "spin and pray",
+];

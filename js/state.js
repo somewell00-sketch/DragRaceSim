@@ -1,0 +1,5 @@
+window.gameState = {data: window.GAME_DATA, season:null, queens:[], eliminatedQueens:[], playerQueenId:null, currentEpisode:null, episodeHistory:[], relationships:{}, settings:{episodeTarget:10, castSize:14}};
+function resetState(){const data=gameState.data; const settings=gameState.settings||{episodeTarget:10,castSize:14}; gameState.season=null; gameState.queens=[]; gameState.eliminatedQueens=[]; gameState.playerQueenId=null; gameState.currentEpisode=null; gameState.episodeHistory=[]; gameState.relationships={}; gameState.data=data; gameState.settings=settings;}
+function saveGame(){const save=JSON.parse(JSON.stringify(gameState)); delete save.data; localStorage.setItem('dragRaceSave', JSON.stringify(save));}
+function loadGame(){const raw=localStorage.getItem('dragRaceSave'); if(!raw) return false; const save=JSON.parse(raw); Object.assign(gameState, save); gameState.data=window.GAME_DATA; if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); return true;}
+function clearSave(){localStorage.removeItem('dragRaceSave');}

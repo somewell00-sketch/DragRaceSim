@@ -1,0 +1,30 @@
+// Auto-split from the old js/data.js. Edit this file to expand brandingProducts.
+window.GAME_DATA = window.GAME_DATA || {};
+window.GAME_DATA.brandingProducts = [
+  "a signature perfume",
+  "an energy drink",
+  "a dating app",
+  "a frozen meal",
+  "a makeup line",
+  "a luxury wig glue",
+  "a wellness retreat",
+  "a cursed beauty product",
+"a hot sauce that doubles as lip plumper",
+  "an apology video generator",
+  "a protein shake made of tears",
+  "a scented candle that smells like drama",
+  "a luxury insurance for broken heels",
+  "a talking doll that only insults you",
+  "a detox tea that causes instant panic",
+  "a self-defense kit for the runway",
+  "a spray that makes straight men polite",
+  "a water bottle filled with shade",
+  "a premium air-freshener for smelly wigs",
+  "a fake green card service",
+  "a pillow that whispers positive affirmations",
+  "a luxury glue stick for eyebrows",
+  "a GPS voice that judges your outfits",
+  "a legal defense fund for tax evasion",
+  "a wine that tastes like cheap victory",
+  "a subscription box of expired makeup"  
+];
