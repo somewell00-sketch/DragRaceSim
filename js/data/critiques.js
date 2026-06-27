@@ -215,8 +215,8 @@ window.GAME_DATA.critiques = {
         "The drag family resemblance was clear.",
         "Two twins on the runway. Stunning transformation.",
         "You didn't just paint them, you gave them your soul.",
-        "They looked confident, beautiful, and 100% drag."
-        "You made your partner shine, but you is shining as well."
+        "They looked confident, beautiful, and 100% drag.",
+        "You made your partner shine, but you are shining as well."
       ],
       "negative": [
         "The transformation felt disconnected and under-polished.",

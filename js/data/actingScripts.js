@@ -46,8 +46,8 @@ window.GAME_DATA.actingScripts = [
   "a psychological thriller about a missing mirror",
   "a sitcom about cavewomen discovering fashion",
   "a Victorian drama where everyone speaks in internet slang",
-  "a cyber-punk heist movie about stealing a wig lace"
-"a sitcom about angry mannequins",
+  "a cyber-punk heist movie about stealing a wig lace",
+  "a sitcom about angry mannequins",
   "a true crime show about broken heels",
   "a cooking show with only micro-meals",
   "a silent film about a fart",

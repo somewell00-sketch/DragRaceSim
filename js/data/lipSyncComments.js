@@ -157,8 +157,8 @@ window.GAME_DATA.lipSyncComments = {
     "The song chose its survivor.",
     "The final beat made the difference.",
     "And that's how you clear a runway.",
-    "The lipstick doesn't lie."
-"A decisive final moment on the main stage.",
+    "The lipstick doesn't lie.",
+    "A decisive final moment on the main stage.",
     "The judges saw exactly what they needed to see.",
     "A performance that settled the score.",
     "The track finished, but the tension remained.",

@@ -186,8 +186,6 @@ window.GAME_DATA.songs = [
   { "title": "Bumbum de Ouro", "artist": "MC Bin Laden", "energy": "high" },
   { "title": "Tá OK", "artist": "Dennis DJ, Kevin O Chris", "energy": "high" },
   { "title": "Lança Perfume", "artist": "MC Rita", "energy": "high" },
-
-]
   { "title": "Fame", "artist": "Irene Cara", "energy": "high" },
   { "title": "Flashdance... What a Feeling", "artist": "Irene Cara", "energy": "high" },
   { "title": "Maniac", "artist": "Michael Sembello", "energy": "high" },
