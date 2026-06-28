@@ -1,3 +1,25 @@
+// Helper para construir o bloco de interações
+function buildWorkroomPulse(events, relationshipNotes) {
+    // Seleciona até 2 Social Sparks aleatórios
+    const social = [...events]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 2)
+        .map(e => formatPlayerNameInSocialText(e.text));
+
+    // Seleciona até 2 Relationship Shifts (já priorizados pela função)
+    const relationships = relationshipNotes
+        .slice(0, 2)
+        .map(n => formatPlayerNameInSocialText(n));
+
+    // Combina e formata como lista HTML
+    const allItems = [...social, ...relationships];
+    
+    if (allItems.length === 0) {
+        return '<li>The room gets quiet. Everyone can feel the twist coming.</li>';
+    }
+    
+    return allItems.map(item => `<li>${item}</li>`).join('');
+}
 
 function formatPlayerNameInSocialText(text){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
@@ -8,8 +30,6 @@ function formatPlayerNameInSocialText(text){
   }
   return html;
 }
-
-
 
 function smackdownStrategyOptionsHtml(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
@@ -59,9 +79,20 @@ function lalaparuzaIntroContext(){
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('workroom'):null;
   const visibleDriftNotes=selectVisibleRelationshipShiftNotes(ep.relationshipDriftNotes||[]);
   const productionEvent=(ep.event&&ep.event.text)?[{text:ep.event.text,type:'production'}]:[];
-  const eventList=[...productionEvent, ...(ep.socialEvents||[]), ...npcEvents, ...(narrativeEvent?[narrativeEvent]:[])].map(e=>`<li>${formatPlayerNameInSocialText(e.text)}</li>`).join('');
+  
+  // Usando o helper buildWorkroomPulse
+  const workroomPulse = buildWorkroomPulse(
+    [
+      ...productionEvent,
+      ...(ep.socialEvents || []),
+      ...npcEvents,
+      ...(narrativeEvent ? [narrativeEvent] : [])
+    ],
+    visibleDriftNotes
+  );
+  
   const activeNames=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ');
-  return `<div class="card"><h3>Workroom</h3><p>The queens enter knowing tonight is not a normal challenge. Every lipstick, heel, and hair flip could become survival.</p><h4>Social sparks</h4><ul>${eventList||'<li>The room gets quiet. Everyone can feel the twist coming.</li>'}</ul>${visibleDriftNotes.length?`<h4>Relationship shifts</h4><ul>${visibleDriftNotes.map(n=>`<li>${formatPlayerNameInSocialText(n)}</li>`).join('')}</ul>`:''}${activeNames?`<h4>Competing queens</h4><p>${activeNames}</p>`:''}</div>`;
+  return `<div class="card"><h3>Workroom</h3><p>The queens enter knowing tonight is not a normal challenge. Every lipstick, heel, and hair flip could become survival.</p><h4>Interactions</h4><p><em>What you're picking up from the room...</em></p><ul>${workroomPulse}</ul>${activeNames?`<h4>Competing queens</h4><p>${activeNames}</p>`:''}</div>`;
 }
 
 function renderLalaparuzaEpisode(){
@@ -202,7 +233,18 @@ function renderWorkroom(){
   const driftNotes = evolveRelationshipsDuringEpisode();
   const visibleDriftNotes = selectVisibleRelationshipShiftNotes(driftNotes);
   const productionEvent=(ep.event&&ep.event.text)?[{text:ep.event.text,type:'production'}]:[];
-  const eventList=[...productionEvent, ...(ep.socialEvents||[]), ...npcEvents, ...(narrativeEvent?[narrativeEvent]:[])].map(e=>`<li>${formatPlayerNameInSocialText(e.text)}</li>`).join('');
+  
+  // Usando o helper buildWorkroomPulse
+  const workroomPulse = buildWorkroomPulse(
+    [
+      ...productionEvent,
+      ...(ep.socialEvents || []),
+      ...npcEvents,
+      ...(narrativeEvent ? [narrativeEvent] : [])
+    ],
+    visibleDriftNotes
+  );
+  
   const snatchBlock=(ep.challengeType==='snatchgame' && ep.snatchCharacters?.length)
     ? `<div class="card"><h3>Snatch Game Characters</h3><div class="snatch-grid">${ep.snatchCharacters.map(c=>`<div class="snatch-card"><strong>${escapeHtml(c.queenName)}</strong><span>${escapeHtml(c.character)}</span></div>`).join('')}</div></div>`
     : '';
@@ -218,8 +260,10 @@ function renderWorkroom(){
     <div class="card">
       <h3>Workroom</h3>
       <p>${ep.miniChallenge?`A mini challenge took place. Winner: <strong>${escapeHtml(ep.miniWinnerName)}</strong>.`:'No mini challenge today. The dolls get straight to work.'}</p>
-      <h4>Social sparks</h4>
-      <ul>${eventList}</ul>${ep.teams?.length?`<h4>Teams</h4><ul>${ep.teams.map(t=>`<li><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>escapeHtml(gameState.queens.find(q=>q.id===id)?.name||'')).join(', ')}</li>`).join('')}</ul>`:''}${visibleDriftNotes.length?`<h4>Relationship shifts</h4><ul>${visibleDriftNotes.map(n=>`<li>${formatPlayerNameInSocialText(n)}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
+      <h4>Interactions</h4>
+      <p><em>What you're picking up from the room...</em></p>
+      <ul>${workroomPulse}</ul>
+      ${ep.teams?.length?`<h4>Teams</h4><ul>${ep.teams.map(t=>`<li><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>escapeHtml(gameState.queens.find(q=>q.id===id)?.name||'')).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
     </div>
     ${challengeContentBlock(ep)}
     ${talentContentBlock(ep)}
