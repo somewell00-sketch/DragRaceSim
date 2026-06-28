@@ -661,7 +661,7 @@ function prepareFinale(){
     const ranked=[...finalists].sort((a,b)=>trackRecordScore(b)-trackRecordScore(a));
     const cut=ranked[ranked.length-1];
     const top2=ranked.slice(0,2);
-    finale.events.push(`${cut.name} is asked to sashay away as the 2nd runner-up.`);
+    finale.events.push(`<h2>${cut.name}</h2><p>I'm sorry, my dear, but this is not your time.</p>`);
     finale.thirdFourthIds=[cut.id];
     finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync');
     finale.winnerId=finale.finalDuel.winnerId;
