@@ -1,23 +1,41 @@
 // Helper para construir o bloco de interações
+function eventNarrativeWeight(e){
+  const type=String(e?.type||'').toLowerCase();
+  let w=1;
+  if(['narrative','rivalry','alliance','conflict','shade','sabotage','emotion','support','production'].includes(type)) w+=2;
+  if(type==='narrative') w+=3;
+  if(e?.a===gameState.playerQueenId || e?.b===gameState.playerQueenId || e?.queenId===gameState.playerQueenId) w+=2;
+  return w;
+}
+function weightedPickUnique(items,count,weightFn){
+  const pool=[...(items||[])];
+  const picked=[];
+  while(pool.length && picked.length<count){
+    const total=pool.reduce((sum,item)=>sum+Math.max(0.05,weightFn(item)),0);
+    let roll=Math.random()*total;
+    let index=0;
+    for(;index<pool.length;index++){
+      roll-=Math.max(0.05,weightFn(pool[index]));
+      if(roll<=0)break;
+    }
+    picked.push(pool.splice(Math.min(index,pool.length-1),1)[0]);
+  }
+  return picked;
+}
+// Helper para construir um bloco curto de Story Beats sem encher a UI.
 function buildWorkroomPulse(events, relationshipNotes) {
-    // Seleciona até 2 Social Sparks aleatórios
-    const social = [...events]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 2)
+    const social = weightedPickUnique(events||[], 2, eventNarrativeWeight)
         .map(e => formatPlayerNameInSocialText(e.text));
 
-    // Seleciona até 2 Relationship Shifts (já priorizados pela função)
-    const relationships = relationshipNotes
-        .slice(0, 2)
-        .map(n => formatPlayerNameInSocialText(n));
+    const relationships = weightedPickUnique(relationshipNotes||[], 1, note => {
+        const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+        return player?.name && String(note).includes(player.name) ? 3 : 1;
+    }).map(n => formatPlayerNameInSocialText(n));
 
-    // Combina e formata como lista HTML
-    const allItems = [...social, ...relationships];
-    
+    const allItems = [...social, ...relationships].slice(0,3);
     if (allItems.length === 0) {
         return '<li>The room gets quiet. Everyone can feel the twist coming.</li>';
     }
-    
     return allItems.map(item => `<li>${item}</li>`).join('');
 }
 
@@ -264,8 +282,8 @@ function renderWorkroom(){
     <div class="card">
       <h3>Workroom</h3>
       <p>${ep.miniChallenge?`A mini challenge took place. Winner: <strong>${escapeHtml(ep.miniWinnerName)}</strong>.`:'No mini challenge today. The dolls get straight to work.'}</p>
-      <h4>Interactions</h4>
-      <p><em>What you're picking up from the room...</em></p>
+      <h4>Story Beats</h4>
+      <p><em>Only the moments the edit wants you to notice.</em></p>
       <ul>${workroomPulse}</ul>
       ${ep.teams?.length?`<h4>Teams</h4><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
     </div>

@@ -91,7 +91,7 @@ function calculateNarrativeTags(q){
   const flagStrength=type=>storyFlags.filter(f=>f.type===type).reduce((sum,f)=>sum+(Number(f.strength)||1),0);
 
   if(flagStrength('villain_edit')||flagStrength('villain_spark'))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,2+flagStrength('villain_edit')*2+flagStrength('villain_spark'),'earned villain-edit story flags');
-  if(flagStrength('positive_confessional'))addNarrativeTag(scores,NARRATIVE_TAGS.FAN_FAVORITE,1+flagStrength('positive_confessional'),'positive confessionals gave her warmth');
+  if(flagStrength('warm_moment'))addNarrativeTag(scores,NARRATIVE_TAGS.FAN_FAVORITE,1+flagStrength('warm_moment'),'warm cast moments gave her audience warmth');
   if(flagStrength('alliance_builder')||flagStrength('alliance_member'))addNarrativeTag(scores,NARRATIVE_TAGS.PRODUCERS_DREAM,1+flagStrength('alliance_builder')+flagStrength('alliance_member')*.5,'active alliance story');
   if(flagStrength('argument'))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,1+flagStrength('argument'),'argument in Untucked');
 
@@ -599,6 +599,45 @@ if (pick) {
     'You solidified your place in this competition tonight.'
   ]);
 }
+function narrativeEventTemplates(stage, q){
+  const tags=(typeof getQueenNarrativeTags==='function'?getQueenNarrativeTags(q):[]).map(t=>t.tag);
+  const has=t=>tags.includes(t);
+  const name=q?.name||'A queen';
+  const lines=[];
+  if(has(NARRATIVE_TAGS.VILLAIN)) lines.push(
+    {text:`🔥 ${name} throws one comment and the room immediately splits.`,type:'conflict',effects:{production:2,fans:-1,stress:2}},
+    {text:`📺 Production clearly knows ${name} can turn tension into television.`,type:'production',effects:{production:2}},
+    {text:`⚔️ ${name}'s closest rivalry gets another little spark.`,type:'rivalry',effects:{production:1,stress:2}}
+  );
+  if(has(NARRATIVE_TAGS.FAN_FAVORITE)) lines.push(
+    {text:`💖 The room notices how naturally people root for ${name}.`,type:'support',effects:{fans:2,queens:1,stress:-1}},
+    {text:`✨ ${name} gets a warm little moment without forcing it.`,type:'emotion',effects:{fans:2,production:1}},
+    {text:`👑 Another queen says ${name} is becoming hard not to love.`,type:'support',effects:{fans:1,queens:1}}
+  );
+  if(has(NARRATIVE_TAGS.FRONT_RUNNER) || has(NARRATIVE_TAGS.COMPETITIVE_THREAT)) lines.push(
+    {text:`🎯 Everyone clocks ${name} as one of the queens to beat.`,type:'threat',effects:{stress:3,production:1}},
+    {text:`👀 ${name}'s track record is starting to make the room nervous.`,type:'threat',effects:{stress:2}}
+  );
+  if(has(NARRATIVE_TAGS.LIP_SYNC_ASSASSIN)) lines.push(
+    {text:`🎤 Nobody looks excited about facing ${name} when the music starts.`,type:'threat',effects:{production:1,fans:1}}
+  );
+  if(has(NARRATIVE_TAGS.FILLER)) lines.push(
+    {text:`🕯️ ${name} quietly realizes she needs a moment before the edit moves on.`,type:'pressure',effects:{stress:4,production:-1}}
+  );
+  if(has(NARRATIVE_TAGS.RISING) || has(NARRATIVE_TAGS.REDEMPTION)) lines.push(
+    {text:`📈 ${name}'s arc is starting to feel like a real comeback.`,type:'growth',effects:{fans:1,production:1,stress:-1}}
+  );
+  if(has(NARRATIVE_TAGS.FASHION)) lines.push(
+    {text:`👠 The cast keeps checking what ${name} is building for the runway.`,type:'fashion',effects:{fans:1,production:1}}
+  );
+  if(has(NARRATIVE_TAGS.COMEDY)) lines.push(
+    {text:`😂 ${name} breaks the tension with one perfectly timed joke.`,type:'comedy',effects:{fans:1,queens:1,stress:-1}}
+  );
+  if(has(NARRATIVE_TAGS.SURVIVOR)) lines.push(
+    {text:`🛟 ${name} knows another weak week could make her story dangerous.`,type:'pressure',effects:{stress:3,production:1}}
+  );
+  return lines;
+}
 function narrativeEventForEpisode(stage='workroom'){
   const ep=gameState.currentEpisode;
   if(!ep)return null;
@@ -607,19 +646,21 @@ function narrativeEventForEpisode(stage='workroom'){
   recalcNarrativeTags();
   const active=(gameState.queens||[]).filter(q=>!q.isEliminated);
   if(!active.length)return null;
-  const threats=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.COMPETITIVE_THREAT)&&!hasNarrativeTag(q,NARRATIVE_TAGS.FRONT_RUNNER));
-  const assassins=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.LIP_SYNC_ASSASSIN));
-  const favorites=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.FAN_FAVORITE));
-  const fillers=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.FILLER));
-  const villains=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.VILLAIN));
-  let text='';
-  const roll=Math.random();
-  if(threats.length && roll<.25){ const q=sample(threats); text=`The room clocks ${q.name} as a real competitive threat.`; applyChoiceEffects({stress:3},{queen:q,note:text,source:'narrative-pulse',save:false}); }
-  else if(assassins.length && roll<.45){ const q=sample(assassins); text=`Nobody looks thrilled at the idea of facing ${q.name} in a lip sync.`; applyChoiceEffects({production:1},{queen:q,note:text,source:'narrative-pulse',save:false}); }
-  else if(favorites.length && roll<.65){ const q=sample(favorites); text=`The cast can feel how easy it is to root for ${q.name}.`; applyChoiceEffects({fans:1},{queen:q,note:text,source:'narrative-pulse',save:false}); }
-  else if(villains.length && roll<.82){ const q=sample(villains); text=`${q.name} says one sentence and somehow the whole room has a reaction.`; applyChoiceEffects({production:2},{queen:q,note:text,source:'narrative-pulse',save:false}); }
-  else if(fillers.length){ const q=sample(fillers); text=`${q.name} quietly realizes she needs a moment before the season moves past her.`; applyChoiceEffects({stress:4},{queen:q,note:text,source:'narrative-pulse',save:false}); }
-  if(!text)return null;
-  ep[key]={text,type:'narrative'};
+  const weighted=[];
+  active.forEach(q=>{
+    const templates=narrativeEventTemplates(stage,q);
+    const tagStrength=(getQueenNarrativeTags(q)[0]?.strength||1);
+    templates.forEach(t=>weighted.push({q,t,w:Math.max(1,tagStrength)+(t.type==='rivalry'||t.type==='conflict'?1.5:0)}));
+  });
+  if(!weighted.length || Math.random()<0.12)return null;
+  const total=weighted.reduce((s,x)=>s+x.w,0);
+  let roll=Math.random()*total;
+  let picked=weighted[0];
+  for(const item of weighted){roll-=item.w;if(roll<=0){picked=item;break;}}
+  const text=picked.t.text;
+  if(picked.t.effects && typeof applyChoiceEffects==='function'){
+    applyChoiceEffects(picked.t.effects,{queen:picked.q,note:text,source:'narrative-pulse',save:false});
+  }
+  ep[key]={text,type:picked.t.type||'narrative',queenId:picked.q.id};
   return ep[key];
 }

@@ -31,12 +31,29 @@ function productionReceptionTier(prod){
     {min:-999,label:'Hard to Edit',tone:'Production struggled to turn your run into a clear story.'}
   ]);
 }
-function castReceptionTier(queens){
-  return receptionTier(queens,[
-    {min:40,label:'Beloved by the Cast',tone:'The workroom clearly had room for you.'},
-    {min:20,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
-    {min:-19,label:'Mixed Cast Reception',tone:'Some queens connected with you; others kept their distance.'},
-    {min:-39,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
+function castReceptionScore(q){
+  const rels=Object.values(gameState.relationships?.[q?.id]||{});
+  const relScore=rels.length ? rels.reduce((sum,r)=>sum+(Number(r.affinity)||0)+(Number(r.respect)||0)*0.75,0)/rels.length : 0;
+  const pub=Number(q?.publicScores?.queens)||0;
+  const flags=(q?.storyFlags||[]).concat((gameState.season?.storyFlags||[]).filter(f=>f.queenId===q?.id));
+  const count=type=>flags.filter(f=>f.type===type).reduce((sum,f)=>sum+(Number(f.strength)||1),0);
+  const st=q?.statistics||{};
+  let score=(pub*0.55)+(relScore*0.75);
+  score += count('alliance_builder')*8 + count('alliance_member')*5 + count('warm_moment')*4;
+  score -= count('argument')*7 + count('villain_edit')*5 + count('villain_spark')*4;
+  score += Math.min(10,(st.wins||0)*3+(st.highs||0)*1.5);
+  score -= Math.min(8,(st.bottoms||0)*2);
+  return Math.round(score);
+}
+function castReceptionTier(value){
+  return receptionTier(value,[
+    {min:70,label:'Cast Favorite',tone:'The workroom treated you like one of the hearts of the season.'},
+    {min:48,label:'Beloved by the Cast',tone:'The other queens clearly had room for you.'},
+    {min:28,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
+    {min:10,label:'Generally Liked',tone:'Most of the cast seemed comfortable with you.'},
+    {min:-9,label:'Complicated Cast Reception',tone:'Your relationships had warmth, distance, and a few unresolved edges.'},
+    {min:-27,label:'Divisive in the Workroom',tone:'Some queens connected with you, but the tension was real.'},
+    {min:-49,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
     {min:-999,label:'Cast Villain',tone:'The cast did not exactly line up to braid your wig.'}
   ]);
 }
@@ -88,7 +105,7 @@ function seasonArcTags(q){
 function mainSeasonArc(q){return seasonArcTags(q)[0]||'steady competitor';}
 function postSeasonReception(q){
   if(!q)return '';
-  const fans=q.publicScores?.fans||0, prod=q.publicScores?.production||0, cast=q.publicScores?.queens||0;
+  const fans=q.publicScores?.fans||0, prod=q.publicScores?.production||0, cast=castReceptionScore(q);
   const fan=fanReceptionTier(fans);
   const production=productionReceptionTier(prod);
   const castTier=castReceptionTier(cast);

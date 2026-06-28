@@ -51,7 +51,7 @@
     "Walked, posed, and disappeared from memory.",
     "Did enough to survive and nothing else.",
     "Looked like she was playing it safe in every way.",
-    "Gave a look that was fine for brunch, not for the main stage."
+    "Gave a look that was fine for brunch, not for the main stage.",
      "Looked nice and presentable.",
       "A solid look for the category.",
       "Clean and polished from head to toe.",
@@ -1215,7 +1215,9 @@
     "cast": [
       "Beloved by the Cast",
       "Respected by the Cast",
-      "Mixed Cast Reception",
+      "Generally Liked",
+      "Complicated Cast Reception",
+      "Divisive in the Workroom",
       "Difficult in the Workroom",
       "Cast Villain"
     ]

@@ -343,8 +343,8 @@ function applyTargetedPrepChoice(choice,target){
   if(choice.dynamicEffect==='askHelp' && target){
     const built=buildDynamicPlayerEffects('askHelp',target);
     applyPlayerEffects(built.effects,built.note,target.id);
-    applyQueenEffects(target,{challengeBonus:0.2,confidence:2,stress:-3,production:1,fans:1},`${target.name} gets a positive helper confessional after helping you prepare.`,gameState.playerQueenId);
-    addStoryFlag(target.id,'positive_confessional',`${target.name} helped the player prepare.`,1);
+    applyQueenEffects(target,{challengeBonus:0.2,confidence:2,stress:-3,production:1,fans:1},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
+    addStoryFlag(target.id,'warm_moment',`${target.name} helped the player prepare.`,1);
     episodeSocialNote('workroom',built.note);
     return;
   }
@@ -530,7 +530,7 @@ function applyUntuckedAction(actionId,targetId=null){
     }
     if(action.dynamicEffect==='makeDrama'){
       maybeVillainEdit(player,0.24,'made drama in Untucked');
-      addStoryFlag(player.id,'future_confessional','Untucked drama created future confessional material.',1);
+      addStoryFlag(player.id,'story_material','Untucked drama gave production more story material.',1);
     }
     if(action.dynamicEffect==='buildAlliance' && target){
       const alliance=createAlliance(player.id,target.id,'untucked');
@@ -760,6 +760,8 @@ function chooseNpcHelpTarget(q){
 function pickNpcSocialEventForQueen(pool,a){
   const prof=(typeof getPersonalityProfile==='function')?getPersonalityProfile(a):{};
   const ambition=(typeof getAmbition==='function')?getAmbition(a):3;
+  const tags=(typeof getQueenNarrativeTags==='function'?getQueenNarrativeTags(a):[]).map(t=>t.tag);
+  const hasTag=t=>tags.includes(t);
   const weighted=pool.map(ev=>{
     let w=1;
     if(ev.type==='comfort'||ev.type==='friendship'||ev.type==='mentor'||ev.type==='alliance') w += (prof.helpBias||0)*5 + Math.max(0,(prof.social||5)-5)*0.25;
@@ -767,6 +769,13 @@ function pickNpcSocialEventForQueen(pool,a){
     if(ev.type==='sabotage') w += (prof.sabotageBias||0)*7 + Math.max(0,ambition-3)*0.6;
     if((prof.id==='kind'||prof.id==='sweet'||prof.id==='humble') && (ev.type==='sabotage'||ev.type==='conflict')) w*=0.25;
     if((prof.id==='chaotic'||prof.id==='dramatic'||prof.id==='hotheaded') && (ev.type==='conflict'||ev.type==='shade')) w*=1.8;
+
+    // Narrative integration: tags change which existing short events are more likely.
+    if(hasTag(NARRATIVE_TAGS?.VILLAIN) && ['conflict','shade','jealousy','sabotage'].includes(ev.type)) w*=2.4;
+    if(hasTag(NARRATIVE_TAGS?.FAN_FAVORITE) && ['comfort','friendship','mentor','alliance'].includes(ev.type)) w*=2.0;
+    if(hasTag(NARRATIVE_TAGS?.PRODUCERS_DREAM) && ['conflict','shade','jealousy','alliance','sabotage'].includes(ev.type)) w*=1.6;
+    if(hasTag(NARRATIVE_TAGS?.FILLER) && ['conflict','shade','jealousy','sabotage'].includes(ev.type)) w*=1.25;
+    if(hasTag(NARRATIVE_TAGS?.RISING) && ['comfort','friendship','mentor'].includes(ev.type)) w*=1.35;
     return {ev,w:Math.max(0.02,w)};
   });
   const total=weighted.reduce((s,x)=>s+x.w,0);

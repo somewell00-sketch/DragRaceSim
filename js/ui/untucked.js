@@ -24,6 +24,8 @@ function renderUntucked(){
   else if(eliminatedNames.length) desc=`${eliminatedNames.map(escapeHtml).join(' and ')} ${eliminatedNames.length>1?'have':'has'} left the competition.`;
   const spontaneous=generateUntuckedSpontaneous();
   const npcUntuckedEvents=generateNpcSocialEvents('untucked');
+  const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('untucked'):null;
+  const loungeBeats=[...(narrativeEvent?[narrativeEvent]:[]), ...npcUntuckedEvents].slice(0,3);
   const playerObserver=(typeof isCurrentEpisodePremiereObserver==='function' && isCurrentEpisodePremiereObserver());
   const spectatorMode=!!gameState.season?.spectatorMode;
   const choiceDone=!!ep.untuckedChoice || playerJustEliminated || playerObserver || (playerAlreadyEliminated && spectatorMode);
@@ -38,7 +40,7 @@ function renderUntucked(){
       <p>${desc}</p>
       
     </div>
-    <div class="card"><h3>Lounge talk</h3><p>${escapeHtml(spontaneous)}</p>${npcUntuckedEvents.length?`<ul>${npcUntuckedEvents.map(e=>`<li>${escapeHtml(e.text)}</li>`).join('')}</ul>`:''}</div>
+    <div class="card"><h3>Lounge talk</h3><p>${escapeHtml(spontaneous)}</p>${loungeBeats.length?`<h4>Story Beats</h4><ul>${loungeBeats.map(e=>`<li>${escapeHtml(e.text)}</li>`).join('')}</ul>`:''}</div>
     ${playerObserver?`<div class="card subtle"><h3>Observer mode</h3><p>Your queen is not competing in this premiere episode, so you do not take an Untucked action.</p></div>`:''}
     ${(playerAlreadyEliminated && spectatorMode && !playerJustEliminated)?`<div class="card subtle"><h3>Spectator mode</h3><p>Your queen is out of the competition. You are watching how the rest of the season unfolds.</p></div>`:''}
     <div id="untuckedChoice"></div>
