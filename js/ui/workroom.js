@@ -37,7 +37,7 @@ function smackdownStrategyOptionsHtml(){
   const strategies=[
     ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
     ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','💃 Dance the House Down','Attack the rhythm and try to own the stage.'],
+    ['dance','Dance the House Down','Attack the rhythm and try to own the stage.'],
     ['stunts','🤸 Stunts & Tricks','Go for big physical moments.'],
     ['save_reveal','👗 Reveal During the Climax','Hold the reveal until the song hits its biggest moment.'],
     ['reveal_early','✨ Reveal Early','Shock the judges quickly.'],
@@ -165,7 +165,10 @@ function challengeContentBlock(ep){
 
 function renderPremiereObserverWorkroom(){
   const ep=gameState.currentEpisode;
-  if(!ep.placements?.length)calculateEpisodeResults({risk:'safe'});
+  if(!ep.placements?.length){
+    ep.playerChallengeRisk='safe';
+    calculateEpisodeResults({risk:'safe'});
+  }
   const groupLabel=ep.premiereSpecial?.phase?`Premiere Part ${ep.premiereSpecial.phase}`:'Premiere';
   const names=currentEpisodeParticipantNames().map(escapeHtml).join(', ');
   const talent=talentContentBlock(ep);
@@ -203,6 +206,7 @@ function renderSeasonObserverWorkroom(){
   document.querySelector('#continue').addEventListener('click',()=>{
     if(!ep.placements?.length){
       ep.workroomComplete=true;
+      ep.playerChallengeRisk='safe';
       calculateEpisodeResults({risk:'safe'});
     }
     renderRunway();
@@ -287,7 +291,7 @@ function bindSkipWorkroom(){
     if(!ep.challengeApproach)ep.challengeApproach='No clear approach';
     ep.workroomComplete=true;
     if(typeof applyPassiveWorkroomPenalty==='function') applyPassiveWorkroomPenalty();
-    if(!ep.placements?.length)calculateEpisodeResults({risk:'safe'});
+    if(!ep.placements?.length){ep.playerChallengeRisk='safe'; calculateEpisodeResults({risk:'safe'});}
     renderRunway();
   });
 }
@@ -314,7 +318,7 @@ function renderWorkroomChoice(){
   document.querySelectorAll('[data-workroom]').forEach(btn=>btn.addEventListener('click',()=>{
     const choice=WORKROOM_CHOICES[btn.dataset.workroom];
     gameState.currentEpisode.workroomChoice=choice.label;
-    applyPlayerEffects(choice.effects,choice.text);
+    if(typeof applyWorkroomChoice==='function') applyWorkroomChoice(choice); else applyPlayerEffects(choice.effects,choice.text);
     renderPreparationChoice();
   }));
 }
@@ -332,6 +336,8 @@ function renderPreparationChoice(){
         gameState.currentEpisode.prepChoice=`${choice.label}: ${target?.name||'another queen'}`;
         if(choice.isSabotage && typeof applySabotageAttempt==='function'){
           applySabotageAttempt(targetId);
+        }else if(typeof applyTargetedPrepChoice==='function'){
+          applyTargetedPrepChoice(choice,target);
         }else{
           applyPlayerEffects(choice.effects,choice.text,targetId);
         }
@@ -351,6 +357,7 @@ function renderChallengeApproachChoice(){
     gameState.currentEpisode.challengeApproach=choice.label;
     gameState.currentEpisode.workroomComplete=true;
     applyPlayerEffects(choice.effects,choice.text);
+    gameState.currentEpisode.playerChallengeRisk=choice.risk;
     calculateEpisodeResults({risk:choice.risk});
     renderRunway();
   }));

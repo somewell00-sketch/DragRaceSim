@@ -20,7 +20,7 @@ function renderLipSyncStrategyChoice(){
   const strategies=[
     ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
     ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','💃 Dance the House Down','Attack the rhythm and try to own the whole stage.'],
+    ['dance','Dance the House Down','Attack the rhythm and try to own the whole stage.'],
     ['stunts','🤸 Stunts & Tricks','Go for big physical moments. It could be iconic or messy.'],
     ['save_reveal','👗 Save the Reveal for the Climax','Hold the reveal until the song hits its biggest moment.'],
     ['reveal_early','✨ Reveal Early','Shock the judges quickly and hope the energy carries through.'],

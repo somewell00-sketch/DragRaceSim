@@ -46,8 +46,178 @@ function runwayTone(p, placements){
 }
 function getRunwayOrder(ep, placements){if(!ep.runwayOrder || ep.runwayOrder.length!==placements.length){ep.runwayOrder=shuffle(placements.map(p=>p.queenId)); saveGame();} return ep.runwayOrder.map(id=>placements.find(p=>p.queenId===id)).filter(Boolean);}
 
+const RUNWAY_ACTIONS = {
+  none:{
+    label:'Walk Normally',
+    shortLabel:'Walk normally',
+    description:'Let the garment speak. No extra risk. Small confidence gain.',
+    weights:{},
+    success:{confidence:1},
+    failure:null,
+    successText:'You decide not to force a trick tonight. The walk is clean, composed, and focused on the look.',
+    story:'clean runway walk'
+  },
+  reveal:{
+    label:'Reveal',
+    shortLabel:'Reveal',
+    description:'High risk, high reward. A reveal can become the episode image or collapse on stage.',
+    weights:{runway:.6,confidence:.4},
+    success:{runway:3,production:2,fans:1,confidence:1},
+    failure:{runway:-3,production:1,fans:-1,confidence:-1,stress:3},
+    successText:'The reveal lands at the perfect beat. The judges sit forward and the garment suddenly has a second life.',
+    failureText:'The reveal fights back. You recover, but the panel notices the mechanics before the fantasy.',
+    story:'reveal moment'
+  },
+  cape_reveal:{
+    label:'Cape Reveal',
+    shortLabel:'Cape Reveal',
+    description:'Elegant reveal. Small score increase, but it can malfunction.',
+    weights:{runway:.7,confidence:.3},
+    success:{runway:2,production:1,fans:1},
+    failure:{runway:-2,production:1,confidence:-1,stress:2},
+    successText:'The cape opens cleanly and frames the silhouette. It reads graceful, expensive, and intentional.',
+    failureText:'The cape catches for a second. You save it, but the hesitation slightly softens the moment.',
+    story:'elegant edit'
+  },
+  wig_reveal:{
+    label:'Wig Reveal',
+    shortLabel:'Wig Reveal',
+    description:'Can greatly impress. Can also appear messy.',
+    weights:{runway:.5,lipSync:.3,cunt:.2},
+    success:{runway:4,production:3,fans:2,confidence:2},
+    failure:{runway:-4,production:2,fans:-1,confidence:-2,stress:4},
+    successText:'The wig reveal is clean, dramatic, and timed like a punchline. The judges react immediately.',
+    failureText:'The wig reveal gets messy. The idea is visible, but so are the seams.',
+    story:'viral wig reveal'
+  },
+  prop:{
+    label:'Prop',
+    shortLabel:'Prop',
+    description:'Use an accessory. It can elevate the concept or distract from the look.',
+    weights:{lipSync:.5,sewing:.3,runway:.2},
+    success:{runway:3,production:2,fans:1},
+    failure:{runway:-3,production:1,fans:-1,stress:2},
+    successText:'The prop completes the story instead of stealing focus. The judges understand the choice.',
+    failureText:'The prop pulls attention away from the garment. It gives story, but not all of it is flattering.',
+    story:'prop moment'
+  },
+  audience_interaction:{
+    label:'Audience Interaction',
+    shortLabel:'Audience Interaction',
+    description:'Connect with the judges. High charisma reward, risk of appearing forced.',
+    weights:{cunt:.7,confidence:.3},
+    success:{runway:2,production:1,fans:3,confidence:1},
+    failure:{runway:-2,production:1,fans:-1,confidence:-1,stress:2},
+    successText:'You connect with the panel without begging for attention. It feels charismatic and controlled.',
+    failureText:'The interaction feels a little forced. The judges smile politely, but the beat does not fully land.',
+    story:'charisma edit'
+  },
+  extra_pose:{
+    label:'Extra Pose',
+    shortLabel:'Extra Pose',
+    description:'A final pose before leaving. Small reward and possible confidence boost.',
+    weights:{runway:.8,confidence:.2},
+    success:{runway:1,fans:1,confidence:2},
+    failure:{runway:-1,confidence:-1,stress:1},
+    successText:'The final pose gives the look a clean last image. Small choice, useful impact.',
+    failureText:'The extra pose hangs a beat too long. It is not fatal, but the exit loses polish.',
+    story:'fashion moment'
+  }
+};
+
+function runwayActionEmoji(id){
+  return {none:'👠',reveal:'🎭',cape_reveal:'🧥',wig_reveal:'💇',prop:'🪭',audience_interaction:'🗣️',extra_pose:'📸'}[id] || '👠';
+}
+
+function runwayAttribute(q, key){
+  if(!q)return 5;
+  if(key==='confidence') return clamp(((q.confidence ?? 50)/10),1,10);
+  return clamp(q.attributes?.[key] ?? 5,1,10);
+}
+function runwayActionSkillScore(q, action){
+  const weights=action.weights||{};
+  const entries=Object.entries(weights);
+  if(!entries.length)return 7;
+  return entries.reduce((total,[key,weight])=>total + runwayAttribute(q,key)*weight,0);
+}
+function runwayActionChance(q, action){
+  if(!action.failure)return 1;
+  const skill=runwayActionSkillScore(q, action);
+  // Skill 1 => roughly 34%, skill 10 => roughly 88%.
+  return clamp(.28 + (skill/10)*.6, .25, .9);
+}
+function runwayVisibleEffectText(result){
+  if(!result)return '';
+  const lines=[];
+  if(result.confidenceDelta) lines.push(result.confidenceDelta>0?'You feel more confident.':'Your confidence takes a hit.');
+  if(result.stressDelta) lines.push(result.stressDelta>0?'The moment adds pressure.':'You feel calmer.');
+  if(result.productionHint) lines.push(result.productionHint);
+  return lines.length?`<ul class="runway-visible-effects">${lines.map(x=>`<li>${escapeHtml(x)}</li>`).join('')}</ul>`:'';
+}
+function runwayActionResultBlock(ep){
+  if(!ep.runwayActionApplied)return '';
+  const result=ep.runwayActionResult;
+  const icon=result?.success===false?'💥':runwayActionEmoji(result?.id);
+  const outcome=result?.success===false?'Misfire':(result?.id==='none'?'Clean Walk':'Success');
+  return `<div class="card runway-action-result ${result?.success===false?'runway-action-fail':'runway-action-success'}">
+    <h3>${icon} ${escapeHtml(outcome)}: ${escapeHtml(result?.label||'Runway Action')}</h3>
+    <p>${escapeHtml(result?.outcomeText||'Your runway choice has been applied.')}</p>
+    ${runwayVisibleEffectText(result)}
+  </div>`;
+}
+
+function playerRunwayActionBlock(ep){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  if(!player || player.isEliminated || (ep.participantIds && !ep.participantIds.includes(player.id))) return '';
+  if(ep.runwayActionApplied) return runwayActionResultBlock(ep);
+  const actionIds=['none','reveal','cape_reveal','wig_reveal','prop','audience_interaction','extra_pose'];
+  const buttons=actionIds.map(id=>{
+    const o=RUNWAY_ACTIONS[id];
+    const chance=runwayActionChance(player,o);
+    const risk=o.failure?`<span class="small runway-chance">🎲: ${Math.round(chance*100)}%</span>`:'<span class="small runway-chance">🎲: no risk</span>';
+    return `<button class="option runway-choice-option" data-runway-action="${id}"><span class="choice-emoji" aria-hidden="true">${runwayActionEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(o.shortLabel||o.label)}</strong><span class="small">${escapeHtml(o.description)}</span>${risk}</span></button>`;
+  }).join('');
+  return `<div class="card decision-card runway-pre-choice"><h3>How do you approach tonight's runway?</h3><p>Choose before stepping onto the main stage. The judges will only see the result, not the math behind it.</p><div class="options">${buttons}</div></div>`;
+}
+
+function applyRunwayAction(actionId){
+  const ep=gameState.currentEpisode;
+  if(!ep || ep.runwayActionApplied) return;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const action=RUNWAY_ACTIONS[actionId] || RUNWAY_ACTIONS.none;
+  const chance=runwayActionChance(player, action);
+  const success=!action.failure || Math.random()<chance;
+  const effects=success?action.success:action.failure;
+  const note=success?action.successText:action.failureText;
+  applyChoiceEffects(effects,{note,source:'runway-action'});
+  ep.runwayActionApplied=true;
+  ep.runwayAction=action.label;
+  ep.runwayActionResult={
+    id:actionId,
+    label:action.label,
+    success,
+    chance:Math.round(chance*100),
+    outcomeText:note,
+    scoreDelta:effects.runway||0,
+    confidenceDelta:effects.confidence||0,
+    stressDelta:effects.stress||0,
+    productionHint: effects.production ? 'The cameras stay with you for an extra beat.' : '',
+    story:action.story||''
+  };
+  if(!ep.storyFlags)ep.storyFlags=[];
+  ep.storyFlags.push({type:success?'runway_moment':'runway_misfire',queenId:gameState.playerQueenId,label:action.label,text:note,hiddenEffects:{production:effects.production||0,fans:effects.fans||0}});
+  const risk=ep.playerChallengeRisk || 'safe';
+  calculateEpisodeResults({risk});
+  saveGame();
+  renderRunwayMainStage();
+}
+
+function bindRunwayActions(){
+  document.querySelectorAll('[data-runway-action]').forEach(btn=>btn.addEventListener('click',()=>applyRunwayAction(btn.dataset.runwayAction)));
+}
+
 function runwayCategoryHeader(cat){
-  return `<div class="runway-category-title"><span>Category Is</span><strong>${escapeHtml(cat||'Runway')}</strong></div>`;
+  return `<div class="runway-category-title"><span>Tonight's category is...</span><strong>${escapeHtml(cat||'Runway')}</strong></div>`;
 }
 
 function runwayMomentMap(placements){
@@ -64,16 +234,50 @@ function runwayMomentMap(placements){
   if(low && low.queenId!==top?.queenId && low.runway <= median-5) map[low.queenId]='flop';
   return map;
 }
-
-function runwayWalkCard(p, placements, momentMap){
+function runwayStars(p, placements){
+  const values=placements.map(x=>x.runway).sort((a,b)=>a-b);
+  const min=values[0] ?? 0;
+  const max=values[values.length-1] ?? min+1;
+  const normalized=(p.runway-min)/Math.max(1,max-min);
+  const stars=clamp(Math.round(normalized*4)+1,1,5);
+  return '★'.repeat(stars)+'☆'.repeat(5-stars);
+}
+function runwayTagForStars(starCount, moment, isTopToot){
+  const tags=[];
+  if(moment==='flop'){
+    tags.push({icon:'💥', label:'SCOOT'});
+  }else if(starCount<=1){
+    tags.push({icon:'🥾', label:'BOOT'});
+  }else if(starCount===2){
+    tags.push({icon:'🥾', label:'SOFT BOOT'});
+  }else if(starCount===3){
+    tags.push({icon:'✨', label:'SOFT TOOT'});
+  }else{
+    tags.push({icon:'💎', label:'TOOT'});
+  }
+  if(moment==='showstopper') tags.push({icon:'⭐', label:'SHOOT'});
+  if(isTopToot) tags.push({icon:'🏆', label:'TOP TOOT OF THE WEEK'});
+  return tags;
+}
+function runwayStarCount(p, placements){
+  const values=placements.map(x=>x.runway).sort((a,b)=>a-b);
+  const min=values[0] ?? 0;
+  const max=values[values.length-1] ?? min+1;
+  const normalized=(p.runway-min)/Math.max(1,max-min);
+  return clamp(Math.round(normalized*4)+1,1,5);
+}
+function runwayTagMarkup(tags){
+  return tags.map(t=>`<span class="runway-label">${t.icon} ${escapeHtml(t.label)}</span>`).join('');
+}
+function runwayWalkCard(p, placements, momentMap, opts={}){
   const moment=momentMap[p.queenId] || 'normal';
-  const icon=moment==='showstopper'?'👑':moment==='moment'?'✨':moment==='flop'?'💥':'○';
-  const label=moment==='showstopper'?'SHOWSTOPPER':moment==='moment'?'RUNWAY MOMENT':moment==='flop'?'FASHION FLOP':'';
-  const labelHtml=label?`<span class="runway-label">${icon} ${label}</span>`:'';
+  const starCount=runwayStarCount(p,placements);
+  const isTopToot=!!opts.allowTopToot && p.queenId===opts.topTootQueenId;
+  const tags=runwayTagForStars(starCount,moment,isTopToot);
   const q=gameState.queens.find(x=>x.id===p.queenId);
   return `<article class="runway-look runway-${moment}">
-    ${labelHtml}
-    <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4><span class="runway-icon">${icon}</span>${escapeHtml(p.name)}</h4>
+    <div class="runway-tags">${runwayTagMarkup(tags)}</div>
+    <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4>${escapeHtml(p.name)}</h4>
     <p>${escapeHtml(runwayTone(p,placements))}</p></div></div>
   </article>`;
 }
@@ -81,7 +285,6 @@ function runwayWalkCard(p, placements, momentMap){
 function runwaySafeDecisionBlock(ep, placements){
   const activeCount=gameState.queens.filter(q=>!q.isEliminated).length;
   const safeQueens=placements.filter(p=>p.placement==='SAFE');
-  // If nobody is safe, do not show a fake safe-queens card. Go straight to critiques.
   if(!safeQueens.length)return '';
   const safePortraits=`<div class="safe-portraits">${safeQueens.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return q?queenPortraitHtml(q,'sm'):'';}).join('')}</div>`;
   const safeLine=`${safePortraits}<p>${safeQueens.map(p=>`<strong>${escapeHtml(p.name)}</strong>`).join(', ')}</p>`;
@@ -102,19 +305,27 @@ function teamJudgingSummary(ep){
   return `<div class="card"><h3>${escapeHtml(teamJudgingLabel(ep))}</h3><p>${escapeHtml(intro)}</p>${teamLines}</div>`;
 }
 
-
 function runwayCategoryCards(ep, placements, runwayOrder){
   const categories=(ep.runwayCategories&&ep.runwayCategories.length)?ep.runwayCategories:[ep.runwayCategory];
   const momentMap=runwayMomentMap(placements);
+  const topTootQueenId=[...placements].sort((a,b)=>b.runway-a.runway)[0]?.queenId;
   if(ep.challengeType==='ball' && categories.length>1){
     return categories.map((cat,idx)=>{
       const note=idx===categories.length-1?'<p class="small">This final category was constructed in the workroom.</p>':'';
-      const walks=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap)).join('');
+      const allowTopToot=idx===categories.length-1;
+      const walks=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap,{allowTopToot,topTootQueenId})).join('');
       return `<div class="card runway-card">${runwayCategoryHeader(cat)}${note}<div class="runway-walk-list">${walks}</div></div>`;
     }).join('');
   }
-  const runwayWalk=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap)).join('');
+  const runwayWalk=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap,{allowTopToot:true,topTootQueenId})).join('');
   return `<div class="card runway-card">${runwayCategoryHeader(ep.runwayCategory)}<div class="runway-walk-list">${runwayWalk}</div></div>`;
+}
+
+function canPlayerTakeRunwayAction(ep){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  if(!player || player.isEliminated)return false;
+  if(ep?.participantIds && !ep.participantIds.includes(player.id))return false;
+  return true;
 }
 
 function renderRunway(){renderRunwayMainStage();}
@@ -129,20 +340,27 @@ function renderRunwayMainStage(){
     if(!ep.challengeApproach)ep.challengeApproach='No clear approach';
     ep.workroomComplete=true;
     if(typeof applyPassiveWorkroomPenalty==='function') applyPassiveWorkroomPenalty();
+    ep.playerChallengeRisk='safe';
     calculateEpisodeResults({risk:'safe'});
   }
   const placements=ep.placements;
   const runwayOrder=getRunwayOrder(ep, placements);
-  const runwayCards=runwayCategoryCards(ep, placements, runwayOrder);
+  const playerCanAct=canPlayerTakeRunwayAction(ep);
+  const runwayReady=ep.runwayActionApplied || !playerCanAct;
+  const runwayCards=runwayReady ? runwayCategoryCards(ep, placements, runwayOrder) : '';
+  const initialCategory=runwayReady ? '' : runwayCategoryHeader(ep.runwayCategory);
+  const afterRunway=runwayReady ? `${teamJudgingSummary(ep)}${runwaySafeDecisionBlock(ep, placements)}<button id="toCritiques">Continue to Judges’ Critiques</button>` : '';
   setHTML(`<main class="layout"><section class="screen">
     <div class="hero">${bigMomentHeader('Welcome to Drag Race','MAIN STAGE','mainstage')}<p>Guest judge: <strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong></p><div class="challenge-brief"><span>This week, the queens were challenged to:</span><strong>${escapeHtml(episodeChallengeBrief(ep))}</strong></div></div>
+    ${initialCategory}
+    ${playerRunwayActionBlock(ep)}
     ${runwayCards}
-    ${teamJudgingSummary(ep)}
-    ${runwaySafeDecisionBlock(ep, placements)}
-    <button id="toCritiques">Continue to Judges’ Critiques</button>
+    ${afterRunway}
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderRunwayMainStage));
-  document.querySelector('#toCritiques').addEventListener('click',renderJudgesCritiques);
+  bindRunwayActions();
+  const critiqueBtn=document.querySelector('#toCritiques');
+  if(critiqueBtn) critiqueBtn.addEventListener('click',renderJudgesCritiques);
 }
 
 function passiveJudgeNote(p, placements){

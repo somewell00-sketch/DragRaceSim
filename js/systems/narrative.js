@@ -87,6 +87,13 @@ function calculateNarrativeTags(q){
   const type=String(q.type||'').toLowerCase();
   const personality=String(q.personalityId||q.personality||'').toLowerCase();
   const frontIds=currentFrontRunnerIds();
+  const storyFlags=(q.storyFlags||[]).concat((gameState.season?.storyFlags||[]).filter(f=>f.queenId===q.id));
+  const flagStrength=type=>storyFlags.filter(f=>f.type===type).reduce((sum,f)=>sum+(Number(f.strength)||1),0);
+
+  if(flagStrength('villain_edit')||flagStrength('villain_spark'))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,2+flagStrength('villain_edit')*2+flagStrength('villain_spark'),'earned villain-edit story flags');
+  if(flagStrength('positive_confessional'))addNarrativeTag(scores,NARRATIVE_TAGS.FAN_FAVORITE,1+flagStrength('positive_confessional'),'positive confessionals gave her warmth');
+  if(flagStrength('alliance_builder')||flagStrength('alliance_member'))addNarrativeTag(scores,NARRATIVE_TAGS.PRODUCERS_DREAM,1+flagStrength('alliance_builder')+flagStrength('alliance_member')*.5,'active alliance story');
+  if(flagStrength('argument'))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,1+flagStrength('argument'),'argument in Untucked');
 
   if(frontIds.includes(q.id))addNarrativeTag(scores,NARRATIVE_TAGS.FRONT_RUNNER,5,'best track record right now');
   if(power>=8 || wins>=1&&highs>=2)addNarrativeTag(scores,NARRATIVE_TAGS.COMPETITIVE_THREAT,Math.min(5,2+wins+Math.floor(highs/2)),'track record makes her dangerous');
@@ -565,11 +572,11 @@ function narrativeEventForEpisode(stage='workroom'){
   const villains=active.filter(q=>hasNarrativeTag(q,NARRATIVE_TAGS.VILLAIN));
   let text='';
   const roll=Math.random();
-  if(threats.length && roll<.25){ const q=sample(threats); text=`The room clocks ${q.name} as a real competitive threat.`; q.stress=clamp((q.stress||20)+3,0,100); }
-  else if(assassins.length && roll<.45){ const q=sample(assassins); text=`Nobody looks thrilled at the idea of facing ${q.name} in a lip sync.`; q.publicScores.production=clamp((q.publicScores.production||0)+1,-100,100); }
-  else if(favorites.length && roll<.65){ const q=sample(favorites); text=`The cast can feel how easy it is to root for ${q.name}.`; q.publicScores.fans=clamp((q.publicScores.fans||0)+1,-100,100); }
-  else if(villains.length && roll<.82){ const q=sample(villains); text=`${q.name} says one sentence and somehow the whole room has a reaction.`; q.publicScores.production=clamp((q.publicScores.production||0)+2,-100,100); }
-  else if(fillers.length){ const q=sample(fillers); text=`${q.name} quietly realizes she needs a moment before the season moves past her.`; q.stress=clamp((q.stress||20)+4,0,100); }
+  if(threats.length && roll<.25){ const q=sample(threats); text=`The room clocks ${q.name} as a real competitive threat.`; applyChoiceEffects({stress:3},{queen:q,note:text,source:'narrative-pulse',save:false}); }
+  else if(assassins.length && roll<.45){ const q=sample(assassins); text=`Nobody looks thrilled at the idea of facing ${q.name} in a lip sync.`; applyChoiceEffects({production:1},{queen:q,note:text,source:'narrative-pulse',save:false}); }
+  else if(favorites.length && roll<.65){ const q=sample(favorites); text=`The cast can feel how easy it is to root for ${q.name}.`; applyChoiceEffects({fans:1},{queen:q,note:text,source:'narrative-pulse',save:false}); }
+  else if(villains.length && roll<.82){ const q=sample(villains); text=`${q.name} says one sentence and somehow the whole room has a reaction.`; applyChoiceEffects({production:2},{queen:q,note:text,source:'narrative-pulse',save:false}); }
+  else if(fillers.length){ const q=sample(fillers); text=`${q.name} quietly realizes she needs a moment before the season moves past her.`; applyChoiceEffects({stress:4},{queen:q,note:text,source:'narrative-pulse',save:false}); }
   if(!text)return null;
   ep[key]={text,type:'narrative'};
   return ep[key];

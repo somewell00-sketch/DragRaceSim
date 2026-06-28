@@ -291,16 +291,20 @@ function calculateEpisodeResults(playerChoices={}){
   simulateNpcEpisodeChoices();
   const challenge=challengeDefinitionForEpisode(ep);
   const active=gameState.queens.filter(q=>!q.isEliminated && (!ep.participantIds || ep.participantIds.includes(q.id)));
+  if(!ep.runwayRolls) ep.runwayRolls={};
+  if(!ep.eventRolls) ep.eventRolls={};
   const scored=active.map(q=>{
     const qEffects=currentQueenEffects(q);
     const risk=q.id===gameState.playerQueenId?playerChoices.risk:(qEffects.risk||chooseAIRisk(q));
     const base=weightedAttributeScore(q.attributes,challenge.weights);
-    const runway=q.attributes.runway*3+rand(-5,5);
+    if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5,5);
+    const runway=q.attributes.runway*3+ep.runwayRolls[q.id];
     const production=clamp((q.publicScores.production/8) * ((q.statistics?.wins||0)>=4 ? 0.5 : 1),-2,2);
     const momentum=q.momentum;
     const riskBonus=riskRoll(risk);
     const miniBonus=q.id===ep.miniWinnerId?3:0;
-    const eventBonus=q.id===gameState.playerQueenId?(ep.event?.score||0):rand(-1,1);
+    if(q.id!==gameState.playerQueenId && ep.eventRolls[q.id]===undefined) ep.eventRolls[q.id]=rand(-1,1);
+    const eventBonus=q.id===gameState.playerQueenId?(ep.event?.score||0):(ep.eventRolls[q.id]||0);
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
     const energyStressMod=queenEnergyStressMod(q);
     const effectSource=q.id===gameState.playerQueenId?playerEffects:qEffects;
@@ -464,21 +468,48 @@ function resolveLipSync(playerMoves=null){
   saveGame();
   return ep.lipSyncResult;
 }
-function applyEpisodeStats(){const ep=gameState.currentEpisode; if(ep.statsApplied)return; ensureAllQueenV14Stats(); for(const p of ep.placements){const q=gameState.queens.find(x=>x.id===p.queenId); q.statistics.episodesCompeted++; q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM'}); if(p.placement==='WIN'){q.statistics.wins++; q.momentum=clamp(q.momentum+2,-5,5); q.publicScores.production+=3; q.publicScores.fans+=4; q.confidence=clamp(q.confidence+10,0,100); q.stress=clamp(q.stress-8,0,100);} if(p.placement==='HIGH'||p.placement==='TOP2'){q.statistics.highs++; q.momentum=clamp(q.momentum+1,-5,5); q.publicScores.fans+=2; q.confidence=clamp(q.confidence+5,0,100); q.stress=clamp(q.stress-3,0,100);} if(p.placement==='SAFE'){q.statistics.safes++; q.stress=clamp(q.stress+2,0,100);} if(p.placement==='LOW'){q.statistics.lows++; q.momentum=clamp(q.momentum-1,-5,5); q.confidence=clamp(q.confidence-5,0,100); q.stress=clamp(q.stress+8,0,100);} if(p.placement==='BTM'){q.statistics.bottoms++; q.momentum=clamp(q.momentum-2,-5,5); q.confidence=clamp(q.confidence-8,0,100); q.stress=clamp(q.stress+12,0,100); q.energy=clamp(q.energy-8,0,100);}}
- if(ep.lipSyncResult){
-   if(ep.lipSyncResult.outcome==='top2Win'){
-     const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
-     if(win){ win.statistics.lipSyncWins++; win.momentum=clamp(win.momentum+1,-5,5); }
-     ep.eliminatedQueenId=null;
-   } else if(ep.lipSyncResult.outcome==='doubleShantay'){
-     ep.lipSyncResult.results.forEach(r=>{const q=gameState.queens.find(x=>x.id===r.queenId); if(q){q.statistics.lipSyncWins++; q.momentum=clamp(q.momentum+1,-5,5);}});
-   } else if(ep.lipSyncResult.outcome==='doubleSashay'){
-     ep.lipSyncResult.eliminatedQueenIds.forEach(id=>{const out=gameState.queens.find(q=>q.id===id); if(!out)return; out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out);});
-   } else {
-     const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
-     const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
-     if(win)win.statistics.lipSyncWins++;
-     if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
-   }
- }
- if(typeof markPremierePhaseDone==='function')markPremierePhaseDone(); ep.statsApplied=true; gameState.episodeHistory.push(JSON.parse(JSON.stringify(ep))); saveGame();}
+function applyEpisodeStats(){
+  const ep=gameState.currentEpisode;
+  if(ep.statsApplied)return;
+  ensureAllQueenV14Stats();
+  const placementEffects={
+    WIN:{momentum:2,production:3,fans:4,confidence:10,stress:-8},
+    HIGH:{momentum:1,fans:2,confidence:5,stress:-3},
+    TOP2:{momentum:1,fans:2,confidence:5,stress:-3},
+    SAFE:{stress:2},
+    LOW:{momentum:-1,confidence:-5,stress:8},
+    BTM:{momentum:-2,confidence:-8,stress:12,energy:-8}
+  };
+  for(const p of ep.placements){
+    const q=gameState.queens.find(x=>x.id===p.queenId);
+    if(!q)continue;
+    q.statistics.episodesCompeted++;
+    q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM'});
+    if(p.placement==='WIN')q.statistics.wins++;
+    if(p.placement==='HIGH'||p.placement==='TOP2')q.statistics.highs++;
+    if(p.placement==='SAFE')q.statistics.safes++;
+    if(p.placement==='LOW')q.statistics.lows++;
+    if(p.placement==='BTM')q.statistics.bottoms++;
+    applyChoiceEffects(placementEffects[p.placement]||{},{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
+  }
+  if(ep.lipSyncResult){
+    if(ep.lipSyncResult.outcome==='top2Win'){
+      const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }
+      ep.eliminatedQueenId=null;
+    } else if(ep.lipSyncResult.outcome==='doubleShantay'){
+      ep.lipSyncResult.results.forEach(r=>{const q=gameState.queens.find(x=>x.id===r.queenId); if(q){q.statistics.lipSyncWins++; applyChoiceEffects({momentum:1},{queen:q,note:'Double shantay lip sync survival.',source:'lip-sync-result',save:false});}});
+    } else if(ep.lipSyncResult.outcome==='doubleSashay'){
+      ep.lipSyncResult.eliminatedQueenIds.forEach(id=>{const out=gameState.queens.find(q=>q.id===id); if(!out)return; out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out);});
+    } else {
+      const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+      const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
+      if(win)win.statistics.lipSyncWins++;
+      if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
+    }
+  }
+  if(typeof markPremierePhaseDone==='function')markPremierePhaseDone();
+  ep.statsApplied=true;
+  gameState.episodeHistory.push(JSON.parse(JSON.stringify(ep)));
+  saveGame();
+}

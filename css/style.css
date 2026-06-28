@@ -2409,3 +2409,83 @@ button.option:active,
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}
 }
+
+/* Runway phase overhaul: pre-runway choice + individual walk cards */
+.runway-pre-choice{
+  border:1px solid rgba(151,90,180,.28);
+  background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(250,241,255,.86));
+}
+.runway-choice-option{
+  align-items:flex-start;
+}
+.runway-action-result{
+  border-width:1.5px;
+  animation:runwayPulse .42s ease-out both;
+}
+.runway-action-success{
+  background:linear-gradient(135deg,rgba(230,255,244,.78),rgba(255,255,255,.95));
+  border-color:rgba(58,154,106,.32);
+}
+.runway-action-fail{
+  background:linear-gradient(135deg,rgba(255,233,233,.78),rgba(255,255,255,.95));
+  border-color:rgba(198,72,72,.32);
+}
+.runway-visible-effects{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin:12px 0 0;
+  padding:0;
+  list-style:none;
+}
+.runway-visible-effects li{
+  padding:6px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.72);
+  border:1px solid var(--line);
+  color:var(--ink);
+  font-size:.82rem;
+  font-weight:750;
+}
+.runway-rating{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin:0 0 8px;
+}
+.runway-rating span{
+  color:var(--muted);
+  font-size:.75rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.runway-rating strong{
+  letter-spacing:.08em;
+}
+.runway-normal .runway-label{
+  color:var(--muted);
+  background:rgba(255,255,255,.76);
+  border:1px solid var(--line);
+}
+@keyframes runwayPulse{
+  from{transform:translateY(6px);opacity:.72;}
+  to{transform:translateY(0);opacity:1;}
+}
+
+/* Runway toot / boot tags */
+.runway-tags{
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px;
+  margin:0 0 8px;
+}
+.runway-tags .runway-label{
+  margin:0;
+}
+.runway-chance{
+  display:inline-flex;
+  align-items:center;
+  gap:4px;
+  font-weight:850;
+}
