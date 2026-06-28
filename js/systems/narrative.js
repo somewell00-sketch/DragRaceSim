@@ -458,7 +458,7 @@ function ruNarrativeComment(q, placement){
         'When performance is involved, you know how to wake up.',
         'You command the stage like a true professional.',
         'Your presence is magnetic and undeniable.',
-        'You have the performer s instinct to read a room.',
+        'You have the instinct to read a room.',
         'Every movement you make is intentional and powerful.',
         'You understand the assignment and then some.',
         'Your performance ability sets you apart.',
@@ -534,9 +534,18 @@ function ruNarrativeComment(q, placement){
     }
   };
   
-  const external=gameState.data?.narrativeExpansion?.rupaulComments || gameState.data?.narrativeText?.rupaulComments || {};
-  const pick=tags.find(t=>external[t] || lines[t]);
-  if(pick) return sample(external[pick] || lines[pick]);
+ const external = gameState.data?.narrativeExpansion?.rupaulComments 
+  || gameState.data?.narrativeText?.rupaulComments 
+  || {};
+
+const pick = tags.find(t => external[t] || lines[t]);
+
+if (pick) {
+  const tone = bottom ? 'negative' : 'positive';
+  const source = external[pick] || lines[pick];
+  const pool = source?.[tone] || source?.positive || source?.negative || [];
+  return sample(pool);
+}
   if(bottom)return sample(['This competition is getting tougher, and I need you to fight.','We need more from you, because I believe there is more there.']);
   if(positive)return sample(['This week, you made a real impression.','You should feel proud of what you showed us.']);
   return sample(['You are safe, but do not get too comfortable.','Keep pushing. We are still watching.']);
