@@ -443,6 +443,42 @@ function calculateEpisodeResults(playerChoices={}){
   saveGame();
   return scored;
 }
+
+function recordIconicLipSync(ep, lipSyncResult){
+  if(!ep || !lipSyncResult || !Array.isArray(lipSyncResult.results)) return;
+  const iconicResults=lipSyncResult.results.filter(r=>Number(r.score10)>=8.5);
+  if(!iconicResults.length) return;
+
+  gameState.season=gameState.season||{};
+  gameState.season.iconicLipSyncs=Array.isArray(gameState.season.iconicLipSyncs)
+    ? gameState.season.iconicLipSyncs
+    : [];
+
+  const queenIds=lipSyncResult.results.map(r=>r.queenId).filter(Boolean);
+  const key=[
+    ep.number||gameState.episodeHistory?.length+1||1,
+    queenIds.slice().sort().join('|'),
+    lipSyncResult.song?.title||ep.song?.title||''
+  ].join('::');
+
+  const existingIndex=gameState.season.iconicLipSyncs.findIndex(item=>item.key===key);
+  const record={
+    key,
+    episode:ep.number||gameState.episodeHistory?.length+1||1,
+    songTitle:lipSyncResult.song?.title||ep.song?.title||'Unknown song',
+    artist:lipSyncResult.song?.artist||ep.song?.artist||'Unknown artist',
+    queens:lipSyncResult.results.map(r=>({
+      queenId:r.queenId,
+      name:r.name||gameState.queens.find(q=>q.id===r.queenId)?.name||'A queen',
+      score10:Number(r.score10)||0,
+      iconic:Number(r.score10)>=8.5
+    }))
+  };
+
+  if(existingIndex>=0) gameState.season.iconicLipSyncs[existingIndex]=record;
+  else gameState.season.iconicLipSyncs.push(record);
+}
+
 function resolveLipSync(playerMoves=null){
   const ep=gameState.currentEpisode;
   const song=ep.song;
@@ -532,6 +568,7 @@ function resolveLipSync(playerMoves=null){
       }
     });
     ep.lipSyncResult={song,results,outcome:'top2Win',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10};
+    recordIconicLipSync(ep, ep.lipSyncResult);
     ep.eliminatedQueenId=null;
     saveGame();
     return ep.lipSyncResult;
@@ -559,6 +596,7 @@ function resolveLipSync(playerMoves=null){
   }
 
   ep.lipSyncResult={song,results,outcome,survivorId,eliminatedQueenId,eliminatedQueenIds,difference:Math.round(diff*10)/10};
+  recordIconicLipSync(ep, ep.lipSyncResult);
   ep.eliminatedQueenId=eliminatedQueenId;
   saveGame();
   return ep.lipSyncResult;

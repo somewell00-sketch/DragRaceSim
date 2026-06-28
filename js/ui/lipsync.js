@@ -51,11 +51,11 @@ function getLipSyncQualityKey(results){
   const scores=results.map(r=>r.score10);
   const low=Math.min(...scores);
   const high=Math.max(...scores);
-  if(low>=9.5) return 'legendary';
-  if(low>=8) return 'iconic';
+  if(low>=9.0) return 'legendary';
+  if(high>=8.5) return 'iconic';
   if(high<5) return 'terrible';
   if(high<6.5) return 'forgettable';
-  if(high<8) return 'warm';
+  if(high<7.5) return 'warm';
   return 'irregular';
 }
 

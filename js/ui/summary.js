@@ -493,6 +493,38 @@ function renderFinalePart2(){
     renderSummary();
   });
 }
+
+function iconicLipSyncsTable(){
+  const records=(gameState.season?.iconicLipSyncs||[])
+    .slice()
+    .sort((a,b)=>(Number(a.episode)||0)-(Number(b.episode)||0));
+
+  if(!records.length) return '';
+
+  const rows=records.map(item=>{
+    const queens=(item.queens||[]).map(q=>{
+      const name=escapeHtml(q.name||qName(q.queenId));
+      return q.iconic ? `<strong>${name}</strong>` : name;
+    }).join(' x ');
+
+    const song=`${escapeHtml(item.songTitle||'Unknown song')} by ${escapeHtml(item.artist||'Unknown artist')}`;
+
+    return `<tr>
+      <td>Ep. ${escapeHtml(item.episode)}</td>
+      <td>${queens}</td>
+      <td>${song}</td>
+    </tr>`;
+  }).join('');
+
+  return `<section class="card">
+    <h2>Iconic Lip Syncs</h2>
+    <table>
+      <thead><tr><th>Episode</th><th>Lip Sync</th><th>Song</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </section>`;
+}
+
 function renderSummary(){
   const winner=gameState.queens.find(q=>q.id===gameState.season.winnerId);
   const finale=gameState.season.finale||{};
@@ -507,6 +539,7 @@ function renderSummary(){
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
     ${postSeasonReception(player)}
     <section class="card"><h2>Track Record</h2>${historyTable()}</section>
+    ${iconicLipSyncsTable()}
     <button id="newGame">New season</button>
   </main>`);
   document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
