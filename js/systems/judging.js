@@ -312,7 +312,11 @@ function calculateEpisodeResults(playerChoices={}){
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
     const energyStressMod=queenEnergyStressMod(q);
     const effectSource=q.id===gameState.playerQueenId?playerEffects:qEffects;
-    const choiceBonus=(effectSource.performance||0)+((effectSource.runway||0)*challenge.runwayWeight);
+    // Player/NPC choices are deliberate episode decisions, so runway choice effects
+    // should be felt directly. The runway attribute itself is still weighted by the
+    // challenge's runwayWeight below, but choices like "Prioritize the runway" or
+    // runway presentation moments are no longer diluted by that multiplier.
+    const choiceBonus=(effectSource.performance||0)+(effectSource.runway||0);
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const individualScore=base+runway*challenge.runwayWeight+production+momentum+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);

@@ -908,8 +908,8 @@ function renderLipSyncResult(result){
     : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.";
   document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE', ep.special==='premiere_no_elim'?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
   <div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>
-  <div class="card music-card lipsync-battle-card"><h3 class="music-cue">💡💡🎶🎵🎶💡💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
-  <div class="card">${lipSyncDecisionText(result)}<p>If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue">🎶🎵🎶</p></div>
+  <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ✦ ✦ 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
+  <div class="card">${lipSyncDecisionText(result)}<p>If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue spotlight-cue">💡 ✦ 💡</p></div>
   <button id="continue">Continue</button>`;
   scrollToTop();
   document.querySelector('#continue').addEventListener('click',renderUntucked);

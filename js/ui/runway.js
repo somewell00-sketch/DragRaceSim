@@ -387,7 +387,7 @@ function renderRunwayMainStage(){
   const initialCategory=runwayReady ? '' : runwayCategoryHeader(ep.runwayCategory);
   const afterRunway=runwayReady ? `${teamJudgingSummary(ep)}${runwaySafeDecisionBlock(ep, placements)}<button id="toCritiques">Continue to Judges’ Critiques</button>` : '';
   setHTML(`<main class="layout"><section class="screen">
-    <div class="hero">${bigMomentHeader('Welcome to Drag Race','MAIN STAGE','mainstage')}<p>Guest judge: <strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong></p><div class="challenge-brief"><span>This week, the queens were challenged to:</span><strong>${escapeHtml(episodeChallengeBrief(ep))}</strong></div></div>
+    <div class="hero episode-hero">${bigMomentHeader('Welcome to Drag Race','MAIN STAGE','mainstage')}<div class="guest-judge-callout"><span>Guest Judge</span><strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong></div><div class="challenge-brief"><span>This week, the queens were challenged to:</span><strong>${escapeHtml(episodeChallengeBrief(ep))}</strong></div></div>
     ${initialCategory}
     ${playerRunwayActionBlock(ep)}
     ${runwayCards}

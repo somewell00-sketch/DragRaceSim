@@ -276,7 +276,7 @@ function renderWorkroom(){
       <h2>${escapeHtml(ep.themeName)}</h2>
       <p>${escapeHtml(ep.challengeName)} • ${escapeHtml(ep.structure?.label||'Solo challenge')} • Runway: ${escapeHtml(ep.runwayCategory)}</p>
       <p>${escapeHtml(ep.themeNotes||'')}</p>
-      <p>Guest judge: <strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong> — ${escapeHtml(ep.guestJudge?.note||'Ready for the show.')}</p>
+      <div class="guest-judge-callout"><span>Guest Judge</span><strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong><em>${escapeHtml(ep.guestJudge?.note||'Ready for the show.')}</em></div>
       
     </div>
     <div class="card">

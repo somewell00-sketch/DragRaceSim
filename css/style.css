@@ -2504,3 +2504,1043 @@ button.option:active,
 .team-ring-7,.team-marker-7,.team-line-7{color:#ca8a04!important;}
 .episode-team-list{display:grid;gap:8px;padding-left:0;list-style:none;}
 .episode-team-line{border:1px solid currentColor;border-radius:14px;padding:9px 11px;background:color-mix(in srgb,currentColor 9%,#fff);}
+
+/* =========================================================
+   v31 Complete Visual Identity & UI System Polish
+   Presentation-only layer. Keeps JS hooks, IDs and structure intact.
+   ========================================================= */
+:root{
+  color-scheme:dark;
+  --bg:#09090d;
+  --bg-2:#11111a;
+  --panel:#15151f;
+  --card:#1b1b27;
+  --card-2:#20202e;
+  --ink:#f8f7fb;
+  --text:#f8f7fb;
+  --muted:#b7b3c2;
+  --muted-2:#817b8e;
+  --line:rgba(255,255,255,.12);
+  --line-strong:rgba(255,255,255,.2);
+  --accent:#d72f86;
+  --accent2:#7c3aed;
+  --accent3:#f5b942;
+  --good:#2dd4bf;
+  --warn:#fb923c;
+  --bad:#ef4444;
+  --radius-sm:12px;
+  --radius-md:16px;
+  --radius-lg:22px;
+  --radius-xl:28px;
+  --space-1:8px;
+  --space-2:16px;
+  --space-3:24px;
+  --space-4:32px;
+  --space-5:40px;
+  --space-6:48px;
+  --border:1px solid var(--line);
+  --border-strong:1px solid var(--line-strong);
+  --shadow-soft:0 10px 24px rgba(0,0,0,.18);
+  --grad-primary:linear-gradient(135deg,#d72f86 0%,#7c3aed 100%);
+  --grad-gold:linear-gradient(135deg,#ffe45c 0%,#f59e0b 100%);
+  --grad-blue:linear-gradient(135deg,#0b5ed7 0%,#7c3aed 100%);
+  --grad-coral:linear-gradient(135deg,#fb7185 0%,#fb923c 100%);
+  --transition:.14s ease;
+}
+
+*{box-sizing:border-box;}
+html{background:var(--bg);}
+body{
+  margin:0!important;
+  font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;
+  background:
+    radial-gradient(circle at 16% -10%,rgba(215,47,134,.24),transparent 32%),
+    radial-gradient(circle at 88% 0%,rgba(124,58,237,.18),transparent 34%),
+    linear-gradient(145deg,var(--bg),var(--bg-2))!important;
+  color:var(--ink)!important;
+  min-height:100vh;
+  letter-spacing:.005em;
+}
+body::selection{background:rgba(215,47,134,.45);color:#fff;}
+
+#app{min-height:100vh;}
+.screen{max-width:1120px;margin:0 auto;padding:var(--space-4)!important;}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:var(--space-3);max-width:1240px;margin:0 auto;padding:var(--space-4)!important;}
+.grid{gap:var(--space-2)!important;}
+.row{gap:var(--space-2)!important;}
+
+h1,h2,h3,h4{color:var(--ink);letter-spacing:-.025em;line-height:1.08;}
+h1{font-size:clamp(2.35rem,5vw,4.25rem);}
+h2{font-size:clamp(1.85rem,3.4vw,2.85rem);}
+h3{font-size:1.25rem;}
+h4{font-size:1rem;}
+p,li{color:var(--muted);line-height:1.55;}
+.small,small,.caption,.finale-stats,.finale-archetype{color:var(--muted)!important;}
+
+.hero,
+.card,
+.queen-item,
+.reception-item,
+.snatch-card,
+.talent-card,
+.critique,
+.notice,
+.error,
+.home-step-card,
+.home-queen-panel,
+.home-attributes-panel,
+.finale-result-item,
+.finale-queen-card,
+.entrance-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.025))!important;
+  border:var(--border)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+.hero{
+  position:relative;
+  overflow:hidden;
+  border-radius:var(--radius-xl)!important;
+  padding:var(--space-4)!important;
+  margin-bottom:var(--space-3)!important;
+}
+.hero::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at 0% 0%,rgba(215,47,134,.22),transparent 42%),radial-gradient(circle at 100% 0%,rgba(245,185,66,.12),transparent 36%);
+  pointer-events:none;
+}
+.hero > *{position:relative;}
+.hero h1,.hero h2{margin:0 0 var(--space-1)!important;}
+.hero p{font-size:1rem!important;max-width:760px;}
+.card,
+.screen > .card,
+.layout .screen > .card{
+  border-radius:var(--radius-lg)!important;
+  padding:var(--space-3)!important;
+  margin-bottom:var(--space-3)!important;
+}
+.card.subtle{background:rgba(255,255,255,.035)!important;}
+.card.important{border-color:rgba(245,185,66,.42)!important;background:linear-gradient(135deg,rgba(245,185,66,.12),rgba(255,255,255,.035))!important;}
+.card h2,.card h3{margin-top:0!important;margin-bottom:var(--space-2)!important;}
+
+button,
+button.secondary,
+button.ghost,
+button.option,
+input,
+select{
+  font:inherit;
+  min-height:44px;
+  border-radius:var(--radius-md)!important;
+  transition:background var(--transition),border-color var(--transition),transform var(--transition),opacity var(--transition)!important;
+}
+button{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  min-height:46px;
+  padding:0 var(--space-2)!important;
+  background:var(--grad-primary)!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  color:#fff!important;
+  font-weight:850!important;
+  box-shadow:none!important;
+  cursor:pointer;
+}
+button:hover{filter:none!important;transform:translateY(-1px);border-color:rgba(255,255,255,.32)!important;}
+button:active{transform:translateY(0);}
+button.secondary{background:linear-gradient(135deg,#2563eb,#7c3aed)!important;}
+button.ghost{background:rgba(255,255,255,.04)!important;color:var(--ink)!important;border:var(--border)!important;}
+button.option{
+  width:100%;
+  justify-content:flex-start;
+  align-items:flex-start;
+  min-height:56px;
+  margin:var(--space-1) 0!important;
+  padding:var(--space-2)!important;
+  background:rgba(255,255,255,.045)!important;
+  border:var(--border)!important;
+  color:var(--ink)!important;
+  text-align:left!important;
+}
+button.option:hover{background:rgba(255,255,255,.075)!important;}
+button:disabled{opacity:.45!important;cursor:not-allowed!important;transform:none!important;}
+.sidebar button,#toFinale,#continueBtn,#nextBtn,#startBtn,.home-start-panel button{width:auto;}
+.sidebar #skipToFinaleBtn{width:100%;}
+
+label{gap:var(--space-1)!important;color:var(--muted)!important;font-weight:750!important;}
+input,select{
+  width:100%;
+  padding:0 14px!important;
+  background:#11111a!important;
+  border:var(--border)!important;
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+input:focus,select:focus,button:focus-visible{outline:2px solid rgba(215,47,134,.65);outline-offset:2px;}
+
+.badge,.chip,.status-card span,.runway-visible-effects li{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  border-radius:999px!important;
+  min-height:26px;
+  padding:5px 10px!important;
+  border:1px solid rgba(255,255,255,.16)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:var(--ink)!important;
+  font-size:.76rem!important;
+  line-height:1!important;
+  font-weight:850!important;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  box-shadow:none!important;
+}
+.badge.win,.badge.WIN,.badge.WINNER,.win{background:#0b5ed7!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important;}
+.badge.top2,.placement-TOP2{background:#22d3ee!important;color:#06131a!important;border-color:rgba(255,255,255,.35)!important;}
+.badge.high,.high{background:#93c5fd!important;color:#081827!important;border-color:rgba(255,255,255,.32)!important;}
+.badge.safe,.safe{background:#f1f5f9!important;color:#111827!important;border-color:rgba(255,255,255,.4)!important;}
+.badge.low,.low{background:#fbcfe8!important;color:#3b1024!important;border-color:rgba(255,255,255,.32)!important;}
+.badge.bottom,.bottom{background:#ff1493!important;color:#fff!important;border-color:rgba(255,255,255,.25)!important;}
+.badge.elim,.elim{background:#ef4444!important;color:#fff!important;border-color:rgba(255,255,255,.22)!important;}
+.badge.winner,.winner{background:#ffe45c!important;color:#111!important;border-color:rgba(255,255,255,.45)!important;}
+.badge.runner,.badge.runnerup,.runner,.runnerup{background:#d1d5db!important;color:#111827!important;border-color:rgba(255,255,255,.45)!important;}
+.badge.finalist,.finalist{background:#8b5a2b!important;color:#fff!important;border-color:rgba(255,255,255,.24)!important;}
+.badge.arc,.track-tags .badge.arc,.queen-item .badge.arc,.queen-item .front-runner{
+  background:linear-gradient(135deg,rgba(215,47,134,.18),rgba(124,58,237,.18))!important;
+  color:#f2eaff!important;
+  border:var(--border)!important;
+  opacity:1!important;
+}
+
+.table-wrap{overflow:auto;border-radius:var(--radius-lg);border:var(--border);background:rgba(255,255,255,.025);}
+table{width:100%;border-collapse:collapse!important;border-spacing:0!important;background:transparent!important;border:0!important;border-radius:0!important;overflow:hidden;}
+th,td{padding:12px 14px!important;border-bottom:var(--border)!important;color:var(--ink)!important;vertical-align:middle!important;}
+th{background:rgba(255,255,255,.075)!important;color:#fff!important;font-size:.76rem;text-transform:uppercase;letter-spacing:.08em;font-weight:900;}
+td{font-size:.92rem;}
+tbody tr:nth-child(even){background:rgba(255,255,255,.025);}
+tbody tr:hover{background:rgba(215,47,134,.055);}
+tr:last-child td{border-bottom:0!important;}
+table .small{margin-top:3px;}
+
+.queen-portrait,
+.portrait,
+.queen-avatar,
+.creator-portrait{
+  border-radius:999px!important;
+  object-fit:cover!important;
+  background-size:cover!important;
+  background-position:center!important;
+  border:2px solid rgba(255,255,255,.72)!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+}
+.queen-portrait.player-portrait,.winner-portrait{border-color:#ffe45c!important;box-shadow:0 0 0 3px rgba(255,228,92,.16)!important;}
+.queen-item{
+  border-radius:var(--radius-md)!important;
+  padding:12px!important;
+  gap:12px!important;
+  align-items:center!important;
+}
+.queen-item-copy{gap:3px!important;}
+.sidebar{position:sticky;top:20px;align-self:start;}
+.sidebar .queen-list{gap:10px!important;}
+.sidebar .queen-item{background:rgba(255,255,255,.04)!important;}
+.sidebar .sidebar-mood,.relationship-emoji{
+  background:#15151f!important;
+  border:var(--border-strong)!important;
+  box-shadow:none!important;
+  color:var(--ink)!important;
+}
+
+.decision-card{
+  background:linear-gradient(135deg,rgba(215,47,134,.2),rgba(124,58,237,.16) 62%,rgba(245,185,66,.08))!important;
+  color:#fff!important;
+  border-color:rgba(255,255,255,.22)!important;
+  box-shadow:none!important;
+}
+.decision-card p,.decision-card .small,.decision-card label{color:rgba(255,255,255,.78)!important;}
+.decision-card .option{background:rgba(255,255,255,.075)!important;border-color:rgba(255,255,255,.16)!important;}
+.decision-card .option:hover{background:rgba(255,255,255,.11)!important;}
+.choice-emoji{background:rgba(255,255,255,.1)!important;border:var(--border)!important;}
+
+.notice{background:linear-gradient(135deg,rgba(245,185,66,.14),rgba(255,255,255,.035))!important;color:#ffe8a3!important;border-color:rgba(245,185,66,.35)!important;}
+.error{background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(255,255,255,.035))!important;color:#fecaca!important;border-color:rgba(239,68,68,.38)!important;}
+.critique.win,.critique.critique-win{border-color:rgba(11,94,215,.48)!important;background:linear-gradient(135deg,rgba(11,94,215,.16),rgba(255,255,255,.035))!important;}
+.critique.high,.critique.critique-high{border-color:rgba(147,197,253,.38)!important;background:linear-gradient(135deg,rgba(147,197,253,.12),rgba(255,255,255,.035))!important;}
+.critique.low,.critique.bottom,.critique.btm,.critique.critique-low,.critique.critique-bottom{border-color:rgba(255,20,147,.38)!important;background:linear-gradient(135deg,rgba(255,20,147,.12),rgba(255,255,255,.035))!important;}
+
+.finale-note{color:var(--muted)!important;}
+.finale-personality{color:#f0abfc!important;}
+.finale-section-heading{color:var(--muted)!important;}
+.finale-section-heading:before,.finale-section-heading:after,.finale-divider:before,.finale-divider:after{background:linear-gradient(90deg,transparent,var(--line),transparent)!important;}
+
+.runway-pre-choice,.runway-action-success,.runway-action-fail{background:rgba(255,255,255,.04)!important;border:var(--border)!important;}
+.runway-action-success{border-color:rgba(45,212,191,.35)!important;}
+.runway-action-fail{border-color:rgba(239,68,68,.38)!important;}
+.runway-label{background:rgba(255,255,255,.07)!important;color:var(--ink)!important;border:var(--border)!important;}
+
+.team-name-marker{filter:none!important;}
+.queen-portrait.team-ring{border:3px solid currentColor!important;box-shadow:0 0 0 3px rgba(255,255,255,.16)!important;}
+.episode-team-line{background:color-mix(in srgb,currentColor 14%,#11111a)!important;border:1px solid currentColor!important;}
+
+.perf-mode .card,
+.perf-mode .hero,
+.perf-mode .queen-item.front-runner-card,
+.perf-mode .home-stage .card,
+.perf-mode .home-step-card,
+.perf-mode .home-queen-panel,
+.perf-mode .home-attributes-panel{box-shadow:none!important;}
+.perf-mode button:hover,
+.perf-mode button.option:hover,
+.perf-mode .card.decision-card .option:hover,
+.perf-mode .home-start-panel button:hover{transform:translateY(-1px)!important;}
+@media(max-width:850px){.layout{grid-template-columns:1fr!important;padding:var(--space-2)!important}.screen{padding:var(--space-2)!important}.sidebar{position:static!important}.hero,.card,.screen > .card{padding:var(--space-2)!important}.stat-row{grid-template-columns:1fr!important}}
+@media(max-width:560px){button{width:100%;}.hero h1,.hero h2{font-size:2rem!important;}th,td{padding:10px!important;}.badge{font-size:.68rem!important;}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}}
+
+
+/* v2 contrast fixes: dark-theme holdouts */
+.screen-header,
+.phase-header,
+.section-header,
+.episode-header,
+.runway-category-title,
+.runway-look-head,
+.critique-head,
+.judge-critique-grid,
+.music-card,
+.lipsync-battle-card,
+.front-runner-card,
+.sidebar .front-runner-card,
+.queen-item.front-runner-card,
+.perf-mode .queen-item.front-runner-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.028))!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+  box-shadow:none!important;
+}
+.runway-category-title,
+.runway-look-head,
+.critique-head{
+  border-radius:var(--radius-lg)!important;
+  padding:var(--space-2)!important;
+}
+.runway-category-title span,
+.runway-look-head span,
+.critique-head span,
+.screen-header p,
+.phase-header p,
+.section-header p,
+.episode-header p{
+  color:var(--muted)!important;
+}
+.runway-category-title strong,
+.runway-look-head strong,
+.critique-head h4,
+.screen-header h1,
+.screen-header h2,
+.phase-header h1,
+.phase-header h2,
+.section-header h2,
+.episode-header h1,
+.episode-header h2{
+  color:var(--ink)!important;
+}
+.critique,
+.judge-critique-grid .critique,
+.critique-list .critique{
+  background:linear-gradient(180deg,rgba(255,255,255,.052),rgba(255,255,255,.026))!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+}
+.critique p,
+.critique li,
+.critique .small{color:var(--muted)!important;}
+
+/* Sidebar count / pills contrast */
+.sidebar-count,
+.pill,
+.count-pill,
+.queens-count,
+.cast-count,
+[class*="still-in"],
+[class*="stillIn"]{
+  background:linear-gradient(135deg,rgba(215,47,134,.22),rgba(124,58,237,.18))!important;
+  color:#fff!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:999px!important;
+}
+
+/* Creator utility dice: transparent beside input */
+.creator-name-row{display:flex!important;align-items:center!important;gap:8px!important;}
+.creator-name-row input{flex:1 1 auto!important;}
+button.creator-dice-btn,
+.creator-dice-btn{
+  flex:0 0 42px!important;
+  width:42px!important;
+  min-width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  background:transparent!important;
+  border:1px solid transparent!important;
+  color:var(--muted)!important;
+  box-shadow:none!important;
+  font-size:1.2rem!important;
+}
+button.creator-dice-btn:hover,
+.creator-dice-btn:hover{
+  background:rgba(255,255,255,.045)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  color:var(--ink)!important;
+  transform:translateY(-1px) rotate(8deg)!important;
+}
+
+/* Points hierarchy: current points first, max value secondary */
+.points-card{text-align:right!important;}
+.points-card > span{
+  display:block!important;
+  color:var(--muted)!important;
+  font-size:.72rem!important;
+  text-transform:uppercase!important;
+  letter-spacing:.08em!important;
+  font-weight:850!important;
+  margin-bottom:2px!important;
+}
+.points-card strong,
+.points-card .points-total{
+  display:flex!important;
+  align-items:baseline!important;
+  justify-content:flex-end!important;
+  gap:4px!important;
+  color:var(--ink)!important;
+  line-height:1!important;
+}
+.points-card #total{
+  font-size:2.15rem!important;
+  font-weight:950!important;
+  color:#fff!important;
+  letter-spacing:-.05em!important;
+}
+.points-card .points-max{
+  font-size:.86rem!important;
+  font-weight:800!important;
+  color:var(--muted)!important;
+}
+
+/* Lip sync cue: avoid black music emoji; use spotlight lights */
+.music-cue,
+.spotlight-cue{
+  color:#ffe45c!important;
+  text-shadow:none!important;
+  letter-spacing:.18em!important;
+  filter:none!important;
+}
+.music-cue:not(.spotlight-cue){
+  font-size:0!important;
+}
+.music-cue:not(.spotlight-cue)::after{
+  content:"💡 ✦ 💡";
+  font-size:1.25rem!important;
+  color:#ffe45c!important;
+}
+
+/* Softer portrait borders on dark UI */
+.queen-portrait,
+.portrait,
+.queen-avatar,
+.creator-portrait{
+  border-color:rgba(255,255,255,.16)!important;
+}
+.queen-portrait.player-portrait,
+.winner-portrait{
+  border-color:rgba(255,228,92,.78)!important;
+}
+
+/* v2.1: real dark fixes for Main Stage, Runway and Critiques
+   These selectors target the actual classes used by js/ui/runway.js. */
+.hero,
+.main-stage-hero,
+.stage-hero,
+.challenge-brief,
+.runway-card,
+.runway-category-title,
+.runway-look,
+.runway-look-head,
+.critique-list .critique,
+.critique,
+.judge-critique-grid,
+.judge-line,
+.music-card,
+.lipsync-battle-card{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+  box-shadow:none!important;
+}
+
+.hero,
+.main-stage-hero,
+.stage-hero{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(215,47,134,.18),transparent 38%),
+    radial-gradient(circle at 95% 12%,rgba(124,58,237,.15),transparent 36%),
+    linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025))!important;
+}
+
+.challenge-brief{
+  border-radius:var(--radius-lg)!important;
+}
+
+.challenge-brief span,
+.runway-category-title span,
+.judge-line span{
+  color:var(--muted)!important;
+}
+
+.challenge-brief strong,
+.runway-category-title strong,
+.critique h4,
+.judge-line p{
+  color:var(--ink)!important;
+}
+
+.runway-category-title{
+  margin:0 0 var(--space-3)!important;
+  border-radius:var(--radius-lg)!important;
+  padding:var(--space-3)!important;
+}
+
+.runway-look,
+.runway-look-head,
+.critique-head{
+  background:rgba(255,255,255,.035)!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+}
+
+/* Remove the old light critique buckets. Keep meaning through border tint, not light backgrounds. */
+.critique-win,
+.critique.critique-win,
+.critique.high,
+.critique.win{
+  background:linear-gradient(135deg,rgba(11,94,215,.16),rgba(255,255,255,.03))!important;
+  border-color:rgba(11,94,215,.45)!important;
+}
+
+.critique-high,
+.critique.critique-high{
+  background:linear-gradient(135deg,rgba(147,197,253,.14),rgba(255,255,255,.03))!important;
+  border-color:rgba(147,197,253,.38)!important;
+}
+
+.critique-low,
+.critique-bottom,
+.critique.critique-low,
+.critique.critique-bottom,
+.critique.low,
+.critique.bottom,
+.critique.btm{
+  background:linear-gradient(135deg,rgba(255,20,147,.13),rgba(255,255,255,.03))!important;
+  border-color:rgba(255,20,147,.36)!important;
+}
+
+.judge-line.judge-guest,
+.judge-line.judge-ru,
+.judge-line.judge-michelle,
+.judge-line.judge-rotating{
+  background:rgba(255,255,255,.04)!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+}
+
+.judge-line.judge-ru{
+  border-color:rgba(245,185,66,.34)!important;
+}
+
+.music-card,
+.lipsync-battle-card{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(236,72,153,.16),transparent 38%),
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  border-color:rgba(236,72,153,.26)!important;
+}
+
+/* Runway toot/boot cards were still inheriting old light surfaces. */
+.runway-label,
+.runway-tags .runway-label,
+.runway-toot-card,
+.runway-boot-card,
+.top-toot,
+.boot-card{
+  background:rgba(255,255,255,.06)!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+}
+
+/* v2.2: dark moment/header/runway holdout fix
+   Moment components were still using light-theme backgrounds from older rules.
+   Keep all moment surfaces dark; use borders/left rails for meaning. */
+.moment-header,
+[class~="moment-header"],
+[class*="moment-"]{
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+  box-shadow:none!important;
+}
+
+.moment-header{
+  border-radius:var(--radius-lg)!important;
+  border-left:4px solid rgba(124,58,237,.55)!important;
+  padding:var(--space-4) var(--space-3)!important;
+}
+
+.moment-header span,
+[class*="moment-"] span,
+.moment-header p,
+[class*="moment-"] p{
+  color:var(--muted)!important;
+}
+
+.moment-header strong,
+[class*="moment-"] strong,
+[class*="moment-"] h1,
+[class*="moment-"] h2,
+[class*="moment-"] h3,
+[class*="moment-"] h4{
+  color:var(--ink)!important;
+}
+
+.moment-mainstage{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(124,58,237,.18),transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  border-left-color:rgba(124,58,237,.62)!important;
+}
+
+.moment-danger{
+  background:linear-gradient(135deg,rgba(239,68,68,.16),rgba(255,255,255,.028))!important;
+  border-left-color:rgba(239,68,68,.72)!important;
+  border-color:rgba(239,68,68,.38)!important;
+}
+
+.moment-win,
+.moment-crown{
+  background:linear-gradient(135deg,rgba(245,185,66,.18),rgba(255,255,255,.028))!important;
+  border-left-color:rgba(245,185,66,.78)!important;
+  border-color:rgba(245,185,66,.42)!important;
+}
+
+.moment-success{
+  background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(255,255,255,.028))!important;
+  border-left-color:rgba(34,197,94,.68)!important;
+  border-color:rgba(34,197,94,.34)!important;
+}
+
+.moment-warning{
+  background:linear-gradient(135deg,rgba(245,158,11,.16),rgba(255,255,255,.028))!important;
+  border-left-color:rgba(245,158,11,.70)!important;
+  border-color:rgba(245,158,11,.36)!important;
+}
+
+/* Runway moment buckets: no more white gradient endings. */
+.runway-showstopper,
+.runway-moment,
+.runway-flop,
+.runway-normal{
+  color:var(--ink)!important;
+  box-shadow:none!important;
+}
+
+.runway-showstopper{
+  background:linear-gradient(135deg,rgba(245,185,66,.16),rgba(255,255,255,.028))!important;
+  border-color:rgba(245,185,66,.42)!important;
+}
+
+.runway-moment{
+  background:linear-gradient(135deg,rgba(124,58,237,.16),rgba(255,255,255,.028))!important;
+  border-color:rgba(124,58,237,.40)!important;
+}
+
+.runway-flop{
+  background:linear-gradient(135deg,rgba(239,68,68,.15),rgba(255,255,255,.028))!important;
+  border-color:rgba(239,68,68,.38)!important;
+}
+
+.runway-showstopper .runway-label,
+.runway-moment .runway-label,
+.runway-flop .runway-label{
+  color:#fff!important;
+  background:rgba(255,255,255,.075)!important;
+  border:var(--border)!important;
+}
+
+/* Keep old finale/critical callouts dark too. */
+.finale-results-hero .moment-header,
+.episode-results-hero .moment-header,
+.mainstage-results .moment-header{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(215,47,134,.15),transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  color:var(--ink)!important;
+}
+
+/* v2.3: Lalaparuza / Reunion Smackdown dark component fix
+   These cards were still using the older light-theme duel surfaces. */
+.lala-round-card,
+.lala-final-card,
+.reunion-round-card,
+.reunion-winner-card{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(236,72,153,.12),transparent 34%),
+    linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  color:var(--ink)!important;
+  border:var(--border)!important;
+  box-shadow:none!important;
+}
+
+.lala-duel,
+.lala-duel.final,
+.reunion-duel{
+  background:rgba(255,255,255,.045)!important;
+  color:var(--ink)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  border-radius:var(--radius-lg)!important;
+  box-shadow:none!important;
+}
+
+.lala-duel.final{
+  background:linear-gradient(135deg,rgba(245,185,66,.13),rgba(255,255,255,.04))!important;
+  border-color:rgba(245,185,66,.38)!important;
+}
+
+.lala-queen-chip,
+.reunion-duel-queen{
+  min-width:0;
+  border-radius:var(--radius-md)!important;
+  padding:8px 10px!important;
+}
+
+.lala-queen-chip strong,
+.reunion-duel-queen strong{
+  color:var(--ink)!important;
+  font-weight:900!important;
+}
+
+.lala-queen-chip .small,
+.reunion-duel-queen em{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:24px!important;
+  padding:4px 9px!important;
+  border-radius:999px!important;
+  border:1px solid rgba(255,255,255,.14)!important;
+  background:rgba(255,255,255,.07)!important;
+  color:#fff!important;
+  font-size:.74rem!important;
+  line-height:1!important;
+  letter-spacing:.08em!important;
+  text-transform:uppercase!important;
+  font-style:normal!important;
+  font-weight:950!important;
+}
+
+.lala-wins,
+.lala-survives,
+.reunion-duel-queen.is-winner{
+  background:linear-gradient(135deg,rgba(14,165,233,.18),rgba(255,255,255,.035))!important;
+  border:1px solid rgba(34,211,238,.34)!important;
+}
+
+.lala-wins .small,
+.lala-survives .small,
+.reunion-duel-queen.is-winner em{
+  background:rgba(34,211,238,.20)!important;
+  border-color:rgba(34,211,238,.42)!important;
+  color:#eaffff!important;
+}
+
+.lala-moves{
+  background:linear-gradient(135deg,rgba(251,146,60,.16),rgba(255,255,255,.035))!important;
+  border:1px solid rgba(251,146,60,.32)!important;
+}
+
+.lala-moves .small{
+  background:rgba(251,146,60,.18)!important;
+  border-color:rgba(251,146,60,.38)!important;
+  color:#fff3e8!important;
+}
+
+.lala-sashay,
+.reunion-duel-queen.is-loser{
+  background:rgba(255,255,255,.025)!important;
+  border:1px solid rgba(255,255,255,.075)!important;
+}
+
+.lala-sashay .small{
+  background:rgba(239,68,68,.18)!important;
+  border-color:rgba(239,68,68,.40)!important;
+  color:#ffe8e8!important;
+}
+
+.lala-bye .lala-queen-chip,
+.reunion-bye{
+  background:linear-gradient(135deg,rgba(245,185,66,.12),rgba(255,255,255,.04))!important;
+  color:var(--ink)!important;
+  border:1px solid rgba(245,185,66,.32)!important;
+  border-radius:999px!important;
+}
+
+.lala-duel .vs,
+.reunion-duel .vs{
+  color:#ffe45c!important;
+  font-weight:950!important;
+  letter-spacing:.16em!important;
+  opacity:.95!important;
+}
+
+.lala-final-card > p{
+  margin-top:var(--space-3)!important;
+  padding:var(--space-3)!important;
+  border-radius:var(--radius-lg)!important;
+  background:rgba(255,255,255,.045)!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  color:var(--muted)!important;
+  text-align:center!important;
+}
+
+.lala-final-card > p strong:first-child{
+  display:block!important;
+  margin-bottom:4px!important;
+  color:#fff!important;
+  font-size:clamp(1.4rem,3.2vw,2.4rem)!important;
+  line-height:1.05!important;
+  letter-spacing:-.035em!important;
+}
+
+.lala-final-card > p strong:last-child{
+  color:#ffb4b4!important;
+  font-size:1.08em!important;
+}
+
+.reunion-duel-list{
+  display:grid!important;
+  gap:12px!important;
+  margin-top:12px!important;
+}
+
+.reunion-duel{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:12px!important;
+  padding:12px!important;
+}
+
+.reunion-duel-queen{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+}
+
+.reunion-duel-queen strong{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+}
+
+.reunion-winner-card h3,
+.lala-final-card h3,
+.lala-round-card h3,
+.reunion-round-card h3{
+  color:#fff!important;
+  font-size:clamp(1.05rem,2vw,1.45rem)!important;
+  letter-spacing:.02em!important;
+}
+
+.reunion-winner-card p strong{
+  color:#ffe45c!important;
+  text-shadow:none!important;
+}
+
+@media(max-width:640px){
+  .reunion-duel{grid-template-columns:1fr!important; text-align:left!important;}
+  .reunion-duel .vs{padding-left:10px!important;}
+  .reunion-duel-queen{justify-content:flex-start!important;}
+}
+
+
+/* editorial refinement pass: lightweight header details + subtle guest judge */
+:root{
+  --editorial-line:rgba(255,255,255,.10);
+  --editorial-line-soft:rgba(255,255,255,.065);
+  --editorial-gold:#f6d365;
+  --editorial-pink:#ff5aa5;
+  --editorial-purple:#8b5cf6;
+}
+
+.hero,
+.card > h2:first-child,
+.card > h3:first-child,
+.moment-header,
+.runway-category-title,
+.lala-round-card h3,
+.reunion-round-card h3,
+.lala-final-card h3,
+.reunion-winner-card h3{
+  position:relative;
+}
+
+.hero::after,
+.card > h2:first-child::after,
+.card > h3:first-child::after,
+.moment-header::after,
+.runway-category-title::after{
+  content:"";
+  display:block;
+  width:64px;
+  height:2px;
+  margin-top:12px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--editorial-pink),var(--editorial-purple));
+  opacity:.85;
+}
+
+.hero::after,
+.moment-header::after,
+.runway-category-title::after{
+  margin-left:auto;
+  margin-right:auto;
+}
+
+.hero::before,
+.moment-header::before,
+.runway-category-title::before{
+  content:"";
+  position:absolute;
+  left:18px;
+  right:18px;
+  top:12px;
+  height:1px;
+  background:linear-gradient(90deg,transparent,var(--editorial-line),transparent);
+  pointer-events:none;
+}
+
+.hero{
+  border-top-color:rgba(255,90,165,.22)!important;
+}
+
+.hero .badge,
+.moment-header span,
+.runway-category-title span,
+.guest-judge-callout span{
+  letter-spacing:.18em!important;
+  text-transform:uppercase!important;
+}
+
+.guest-judge-callout{
+  display:grid;
+  gap:4px;
+  margin:16px 0 0;
+  padding:12px 14px;
+  max-width:620px;
+  border:1px solid var(--editorial-line-soft);
+  border-left:3px solid rgba(246,211,101,.65);
+  border-radius:16px;
+  background:linear-gradient(135deg,rgba(246,211,101,.08),rgba(255,255,255,.025));
+  color:var(--ink);
+}
+
+.hero .guest-judge-callout{
+  margin-left:0;
+  margin-right:auto;
+}
+
+.guest-judge-callout span{
+  color:var(--muted)!important;
+  font-size:.68rem!important;
+  font-weight:850!important;
+}
+
+.guest-judge-callout strong{
+  color:#fff!important;
+  font-size:clamp(1.05rem,2.2vw,1.45rem)!important;
+  line-height:1.05!important;
+}
+
+.guest-judge-callout em{
+  color:var(--muted)!important;
+  font-size:.92rem!important;
+  line-height:1.35!important;
+  font-style:italic!important;
+}
+
+.challenge-brief{
+  margin-top:18px!important;
+}
+
+.judge-line span{
+  letter-spacing:.13em!important;
+  text-transform:uppercase!important;
+  font-size:.68rem!important;
+  color:var(--muted)!important;
+}
+
+.judge-line p{
+  font-size:1rem!important;
+  line-height:1.45!important;
+}
+
+.judge-line.judge-guest{
+  border-left:3px solid rgba(246,211,101,.65)!important;
+  background:linear-gradient(135deg,rgba(246,211,101,.07),rgba(255,255,255,.025))!important;
+}
+
+.runway-category-title{
+  padding-top:26px!important;
+  padding-bottom:26px!important;
+}
+
+.runway-category-title strong,
+.moment-header strong{
+  text-wrap:balance;
+}
+
+.lala-round-card h3::before,
+.reunion-round-card h3::before,
+.lala-final-card h3::before,
+.reunion-winner-card h3::before{
+  content:"✦";
+  display:inline-block;
+  margin-right:8px;
+  color:var(--editorial-gold);
+  font-size:.9em;
+  opacity:.9;
+}
+
+.lala-round-card h3::after,
+.reunion-round-card h3::after,
+.lala-final-card h3::after,
+.reunion-winner-card h3::after{
+  content:"";
+  display:block;
+  width:48px;
+  height:2px;
+  margin-top:10px;
+  border-radius:999px;
+  background:linear-gradient(90deg,var(--editorial-gold),transparent);
+  opacity:.75;
+}
+
+@media(max-width:640px){
+  .guest-judge-callout{max-width:100%;}
+  .hero::before,.moment-header::before,.runway-category-title::before{left:12px;right:12px;}
+}

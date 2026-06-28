@@ -30,7 +30,7 @@ const PREP_CHOICES = {
   runway: {
     label:'Prioritize the runway',
     description:'Boost your visual presentation but split your focus.',
-    effects:{performance:-1, runway:4, energy:-8, stress:4, production:1, queens:0, fans:2},
+    effects:{performance:-2, runway:7, energy:-9, stress:4, production:1, queens:0, fans:3},
     text:'You pour extra time into the look. The fantasy gets stronger, but the challenge gets less rehearsal.'
   },
   ask_help: {
@@ -618,7 +618,7 @@ function playerStatusCard(){ return ''; }
 // ---- v14: living cast systems -------------------------------------------------
 const NPC_PREP_CHOICES = {
   rehearse:{label:'rehearses hard',effects:{performance:3,energy:-10,stress:6,production:1}},
-  runway:{label:'pours time into the runway',effects:{performance:-1,runway:3,energy:-7,stress:3,fans:1}},
+  runway:{label:'pours time into the runway',effects:{performance:-2,runway:6,energy:-8,stress:3,fans:2}},
   ask_help:{label:'asks another queen for help',needsTarget:true,effects:{performance:2,energy:-3,stress:-2,affinity:6,respect:3}},
   rest:{label:'protects her energy',effects:{performance:-2,energy:12,stress:-6,production:-1}},
   chaos:{label:'tries something chaotic',effects:{performance:0,energy:-8,stress:8,production:3,fans:2}}

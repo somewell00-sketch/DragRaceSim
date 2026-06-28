@@ -110,7 +110,7 @@ function renderQueenCreator(){
         <section class="home-attributes-panel card">
           <div class="attribute-intro">
             <div><span class="home-card-kicker">✨ Build</span><h2>Attributes</h2><p>Your queen type suggests a starting build. You can still edit every stat.</p></div>
-            <div class="points-card"><span>Points</span><strong><span id="total">42</span> / 45</strong></div>
+            <div class="points-card"><span>Points</span><strong class="points-total"><span id="total">42</span><span class="points-max">/ 45</span></strong></div>
           </div>
           <div id="stats" class="home-stats">${attrHtml}</div>
         </section>

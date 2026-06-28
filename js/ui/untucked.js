@@ -119,7 +119,12 @@ function renderReunionStrategyChoice(){
   }));
 }
 function renderReunionSmackdownResult(result){
-  const rows=result.rounds.map(r=>`<div class="card"><h3>Reunion Round ${r.round}</h3>${r.byeId?`<p>${escapeHtml(qName(r.byeId))} receives a bye.</p>`:''}${r.duels.map(d=>`<p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong> — ${escapeHtml(qName(d.winnerId))} advances.</p>`).join('')}</div>`).join('');
+  const duelHtml=(d)=>`<div class="reunion-duel">
+    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[0]?'is-winner':'is-loser'}"><strong>${escapeHtml(qName(d.queenIds[0]))}</strong>${d.winnerId===d.queenIds[0]?'<em>advances</em>':''}</span>
+    <span class="vs">VS</span>
+    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[1]?'is-winner':'is-loser'}"><strong>${escapeHtml(qName(d.queenIds[1]))}</strong>${d.winnerId===d.queenIds[1]?'<em>advances</em>':''}</span>
+  </div>`;
+  const rows=result.rounds.map(r=>`<div class="card reunion-round-card"><h3>Reunion Round ${r.round}</h3>${r.byeId?`<p class="reunion-bye"><strong>${escapeHtml(qName(r.byeId))}</strong> receives a bye.</p>`:''}<div class="reunion-duel-list">${r.duels.map(duelHtml).join('')}</div></div>`).join('');
   const reunionWinner=gameState.queens.find(q=>q.id===result.winnerId);
   setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Queen of She Already Done Had Herses</h2><p>The eliminated queens return for a lip sync bracket before the finale.</p></div>${rows}<div class="card important reunion-winner-card"><h3>Queen of She Already Done Had Herses.</h3>${reunionWinner?`<div class="winner-portrait-wrap">${queenPortraitHtml(reunionWinner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong></p></div><button id="toFinale">Continue to the Finale</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReunionSmackdownResult(result)));
