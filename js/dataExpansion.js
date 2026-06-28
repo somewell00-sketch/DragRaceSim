@@ -229,7 +229,7 @@
     "Served emergency sewing with way too much confidence.",
     "Made the runway feel longer than it actually was.",
     "Had the judges wondering if she understood the assignment at all.",
-    "Walked out and made everyone grateful for the other queens."
+    "Walked out and made everyone grateful for the other queens.",
     "Michele vomits her lunch after seeing this look."
   ]
   },
