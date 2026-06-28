@@ -16,6 +16,23 @@ function creatorPreviewStyle(typeName, personalityId){
   const fake={type:typeName, personalityId:personalityId};
   return `background:linear-gradient(135deg, ${typeColor(fake)} 0%, ${typeColor(fake)} 48%, ${personalityColor(fake)} 52%, ${personalityColor(fake)} 100%)`;
 }
+
+async function rollCreatorQueenName(){
+  const input=document.querySelector('#qName');
+  if(!input)return;
+  const current=input.value.trim();
+  try{
+    if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
+    if(typeof generatedQueenName==='function'){
+      const usedNames=new Set(current?[current]:[]);
+      input.value=generatedQueenName(Math.floor(Math.random()*9999)+1, usedNames);
+    }
+  }catch(err){
+    console.warn('Could not generate a random queen name.',err);
+  }
+  updateCreatorPreview();
+}
+
 function updateCreatorPreview(){
   const type=document.querySelector('#qType')?.value || 'Jack of All Trades';
   const personalityId=document.querySelector('#qPersonality')?.value || 'ambitious';
@@ -28,29 +45,15 @@ function updateCreatorPreview(){
   const p=(gameState.data.personalities||[]).find(x=>x.id===personalityId)?.name || personalityId;
   if(metaOut)metaOut.textContent=`${p} • ${type}`;
 }
-
-async function randomizeCreatorName(){
-  const input=document.querySelector('#qName');
-  if(!input)return;
-  if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
-  const current=input.value.trim();
-  const usedNames=new Set((gameState.queens||[]).map(q=>q.name).filter(Boolean));
-  if(current && current!=='Your Queen')usedNames.add(current);
-  const name=(typeof generatedQueenName==='function')
-    ? generatedQueenName(0, usedNames)
-    : current || 'Your Queen';
-  input.value=name;
-  updateCreatorPreview();
-}
-
 function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
-  const defaultPersonality=(p.find(x=>x.id==='ambitious')||p[0]||{id:'ambitious'}).id;
+  const defaultPersonality=p[Math.floor(Math.random()*p.length)].id;
+  const randomType=t[Math.floor(Math.random()*t.length)].name;
   const castOptions=['random',8,9,10,11,12,13,14,15,16].map(n=>{
     if(n==='random')return `<option value="random" selected>Random cast size</option>`;
     return `<option value="${n}">${n} queens</option>`;
   }).join('');
-  const typeOptions=t.map(x=>`<option value="${x.name}" ${x.name==='Jack of All Trades'?'selected':''}>${x.name}</option>`).join('');
+  const typeOptions=t.map(x=>`<option value="${x.name}" ${x.name===randomType?'selected':''}>${x.name}</option>`).join('');
   const personalityOptions=p.map(x=>`<option value="${x.id}" ${x.id===defaultPersonality?'selected':''}>${x.name}</option>`).join('');
   const attrHtml=attrDefs.map(([id,label])=>`<div class="stat-row home-stat-row"><span>${label}</span><input type="range" min="1" max="10" value="7" data-attr="${id}"><strong data-value="${id}">7</strong></div>`).join('');
   setHTML(`<main class="screen home-screen home-stage">
@@ -91,16 +94,11 @@ function renderQueenCreator(){
       <div class="home-main-panel">
         <section class="home-queen-panel card">
           <div class="creator-portrait-wrap">
-            <span id="creatorPortrait" class="queen-portrait portrait-xl creator-portrait player-portrait" style="${creatorPreviewStyle('Jack of All Trades',defaultPersonality)}"></span>
+            <span id="creatorPortrait" class="queen-portrait portrait-xl creator-portrait player-portrait" style="${creatorPreviewStyle(randomType,defaultPersonality)}"></span>
             <span class="creator-portrait-crown">👑</span>
           </div>
           <div class="creator-fields">
-            <label class="home-field home-name-field">Drag name
-              <div class="creator-name-row">
-                <input id="qName" value="Your Queen">
-                <button id="randomQueenName" type="button" class="ghost" title="Random name">🎲</button>
-              </div>
-            </label>
+            <label class="home-field home-name-field"><span>Drag name</span><div class="creator-name-row"><input id="qName" value="Your Queen"><button id="rerollQueenName" class="creator-dice-btn" type="button" title="Random name" aria-label="Random name">🎲</button></div></label>
             <div class="creator-select-row">
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
               <label class="home-field">Personality<select id="qPersonality">${personalityOptions}</select></label>
@@ -128,7 +126,7 @@ function renderQueenCreator(){
  document.querySelector('#qType').addEventListener('change',()=>{applyTypePreset();updateCreatorPreview();});
  document.querySelector('#qPersonality').addEventListener('change',updateCreatorPreview);
  document.querySelector('#qName').addEventListener('input',updateCreatorPreview);
- document.querySelector('#randomQueenName')?.addEventListener('click',()=>randomizeCreatorName());
+ document.querySelector('#rerollQueenName')?.addEventListener('click',rollCreatorQueenName);
  document.querySelectorAll('[data-attr]').forEach(input=>input.addEventListener('input',(e)=>updateTotal(e.target)));
  document.querySelector('#startSeason').addEventListener('click',async()=>{
    const startBtn=document.querySelector('#startSeason');
@@ -150,9 +148,10 @@ function renderQueenCreator(){
  });
  document.querySelector('#continueSave').addEventListener('click',()=>{if(loadGame())routeAfterLoad();else alert('No save found.');});
  document.querySelector('#clearSave').addEventListener('click',()=>{clearSave(); alert('Save deleted.');});
+ applyTypePreset();
  updateCreatorPreview();
- randomizeCreatorName();
  updateTotal();
+ rollCreatorQueenName();
 }
 function applyTypePreset(){const preset=getTypePreset(document.querySelector('#qType').value); document.querySelectorAll('[data-attr]').forEach(i=>{i.value=preset[i.dataset.attr]||7;}); updateTotal();}
 function updateTotal(changedInput=null){let total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);}); if(total>45 && changedInput){const overflow=total-45; changedInput.value=Math.max(Number(changedInput.min),Number(changedInput.value)-overflow); total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);});}
