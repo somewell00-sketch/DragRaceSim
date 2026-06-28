@@ -129,6 +129,37 @@ function runwayActionEmoji(id){
   return {none:'👠',reveal:'🎭',cape_reveal:'🧥',wig_reveal:'💇',prop:'🪭',audience_interaction:'🗣️',extra_pose:'📸'}[id] || '👠';
 }
 
+
+function runwayConsumableActionIds(){
+  return Object.keys(RUNWAY_ACTIONS).filter(id=>id !== 'none');
+}
+function usedRunwayActionList(){
+  if(!gameState.season) return [];
+  if(!Array.isArray(gameState.season.usedRunwayActions)) gameState.season.usedRunwayActions=[];
+  return gameState.season.usedRunwayActions;
+}
+function isRunwayActionUsed(id){
+  return id !== 'none' && usedRunwayActionList().includes(id);
+}
+function availableRunwayActionIds(){
+  return runwayConsumableActionIds().filter(id=>!isRunwayActionUsed(id));
+}
+function markRunwayActionUsed(id){
+  if(id === 'none' || !gameState.season) return;
+  const used=usedRunwayActionList();
+  if(!used.includes(id)) used.push(id);
+}
+function shouldSkipRunwayActionChoice(){
+  return availableRunwayActionIds().length === 0;
+}
+function autoSkipRunwayActionChoice(ep){
+  if(!ep || ep.runwayActionApplied) return;
+  ep.runwayActionApplied=true;
+  ep.runwayAction='Walk Normally';
+  ep.runwayActionAutoSkipped=true;
+  saveGame();
+}
+
 function runwayAttribute(q, key){
   if(!q)return 5;
   if(key==='confidence') return clamp(((q.confidence ?? 50)/10),1,10);
@@ -169,8 +200,10 @@ function runwayActionResultBlock(ep){
 function playerRunwayActionBlock(ep){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   if(!player || player.isEliminated || (ep.participantIds && !ep.participantIds.includes(player.id))) return '';
-  if(ep.runwayActionApplied) return runwayActionResultBlock(ep);
-  const actionIds=['none','reveal','cape_reveal','wig_reveal','prop','audience_interaction','extra_pose'];
+  if(ep.runwayActionApplied) return ep.runwayActionAutoSkipped ? '' : runwayActionResultBlock(ep);
+  const availableSpecialActions=availableRunwayActionIds();
+  if(!availableSpecialActions.length) return '';
+  const actionIds=['none',...availableSpecialActions];
   const buttons=actionIds.map(id=>{
     const o=RUNWAY_ACTIONS[id];
     const chance=runwayActionChance(player,o);
@@ -184,12 +217,14 @@ function applyRunwayAction(actionId){
   const ep=gameState.currentEpisode;
   if(!ep || ep.runwayActionApplied) return;
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  if(isRunwayActionUsed(actionId)) return;
   const action=RUNWAY_ACTIONS[actionId] || RUNWAY_ACTIONS.none;
   const chance=runwayActionChance(player, action);
   const success=!action.failure || Math.random()<chance;
   const effects=success?action.success:action.failure;
   const note=success?action.successText:action.failureText;
   applyChoiceEffects(effects,{note,source:'runway-action'});
+  markRunwayActionUsed(actionId);
   ep.runwayActionApplied=true;
   ep.runwayAction=action.label;
   ep.runwayActionResult={
@@ -346,6 +381,7 @@ function renderRunwayMainStage(){
   const placements=ep.placements;
   const runwayOrder=getRunwayOrder(ep, placements);
   const playerCanAct=canPlayerTakeRunwayAction(ep);
+  if(playerCanAct && shouldSkipRunwayActionChoice()) autoSkipRunwayActionChoice(ep);
   const runwayReady=ep.runwayActionApplied || !playerCanAct;
   const runwayCards=runwayReady ? runwayCategoryCards(ep, placements, runwayOrder) : '';
   const initialCategory=runwayReady ? '' : runwayCategoryHeader(ep.runwayCategory);
