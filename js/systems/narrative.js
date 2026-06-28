@@ -216,32 +216,32 @@ function ruNarrativeComment(q, placement){
       ]
     },
     
-    [NARRATIVE_TAGS.FAN_FAVORITE]: {
-      positive: [
-        'There is something about you people want to root for.',
-        'The audience connects with you, and I can see why.',
-        'You have captured the hearts of viewers everywhere.',
-        'Your charisma is undeniable, and the fans are eating it up.',
-        'People see themselves in you—and that is powerful.',
-        'The love for you extends beyond this room.',
-        'You have built a fanbase that will follow you anywhere.',
-        'Your authenticity resonates with so many people.',
-        'The fans are rallying behind you. That is no small thing.',
-        'You have the kind of star quality that makes people invest in you.'
-      ],
-      negative: [
-        'Fan love is beautiful, but it cannot carry you alone.',
-        'The audience adores you—now show them why you deserve to stay.',
-        'You have the support, but you need to deliver the performances.',
-        'Being a fan favorite comes with responsibility. Step up.',
-        'We all love you, but we need to see the fire.',
-        'The fans are waiting for you to break through.',
-        'Dont rely on popularity to save you.',
-        'You have the heart of the fans—now give them a winner.',
-        'The love is there. Now make it mean something.',
-        'Fan favorites can become champions. Show us you are ready.'
-      ]
-    },
+[NARRATIVE_TAGS.FAN_FAVORITE]: {
+  positive: [
+    'You have a warmth that draws people in instantly.',
+    'There is an approachability about you that is rare on this stage.',
+    'You make people want to root for you—that is a gift.',
+    'Your personality shines in a way that feels familiar and lovable.',
+    'You have this way of making everyone in the room feel seen.',
+    'Your authenticity makes you dangerously likeable.',
+    'There is a softness to you that contrasts beautifully with your drag.',
+    'People instinctively gravitate toward you—and that is powerful.',
+    'You have the kind of energy that makes a room feel safe.',
+    'You are relatable, and in this competition, that is a superpower.'
+  ],
+  negative: [
+    'Being likeable is wonderful, but it will not win you this.',
+    'Your sweetness is endearing—now show us the sharp edges.',
+    'Everyone loves you, but we need to see you fight.',
+    'You charm the room, but charm only takes you so far.',
+    'The kindness is beautiful—now give us the killer instinct.',
+    'You are easy to love, but this competition demands more than love.',
+    'Your personality carries you, but your performance needs to catch up.',
+    'We see the heart. Now show us the hunger.',
+    'You have the warmth—now prove you have the fire.',
+    'Being beloved is a privilege. Earn it every week.'
+  ]
+},
     
     [NARRATIVE_TAGS.PRODUCERS_DREAM]: {
       positive: [
@@ -553,9 +553,51 @@ if (pick) {
   const pool = source?.[tone] || source?.positive || source?.negative || [];
   return sample(pool);
 }
-  if(bottom)return sample(['This competition is getting tougher, and I need you to fight.','We need more from you, because I believe there is more there.']);
+  if(bottom)return sample([
+    'This competition is getting tougher, and I need you to fight.',
+    'We need more from you, because I believe there is more there.',
+    'You barely survived this week. Step it up.',
+    'This was not your week, and you know it.',
+    'You faded into the background when you needed to shine.',
+    'You can do better than this, and I want to see it next week.',
+    'You were lucky this time. Don\'t count on luck again.',
+    'Something is missing, and you need to find it fast.',
+    'I almost forgot you were on stage — and that\'s the worst thing I can say.',
+    'You need to stop playing safe and start playing to win.',
+    'This was a warning shot. Next time, you\'re out.',
+    'You came here to compete, not to disappear.',
+    'You have potential, but potential doesn\'t win competitions.',
+    'The spark was there last week. Where did it go?',
+    'You let the pressure get to you. Shake it off next time.',
+    'You coasted through this challenge, and we noticed.',
+    'You were giving nothing. Absolutely nothing.',
+    'I know you have more to give because I\'ve seen it. Show us next time.',
+    'Don\'t let this define you. Use it to fuel you.',
+    'Take this critique and let it light a fire under you.'
+  ]);
   if(positive)return sample(['This week, you made a real impression.','You should feel proud of what you showed us.']);
-  return sample(['You are safe, but do not get too comfortable.','Keep pushing. We are still watching.']);
+  return sample([
+    'This week, you made a real impression.',
+    'You should feel proud of what you showed us.',
+    'You absolutely delivered this week.',
+    'You proved why you deserve to be here.',
+    'What a beautiful performance from you tonight.',
+    'You owned that stage.',
+    'This is the energy we\'ve been waiting for.',
+    'You showed up and showed out.',
+    'I was captivated from start to finish.',
+    'You took our advice and ran with it.',
+    'Consider us impressed.',
+    'That was a masterclass in performance.',
+    'You commanded the room tonight.',
+    'You elevated your game, and we noticed.',
+    'You gave us everything we wanted and more.',
+    'You made yourself unforgettable tonight.',
+    'Your growth this week was undeniable.',
+    'You showcased exactly who you are as a performer.',
+    'Tonight, you were a star on that stage.',
+    'You solidified your place in this competition tonight.'
+  ]);
 }
 function narrativeEventForEpisode(stage='workroom'){
   const ep=gameState.currentEpisode;
