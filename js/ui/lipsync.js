@@ -180,7 +180,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The vulnerability felt misplaced, and the song slipped through her hands.',
       'Her face promised feeling, but her eyes stayed empty throughout.',
       'The emotion read as imitation, never genuine connection.',
-      'She tried to manufacture depth, but the performance stayed surface-level.'
+      'She tried to manufacture depth, but the performance stayed surface-level.',
+      'Her face went through five emotions in ten seconds, none of them right.',
+      'The crying face arrived but the tears forgot to show up.',
+      'She felt the lyrics so deeply she forgot to show anyone else.',
+      'The emotional breakdown looked more like a tantrum.',
+      'She tried to channel heartbreak and summoned constipation instead.',
+      'Every dramatic glance missed the camera by several feet.',
+      'Her face promised devastation, her body promised a nap.',
+      'The vulnerability landed with the grace of a falling anvil.',
+      'She attempted raw emotion and discovered she had none left.',
+      'The performance was so interior that even she couldn\'t find it.',
+      'Her face said "profound" while her body said "please let this end."',
+      'The emotion never arrived, but the desperation sure did.',
+      'She tried to make eye contact with the judges. They pretended not to see.',
+      'The big emotional moment came and went, and nobody noticed.',
+      'She reached for the song\'s soul and grabbed her own confusion.'
     ],
     partial: [
       'There were flashes of feeling, but the impact came and went.',
@@ -201,14 +216,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She turned vulnerability into command and held the room still.',
       'The emotional journey was so clear it felt like watching a short film.',
       'She painted the song\'s story with her face, and every stroke landed.',
-      'The connection was so raw and real that the judges forgot to breathe.'
+      'The connection was so raw and real that the judges forgot to breathe.',
+      'Her face told the whole story before the chorus even arrived.',
+      'The emotions landed with surgical precision, each one sharper than the last.',
+      'She played the song\'s emotional arc like a master instrumentalist.',
+      'The vulnerability became armor. She wore it like a weapon.',
+      'Her eyes held the camera hostage from the first frame.',
+      'She built the emotion beat by beat until the room was hers.',
+      'The judges felt every word without needing to hear it.',
+      'She turned heartbreak into a performance that felt like a confession.',
+      'The emotional control was so complete it looked effortless.',
+      'She connected with every camera, every judge, every breath.'
     ],
     legendary: [
       'She did not perform the song — she lived inside it. The room broke open.',
       'The emotion became the entire story. It was impossible to look away.',
       'She rewired the song\'s meaning through sheer emotional force. Unforgettable.',
       'The vulnerability was so complete that the stage disappeared around her.',
-      'She made the entire room feel what she felt. That\'s not performance — that\'s possession.'
+      'She made the entire room feel what she felt. That\'s not performance — that\'s possession.',
+      'The judges forgot they were judging. They were just watching history.',
+      'She channeled something beyond performance. The song had never been this alive.',
+      'The emotional journey was so profound that silence followed. The room needed a moment.',
+      'She didn\'t perform the lyrics. She became the person who wrote them.',
+      'The judges sat forward, mouths slightly open. They knew what they were seeing.',
+      'That performance will be studied. The emotional mastery was absolute.',
+      'She took the song to places the artist never found.',
+      'The room held its breath and never let go.',
+      'She proved that the face can do more than any stunt.',
+      'It wasn\'t a performance. It was a visitation.'
     ]
   },
   sell_lyrics: {
@@ -217,7 +252,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She knew pieces of the song, but never sold its meaning.',
       'The lyrics felt recited, not believed, and the judges noticed.',
       'She mouthed the words without ever convincing anyone she meant them.',
-      'The song played, she moved her lips, but the connection never formed.'
+      'The song played, she moved her lips, but the connection never formed.',
+      'She confidently mouthed the wrong lyrics at the wrong time.',
+      'Her lips said one thing, her face said another, neither was right.',
+      'She forgot a verse and spent the next fifteen seconds improvising.',
+      'The words were there, but the conviction had left the building.',
+      'She sang the chorus with such confidence it was almost correct.',
+      'Her lip sync was so loose the words fell out of the track.',
+      'She knew about half the words and committed fully to the wrong half.',
+      'The lyrics hit her face and bounced off.',
+      'She tried to sell the song and ended up giving it away for free.',
+      'The words were mouthed with such uncertainty that even the track seemed confused.',
+      'She forgot the bridge and decided the floor was interesting.',
+      'The lip sync was so off that the judges started mouthing along to help her.',
+      'She looked like she was reading the lyrics off an invisible teleprompter that kept glitching.',
+      'The words passed through her without leaving a trace.',
+      'She sold the lyrics like a used car with no engine.'
     ],
     partial: [
       'The lyrics were mostly there, though the intention kept flickering.',
@@ -238,14 +288,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The phrasing, face, and timing worked like choreography.',
       'She made each line land with precision and genuine intention.',
       'The song became hers — every word felt like a calculated choice.',
-      'She didn\'t just lip sync; she delivered a masterclass in lyrical storytelling.'
+      'She didn\'t just lip sync; she delivered a masterclass in lyrical storytelling.',
+      'Every word had weight, every pause had purpose.',
+      'She sold the lyrics so hard the judges bought the whole album.',
+      'The phrasing was so sharp it could cut glass.',
+      'She treated every syllable like it was the most important one.',
+      'The face, the lips, the eyes — they all agreed on the story.',
+      'She made the track feel like an intimate confession in a crowded room.',
+      'The lyrics lived in her body, not just her mouth.',
+      'She sold every verse like it was her last chance.',
+      'The intention never wavered, not for one single word.',
+      'She turned a pop song into a personal manifesto.'
     ],
     legendary: [
       'Every syllable hit like a verdict. The judges watched her tell the whole song with her face.',
       'She made the track feel written for this exact moment. Legendary lyric work.',
       'The words became weapons, and she wielded every single one perfectly.',
       'She rewrote the song\'s meaning through sheer interpretive brilliance.',
-      'The judges forgot the original artist existed. She owned every word.'
+      'The judges forgot the original artist existed. She owned every word.',
+      'She made the lyrics so real that they felt like her own confession.',
+      'Every word landed with the force of a closing argument.',
+      'She turned the song into scripture. The judges were converted.',
+      'The lyrics became her testimony, and the room bore witness.',
+      'She didn\'t just sell the song — she made everyone buy what she was selling.',
+      'The performance was so complete that the track became secondary.',
+      'She owned every syllable, every breath, every moment between.',
+      'The judges leaned in like they were hearing the song for the first time.',
+      'She told the whole story without missing a single chapter.',
+      'She made the lyrics feel like they had always been waiting for her to say them.'
     ]
   },
   dance: {
@@ -254,7 +324,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She chased the rhythm all over the stage and never caught it.',
       'The choreography looked rehearsed but never felt musical.',
       'Her body moved, but the song stayed somewhere else entirely.',
-      'The dance was busy without ever being effective.'
+      'The dance was busy without ever being effective.',
+      'She attempted choreography and discovered she had no rhythm left.',
+      'The death drop became a death flop. Gravity politely declined.',
+      'She attempted a split and ended up in a different time zone.',
+      'The cartwheel was declined by the floor.',
+      'Her body moved like it had just learned what music was.',
+      'The dance was so off-beat that the song seemed confused.',
+      'She tried to twirl and the room spun faster than she did.',
+      'The choreography was ambitious. The execution was a different story.',
+      'She hit the floor and stayed there longer than intended.',
+      'The dance moves were from a different song that no one else could hear.',
+      'Her body promised fluidity and delivered a series of unfortunate events.',
+      'The kicks went wide, the spins went wrong, the floor went hard.',
+      'She danced like she was fighting the song, and the song was winning.',
+      'The rhythm politely asked for space and she gave it plenty.',
+      'She attempted a stunt and the judges attempted not to wince.'
     ],
     partial: [
       'The energy was there, but the control came in patches.',
@@ -275,14 +360,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She moved like the stage had been built around her body.',
       'The dance became the visual embodiment of the track\'s energy.',
       'She attacked every beat with precision and infectious power.',
-      'The movement, the face, and the rhythm fused into something electric.'
+      'The movement, the face, and the rhythm fused into something electric.',
+      'She danced with such precision that every camera found her.',
+      'The choreography was so sharp it left marks on the stage.',
+      'She moved through the song like water finding its level.',
+      'Every transition was seamless, every beat was owned.',
+      'The physicality was so controlled it looked like superpower.',
+      'She ate the choreography and left no crumbs.',
+      'The dancing was so clean that even the edges looked polished.',
+      'She turned movement into punctuation for every lyric.',
+      'The floor was lava and she danced on air.',
+      'Her body knew the song better than the track did.'
     ],
     legendary: [
       'She brought the house down. The choreography became the moment.',
       'The floor, lights, and crowd moved with her. It was a full-stage takeover.',
       'She danced like the song owed her something — and she collected.',
       'Every move was a statement. The stage couldn\'t contain her.',
-      'She redefined what a dance-heavy lip sync could be. Absolutely iconic.'
+      'She redefined what a dance-heavy lip sync could be. Absolutely iconic.',
+      'The dance broke something in the room and rebuilt it better.',
+      'She hit every beat with such force that the judges felt it in their seats.',
+      'The choreography was so perfect it looked spontaneous.',
+      'She turned the stage into her personal playground.',
+      'The performance was so physically commanding that the song seemed to follow her.',
+      'She danced with such fire that the room started sweating.',
+      'The movement was so powerful it rewired how the song felt.',
+      'She made the impossible look effortless and the effortless look essential.',
+      'The dance was so legendary that future queens will study it.',
+      'She didn\'t just perform the song — she choreographed its legacy.'
     ]
   },
   stunts: {
@@ -291,7 +396,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The risk collapsed into messy movement and missed beats.',
       'She went for it, but the landing never matched the ambition.',
       'The stunts read as chaos, not choreography.',
-      'She prioritized spectacle over substance, and it showed.'
+      'She prioritized spectacle over substance, and it showed.',
+      'She attempted a death drop and the floor rejected her.',
+      'The stunt was so ambitious that gravity intervened personally.',
+      'She went for a split and the song went somewhere else.',
+      'The kick was so wide that her balance relocated.',
+      'She tried to recreate a famous move and the memory of it was better.',
+      'The cartwheel was attempted. The floor was unimpressed.',
+      'The dip went so low she almost disappeared from the performance.',
+      'She attempted a backbend and forgot what backs were for.',
+      'The stunt was so messy even her wig looked concerned.',
+      'She went for a flip and the song flipped away from her.',
+      'The jump was so high the landing became an adventure.',
+      'She tried to serve athleticism and served a pulled muscle instead.',
+      'The trick was so forced it looked like the song was holding her back.',
+      'She attempted a death drop and achieved a life flop.',
+      'The stunt was so ill-advised that the judges looked away.'
     ],
     partial: [
       'Some tricks landed, but the performance never fully recovered between them.',
@@ -312,14 +432,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The tricks were sharp, controlled, and undeniably effective.',
       'She made the impossible look effortless and musical.',
       'The stunts built the performance rather than breaking it.',
-      'She turned risk into reward with precision and guts.'
+      'She turned risk into reward with precision and guts.',
+      'The stunts were so clean they looked easy.',
+      'She executed every trick with surgical timing.',
+      'The physical risks paid off in every single moment.',
+      'She made dangerous choices look like second nature.',
+      'The stunts became highlights without overshadowing the song.',
+      'Every move was measured, every risk was calculated.',
+      'She served athleticism and artistry in equal measure.',
+      'The tricks were so seamless they felt like part of the choreography.',
+      'She used her body like punctuation for the music.',
+      'The stunts were thrilling because they were controlled.'
     ],
     legendary: [
       'Every stunt detonated on beat. The room lost its mind.',
       'It was athletic, musical, and ridiculous in the best possible way.',
       'She redefined what a lip sync could include. Legendary physicality.',
       'The stunts became the song\'s visual peak, and she nailed every single one.',
-      'She took risks that should have failed and made them unforgettable victories.'
+      'She took risks that should have failed and made them unforgettable victories.',
+      'The death drop at the climax changed the room\'s atmosphere.',
+      'She executed stunts that would break lesser performers and made them look easy.',
+      'The physical feats were so extraordinary that the judges couldn\'t believe their eyes.',
+      'She flew across the stage and the song carried her.',
+      'The stunts were so perfectly timed they felt choreographed by the music itself.',
+      'She attempted things that shouldn\'t work and made them unforgettable.',
+      'The physicality was so next-level that it set a new standard.',
+      'She served gravity defiance and the room ate it up.',
+      'The stunts were so legendary that they became the performance.',
+      'She took every risk and turned it into a reward for the audience.'
     ]
   },
   save_reveal: {
@@ -328,7 +468,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The reveal came too late to save a performance already fading.',
       'She built toward something that never quite arrived.',
       'The timing was off, and the payoff fell flat.',
-      'She saved the reveal, but the moment had already passed her by.'
+      'She saved the reveal, but the moment had already passed her by.',
+      'The reveal came and went and the room barely noticed.',
+      'She saved her big moment for a beat that never came.',
+      'The build-up was intense. The reveal was not.',
+      'She reached for the reveal and found nothing but fabric.',
+      'The zipper had other plans.',
+      'She pulled the reveal and the entire outfit came with it.',
+      'The reveal was so delayed that it looked like an accident.',
+      'She saved the surprise for after the song had already won.',
+      'The moment arrived and the garment stayed put.',
+      'She tried to unveil and instead unveiled her own panic.',
+      'The reveal was supposed to be a climax. It became a punctuation mark.',
+      'She built tension and then released it into the void.',
+      'The big moment arrived and the reveal was... there.',
+      'She saved the reveal for so long that it expired.',
+      'The reveal came off. So did her composure.'
     ],
     partial: [
       'The reveal worked, but hesitation kept it from becoming the moment.',
@@ -349,14 +504,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She built perfectly toward the reveal, then snapped the song open.',
       'The tension she created made the payoff feel explosive.',
       'She played the long game and won it with one perfect moment.',
-      'The timing was immaculate, and the reveal elevated everything before it.'
+      'The timing was immaculate, and the reveal elevated everything before it.',
+      'The reveal was perfectly telegraphed and perfectly executed.',
+      'She built the tension so skillfully that the release felt inevitable and surprising.',
+      'The moment arrived and the room gasped as one.',
+      'She controlled the anticipation so completely that the reveal was triumphant.',
+      'The payoff matched the build-up perfectly.',
+      'She waited until the exact right moment and made it count.',
+      'The reveal was so well-timed it became the climax of the performance.',
+      'She turned anticipation into explosion.',
+      'The moment was so perfectly set up that the reveal felt like destiny.',
+      'She built a house of cards and knocked it down with a perfect reveal.'
     ],
     legendary: [
       'The reveal instantly became the defining image of the night.',
       'The climax hit, the garment changed, and the entire room erupted.',
       'She built a cathedral of tension and knocked it down with perfection.',
       'The reveal wasn\'t just a moment — it was the moment. Unforgettable.',
-      'She turned the climax into a religious experience. Legendary timing.'
+      'She turned the climax into a religious experience. Legendary timing.',
+      'The reveal was so perfect that the judges gasped in unison.',
+      'The room exploded and never fully recovered.',
+      'She saved the reveal for the final beat and absolutely murdered it.',
+      'The payoff was so complete that the song felt like it was waiting for that moment.',
+      'She turned a lip sync into a cinematic climax.',
+      'The reveal changed the energy of the room permanently.',
+      'She made the judges forget the song before the reveal.',
+      'The moment was so perfectly constructed that it felt like magic.',
+      'She delivered a reveal that will be talked about for years.',
+      'The build-up and payoff were so aligned that it felt scripted by destiny.'
     ]
   },
   reveal_early: {
@@ -365,7 +540,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She showed the trick too soon and had nowhere else to go.',
       'The reveal happened, the room reacted, and then... nothing.',
       'She played her best card immediately and left the rest of the performance empty.',
-      'The early shock worked, but she couldn\'t sustain the momentum.'
+      'The early shock worked, but she couldn\'t sustain the momentum.',
+      'The reveal was so early that the song hadn\'t even started.',
+      'She shocked the room and then had nothing left to give.',
+      'The early surprise was so good that the rest was a disappointment.',
+      'She revealed her entire hand and played the rest of the song with nothing.',
+      'The reveal came so early that she spent the rest of the performance undoing it.',
+      'She gave the judges everything in the first ten seconds and then vanished.',
+      'The reveal was so early that the song felt like the after-party.',
+      'She blew her load in the intro and the rest was cleanup.',
+      'The early reveal was so strong that the rest felt weak by comparison.',
+      'She showed the trick and then the trick showed her limitations.',
+      'The early reveal was the peak of a very short mountain.',
+      'She started with a bang and ended with a whisper.',
+      'The reveal was so early that the climax had already passed before the first chorus.',
+      'She gave the judges everything and then had to fake the rest.',
+      'The early reveal was so complete that there was nothing left to discover.'
     ],
     partial: [
       'The reveal grabbed attention, but the momentum faded after it.',
@@ -386,14 +576,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She shocked the room early and proved the trick was only the beginning.',
       'The opening gambit worked so well that the rest of the performance felt like a victory lap.',
       'She grabbed the judges\' attention immediately and never let go.',
-      'The early reveal created expectations, and she exceeded every single one.'
+      'The early reveal created expectations, and she exceeded every single one.',
+      'She set the bar high and kept clearing it.',
+      'The opening reveal was so strong that the song felt like it was playing catch-up.',
+      'She started with a statement and kept making them.',
+      'The early surprise was so effective that the room was hers from the first beat.',
+      'She opened with a bang and somehow made every subsequent beat louder.',
+      'The reveal was so good that the rest of the performance felt like a reward.',
+      'She hooked the judges in the first five seconds and never let them go.',
+      'The early reveal created momentum that never faltered.',
+      'She started at full power and somehow found more.',
+      'The opening gambit was so strong that it set the tone for the entire performance.'
     ],
     legendary: [
       'The first beat became an event. The reveal lit the fuse and the performance exploded.',
       'She opened with a gag and somehow made every second after it bigger.',
       'The early reveal was so iconic that it redefined the song\'s opening.',
       'She set the bar impossibly high in the first five seconds and kept clearing it.',
-      'The surprise was so perfect that the judges were hooked before the first chorus.'
+      'The surprise was so perfect that the judges were hooked before the first chorus.',
+      'She made the reveal so early and so powerful that the song became the afterthought.',
+      'The opening moment was so legendary that it overshadowed everything that came after.',
+      'She started with a moment that will be replayed for years.',
+      'The early reveal was so perfect that the judges knew they were watching something special.',
+      'She opened with a reveal that became the image of the performance.',
+      'The first five seconds rewrote the entire song.',
+      'She made such a strong opening statement that the rest of the performance was history.',
+      'The reveal was so early and so perfect that it defined the entire lip sync.',
+      'She started with a moment that stopped time.',
+      'The opening gambit was so legendary that the judges were already sold.'
     ]
   },
   multiple_reveals: {
@@ -402,7 +612,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'Too many tricks, not enough performance. The spectacle turned messy.',
       'She kept reaching for surprises, but they stopped surprising.',
       'The multiple reveals became exhausting instead of exciting.',
-      'She prioritized quantity over quality, and the performance suffered.'
+      'She prioritized quantity over quality, and the performance suffered.',
+      'She pulled seven reveals and none of them landed.',
+      'The layers of clothing came off like a sad magic trick.',
+      'She kept revealing until there was nothing left but confusion.',
+      'The reveals were so numerous that the song got lost in the laundry.',
+      'She kept pulling surprises and surprised no one.',
+      'The reveals were so frequent that they became background noise.',
+      'She revealed so many times that the performance became a strip tease gone wrong.',
+      'The multiple reveals were like a horror movie where the monster keeps coming back.',
+      'She kept revealing and somehow every reveal was disappointing.',
+      'The performance became a parade of bad decisions.',
+      'She revealed so many layers that the judges lost count.',
+      'The reveals were so constant that nothing felt surprising.',
+      'She pulled a reveal and then another and then another and none of them mattered.',
+      'The multiple reveals were like a clown car but less entertaining.',
+      'She kept shedding layers until there was nothing left but desperation.'
     ],
     partial: [
       'The reveals created noise, but only some of it felt useful.',
@@ -423,14 +648,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The layers kept coming, and somehow every one had a point.',
       'She turned the performance into a journey with multiple destinations.',
       'The reveals felt like chapters, each one building on the last.',
-      'She had the judges guessing what came next and delivered every time.'
+      'She had the judges guessing what came next and delivered every time.',
+      'The reveals were so well-paced that each one felt earned.',
+      'She kept pulling surprises and every single one worked.',
+      'The layers of reveals created a narrative that the song couldn\'t.',
+      'She turned the performance into a series of escalating climaxes.',
+      'The reveals were so cleverly spaced that the energy never dropped.',
+      'She played the reveal game and won every round.',
+      'The multiple reveals were perfectly calibrated for maximum impact.',
+      'She kept surprising the room and the room kept gasping.',
+      'The reveals became a conversation that the song was having with the audience.',
+      'She turned a lip sync into a theatrical experience with multiple acts.'
     ],
     legendary: [
       'Reveal after reveal after reveal — and every single one hit. The room went feral.',
       'It became a full theatrical demolition. The song had chapters, and she dressed every one.',
       'She turned the lip sync into an event. Multiple reveals, maximum impact.',
       'The layers of surprises created a performance that felt like a movie.',
-      'She kept pulling tricks and every single one landed. Absolute mastery.'
+      'She kept pulling tricks and every single one landed. Absolute mastery.',
+      'The reveals were so perfectly executed that the room couldn\'t keep up.',
+      'She turned the song into a journey and revealed something new at every stop.',
+      'The multiple reveals were so legendary that the judges forgot to judge.',
+      'She created a performance that demanded to be watched again to catch everything.',
+      'The reveals were so clever, so well-timed, so complete that it became a masterclass.',
+      'She redefined what multiple reveals could mean in a lip sync.',
+      'The room was gasping so often they ran out of breath.',
+      'She kept delivering and the room kept losing its mind.',
+      'The performance was so layered that it felt like a theatrical production.',
+      'She made multiple reveals feel like a single, perfect, evolving statement.'
     ]
   },
   play_safe: {
@@ -439,7 +684,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She avoided mistakes, but also avoided giving the judges a reason to care.',
       'The performance was clean, forgettable, and ultimately useless.',
       'She played it so safe that the song passed right through her.',
-      'Nothing went wrong, but nothing went right either.'
+      'Nothing went wrong, but nothing went right either.',
+      'The performance was so safe that it should have had a seatbelt.',
+      'She played it so safe that even the stage looked bored.',
+      'The safe choice was so cautious that it looked like fear.',
+      'She avoided risks and also avoided victory.',
+      'The performance was clean, correct, and completely useless.',
+      'She played it safe and the judges played along by not remembering her.',
+      'The safe approach was so forgettable that the song played without her.',
+      'She gave the judges nothing to critique and nothing to praise.',
+      'The performance was so conservative it should have been wearing a cardigan.',
+      'She played it so safe that it was almost dangerous in its lack of risk.',
+      'The safe performance was so invisible that she disappeared into the background.',
+      'She played it safe and found out safety doesn\'t win.',
+      'The performance was so controlled that it had no pulse.',
+      'She avoided disaster and also avoided relevance.',
+      'The safe choice was the wrong choice.'
     ],
     partial: [
       'The safe approach kept her afloat, but not alive.',
@@ -460,14 +720,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The clean approach looked expensive because she never wasted a beat.',
       'She turned restraint into a weapon and commanded the room quietly.',
       'The simplicity was so sharp that it felt bold.',
-      'She proved that you don\'t need spectacle when you have this much control.'
+      'She proved that you don\'t need spectacle when you have this much control.',
+      'The performance was so clean that every detail stood out.',
+      'She played it safe and made safety look dangerous.',
+      'The control was so complete that it became its own kind of power.',
+      'She served precision over spectacle and it worked perfectly.',
+      'The performance was so tight that nothing was wasted.',
+      'She proved that clean execution can be just as powerful as chaos.',
+      'The restraint was so masterful that it became the point.',
+      'She played it safe and made it feel like the boldest choice.',
+      'The performance was so controlled that every beat landed.',
+      'She turned simplicity into a statement.'
     ],
     legendary: [
       'She proved stillness can be lethal. The smallest choices shook the room.',
       'No stunt could have beaten that control. It was simplicity turned iconic.',
       'She made a quiet performance feel like the loudest statement of the night.',
       'The restraint was so masterful that it became unforgettable.',
-      'She redefined what \'safe\' means by making it absolutely devastating.'
+      'She redefined what \'safe\' means by making it absolutely devastating.',
+      'The performance was so perfectly controlled that it rewired how the song felt.',
+      'She played it safe and won. That\'s how powerful the execution was.',
+      'The quiet control was so complete that it felt like a revolution.',
+      'She proved that you don\'t need to scream to be heard.',
+      'The stillness was so powerful that it became the performance.',
+      'She made the safe choice look like the only choice.',
+      'The restraint was so absolute that it felt like a victory.',
+      'She turned caution into art.',
+      'The performance was so perfectly executed that it needed nothing else.',
+      'She proved that safety, in the right hands, is the most dangerous thing of all.'
     ]
   },
   overshadow: {
@@ -476,7 +756,22 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The attempt to overshadow backfired and made her look less in control.',
       'She reached for the spotlight and grabbed only air.',
       'The aggression read as panic, not power.',
-      'She tried to dominate and ended up diminishing herself.'
+      'She tried to dominate and ended up diminishing herself.',
+      'She tried to overshadow and ended up underperforming.',
+      'The attempt to steal focus was so obvious that the judges looked away.',
+      'She reached for the spotlight and the spotlight moved.',
+      'The overshadowing was so transparent that it became a joke.',
+      'She tried to make her opponent disappear and instead made herself look small.',
+      'The aggression was so misplaced that it helped her opponent.',
+      'She reached for dominance and found only desperation.',
+      'The overshadowing backfired so hard that she overshadowed herself.',
+      'She tried to steal the show and ended up stealing nothing.',
+      'The attempt to control the narrative was so clumsy it became background noise.',
+      'She tried to erase her opponent and erased her own credibility.',
+      'The overshadowing was so obvious that even the crew noticed.',
+      'She attempted to dominate and the judges noticed her lack of control.',
+      'The tactic was so transparent that it earned pity instead of respect.',
+      'She reached for power and found only emptiness.'
     ],
     partial: [
       'She pulled focus in flashes, but the tactic kept distracting from her own lip sync.',
@@ -497,14 +792,34 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She dominated the camera, the judges, and the rhythm without looking messy.',
       'The overshadowing was so surgical that her opponent seemed to disappear.',
       'She controlled the narrative completely and left her opponent scrambling.',
-      'The performance became a one-person show, and her opponent was just a prop.'
+      'The performance became a one-person show, and her opponent was just a prop.',
+      'She made her opponent look invisible without looking desperate.',
+      'The overshadowing was so complete that the duel felt uneven.',
+      'She controlled every camera, every beat, every moment.',
+      'The performance was so dominant that her opponent gave up trying.',
+      'She took the spotlight and never shared it.',
+      'The overshadowing was so smooth that it looked natural.',
+      'She made the duel a solo performance.',
+      'The control was so absolute that her opponent faded into the background.',
+      'She dominated the stage so completely that her opponent became a footnote.',
+      'The overshadowing was so effective that the judges forgot about the other queen.'
     ],
     legendary: [
       'She turned a duel into a takeover. Her opponent vanished in real time.',
       'It was brutal, magnetic, and unforgettable — a complete spotlight robbery.',
       'She ate her opponent alive on that stage. The judges couldn\'t look away.',
       'The overshadowing was so complete that the duel felt over in the first 30 seconds.',
-      'She committed a performance murder and got away with it. Legendary.'
+      'She committed a performance murder and got away with it. Legendary.',
+      'She devoured her opponent so completely that the stage felt empty when she left.',
+      'The overshadowing was so devastating that her opponent became a ghost.',
+      'She took the spotlight and turned it into a laser that burned through everything.',
+      'The performance was so dominant that it became a demonstration.',
+      'She made her opponent irrelevant in the most spectacular way possible.',
+      'The overshadowing was so complete that the judges called the duel early.',
+      'She turned a competition into a coronation.',
+      'The performance was so commanding that her opponent just gave up.',
+      'She performed with such force that her opponent disappeared on stage.',
+      'The overshadowing was so legendary that it became part of the show\'s history.'
     ]
   }
 };
