@@ -2489,3 +2489,18 @@ button.option:active,
   gap:4px;
   font-weight:850;
 }
+
+
+/* Episode team markers: temporary visual grouping for duos and team challenges */
+.team-name-marker{display:inline-flex;align-items:center;justify-content:center;margin-right:.35rem;font-size:.95em;vertical-align:baseline;filter:drop-shadow(0 1px 2px rgba(32,21,29,.18));}
+.queen-portrait.team-ring{border:3px solid currentColor;box-shadow:0 0 0 3px #fff,0 0 0 6px currentColor,0 10px 22px rgba(32,21,29,.18)!important;}
+.team-ring-0,.team-marker-0,.team-line-0{color:#d72f86!important;}
+.team-ring-1,.team-marker-1,.team-line-1{color:#6f4cff!important;}
+.team-ring-2,.team-marker-2,.team-line-2{color:#0891b2!important;}
+.team-ring-3,.team-marker-3,.team-line-3{color:#f97316!important;}
+.team-ring-4,.team-marker-4,.team-line-4{color:#16a34a!important;}
+.team-ring-5,.team-marker-5,.team-line-5{color:#9333ea!important;}
+.team-ring-6,.team-marker-6,.team-line-6{color:#dc2626!important;}
+.team-ring-7,.team-marker-7,.team-line-7{color:#ca8a04!important;}
+.episode-team-list{display:grid;gap:8px;padding-left:0;list-style:none;}
+.episode-team-line{border:1px solid currentColor;border-radius:14px;padding:9px 11px;background:color-mix(in srgb,currentColor 9%,#fff);}
