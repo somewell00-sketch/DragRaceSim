@@ -14,7 +14,8 @@ window.GAME_DATA.challenges = [
       "acting": 0.2,
       "runway": 0.1,
       "makeup": 0.1
-    }
+    },
+    "uniqueSeason": true
   },
   {
     "id": "acting",
@@ -95,7 +96,8 @@ window.GAME_DATA.challenges = [
       "acting": 0.3,
       "runway": 0.15,
       "makeup": 0.1
-    }
+    },
+    "uniqueSeason": true
   },
   {
     "id": "interview",
@@ -125,7 +127,8 @@ window.GAME_DATA.challenges = [
       "lipSync": 0.3,
       "runway": 0.2,
       "cunt": 0.1
-    }
+    },
+    "uniqueSeason": true
   },
   {
     "id": "snatchgame",
@@ -136,7 +139,8 @@ window.GAME_DATA.challenges = [
       "cunt": 0.4,
       "runway": 0.1,
       "makeup": 0.05
-    }
+    },
+    "uniqueSeason": true
   },
   {
     "id": "roast",
@@ -146,7 +150,8 @@ window.GAME_DATA.challenges = [
       "cunt": 0.55,
       "acting": 0.35,
       "runway": 0.1
-    }
+    },
+    "uniqueSeason": true
   },
   {
     "id": "makeover",
@@ -157,6 +162,42 @@ window.GAME_DATA.challenges = [
       "runway": 0.3,
       "sewing": 0.2,
       "cunt": 0.1
-    }
+    },
+    "uniqueSeason": true
+  },
+  {
+    "id": "rumix",
+    "name": "Rumix",
+    "structures": [
+      "solo"
+    ],
+    "runwayWeight": 0.25,
+    "minQueens": 4,
+    "maxQueens": 5,
+    "weights": {
+      "lipSync": 0.4,
+      "cunt": 0.25,
+      "acting": 0.15,
+      "runway": 0.15,
+      "makeup": 0.05
+    },
+    "uniqueSeason": true
+  },
+  {
+    "id": "political_debate",
+    "name": "Political Debate",
+    "structures": [
+      "solo"
+    ],
+    "runwayWeight": 0.15,
+    "maxQueens": 8,
+    "weights": {
+      "cunt": 0.45,
+      "acting": 0.35,
+      "runway": 0.1,
+      "makeup": 0.1
+    },
+    "uniqueSeason": true
+
   }
 ];

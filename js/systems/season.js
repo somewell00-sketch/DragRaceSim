@@ -56,7 +56,7 @@ function pickFinaleSize(castSize){
 function startSeason(playerQueen, castSize='random'){const data=gameState.data; resetState(); gameState.data=data; const allowedCastSizes=[8,9,10,11,12,13,14,15,16]; const resolvedCastSize=String(castSize)==='random'?sample(allowedCastSizes):Math.max(8,Math.min(16,Number(castSize||14))); gameState.settings.castSize=resolvedCastSize; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
-  if(['rusical','girlgroup','musical'].includes(key)||key.includes('rusical')||key.includes('musical'))return 'performance';
+  if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';
   if(['acting','improv'].includes(key))return 'acting';
   if(['comedy','roast','snatchgame','snatch game'].includes(key))return 'comedy';
   if(['branding','advertisement','commercial'].includes(key))return 'branding';
@@ -90,6 +90,17 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
   return best;
 }
 function alreadyUsedChallenge(id){return gameState.episodeHistory.some(ep=>ep.challengeType===id);}
+function isUniqueSeasonChallenge(challengeOrId){
+  const challenge=typeof challengeOrId==='object'?challengeOrId:(gameState.data.challenges||[]).find(c=>c.id===challengeOrId);
+  const id=String(challenge?.id||challengeOrId||'').toLowerCase();
+  const name=String(challenge?.name||'').toLowerCase();
+  if(challenge?.uniqueSeason)return true;
+  // These are special-format challenges: maximum once per season, except when a double premiere repeats
+  // the same selected challenge for both premiere groups. Ball is intentionally not included.
+  return [
+    'talent','snatchgame','makeover','roast','rusical','branding','rumix','political','debate'
+  ].some(key=>id.includes(key)||name.includes(key));
+}
 function requiredChallengeForActiveCount(activeCount){
   const planned=gameState.season?.challengePlan?.[activeCount];
   if(planned && !alreadyUsedChallenge(planned))return planned;
@@ -102,33 +113,40 @@ function pickChallengeByRules(activeCount){
     const required=challenges.find(c=>c.id===requiredId);
     if(required)return required;
   }
-  const unique=['rusical','snatchgame','makeover','roast'];
   const last=gameState.episodeHistory[gameState.episodeHistory.length-1];
   const lastFamily=challengeFamily(last?.challengeType||last?.challengeName);
   let available=challenges.filter(c=>{
-    if(unique.includes(c.id)&&alreadyUsedChallenge(c.id))return false;
+    if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
+    if(c.minQueens && activeCount<c.minQueens)return false;
+    if(c.maxQueens && activeCount>c.maxQueens)return false;
     if(c.id==='rusical'&&activeCount>10)return false;
     if(c.id==='snatchgame'&&!(activeCount<=10&&activeCount>=7))return false;
     if(c.id==='makeover'&&!(activeCount<=6&&activeCount>=5))return false;
     if(c.id==='roast'&&activeCount>7)return false;
+    if(c.id==='political_debate'&&activeCount>8)return false;
     if(last && (c.id===last.challengeType || challengeFamily(c.id)===lastFamily))return false;
     return true;
   });
   if(!available.length){
     available=challenges.filter(c=>{
-      if(unique.includes(c.id)&&alreadyUsedChallenge(c.id))return false;
+      if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
+      if(c.minQueens && activeCount<c.minQueens)return false;
+      if(c.maxQueens && activeCount>c.maxQueens)return false;
       if(c.id==='rusical'&&activeCount>10)return false;
       if(c.id==='snatchgame'&&!(activeCount<=10&&activeCount>=7))return false;
       if(c.id==='makeover'&&!(activeCount<=6&&activeCount>=5))return false;
       if(c.id==='roast'&&activeCount>7)return false;
+      if(c.id==='political_debate'&&activeCount>8)return false;
       return true;
     });
   }
-  return sample(available.length?available:challenges);
+  if(available.length)return sample(available);
+  const repeatable=challenges.filter(c=>!isUniqueSeasonChallenge(c));
+  return sample(repeatable.length?repeatable:challenges);
 }
 
 function challengeStructures(challengeId, activeCount){
-  const solo=['talent','design','ball','comedy','roast','snatchgame','interview'];
+  const solo=['talent','design','ball','comedy','roast','snatchgame','interview','rumix','political_debate'];
   if(solo.includes(challengeId)) return [{id:'solo',label:'Solo challenge'}];
   const list=[{id:'solo',label:'Solo challenge'}];
   if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
@@ -284,6 +302,24 @@ function pickChallengeContent(challengeId){
   if(challengeId==='rusical'){
     const rusical=sample(data.rusicals||['The Rusical']);
     return {rusical, challengeTitle:rusical, challengePrompt:'Learn the role, sell the lyrics, and survive the choreography.', mainTheme:rusical};
+  }
+  if(challengeId==='rumix'){
+    const rumix=sample(data.rumixes||['Finale Rumix']);
+    return {
+      rumix,
+      challengeTitle:'Rumix',
+      challengePrompt:`Write, record, and perform an original verse for ${rumix}. This is about star power, lyrics, movement, and selling the final stretch of the season.`,
+      mainTheme:rumix
+    };
+  }
+  if(challengeId==='political_debate'){
+    const debate=sample(data.politicalDebates||['a campaign debate']);
+    return {
+      debate,
+      challengeTitle:'Political Debate',
+      challengePrompt:`Campaign, debate, and sell your platform in ${debate}. Be persuasive, funny, and impossible to ignore.`,
+      mainTheme:debate
+    };
   }
   if(challengeId==='acting'){
     const script=sample(data.actingScripts||['a sketch']);
