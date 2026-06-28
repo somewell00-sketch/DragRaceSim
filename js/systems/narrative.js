@@ -458,7 +458,7 @@ function ruNarrativeComment(q, placement){
         'When performance is involved, you know how to wake up.',
         'You command the stage like a true professional.',
         'Your presence is magnetic and undeniable.',
-        'You have the performer's instinct to read a room.',
+        "You have the performer\'s instinct to read a room.",
         'Every movement you make is intentional and powerful.',
         'You understand the assignment and then some.',
         'Your performance ability sets you apart.',

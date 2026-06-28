@@ -109,7 +109,24 @@ function renderQueenCreator(){
  document.querySelector('#qPersonality').addEventListener('change',updateCreatorPreview);
  document.querySelector('#qName').addEventListener('input',updateCreatorPreview);
  document.querySelectorAll('[data-attr]').forEach(input=>input.addEventListener('input',(e)=>updateTotal(e.target)));
- document.querySelector('#startSeason').addEventListener('click',()=>{const attributes={}; document.querySelectorAll('[data-attr]').forEach(i=>attributes[i.dataset.attr]=Number(i.value)); const total=Object.values(attributes).reduce((a,b)=>a+b,0); if(total>45){alert('Your attribute total cannot go above 45 points.'); return;} const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes}); startSeason(queen, document.querySelector('#castSize').value); renderEntrance();});
+ document.querySelector('#startSeason').addEventListener('click',async()=>{
+   const startBtn=document.querySelector('#startSeason');
+   const attributes={};
+   document.querySelectorAll('[data-attr]').forEach(i=>attributes[i.dataset.attr]=Number(i.value));
+   const total=Object.values(attributes).reduce((a,b)=>a+b,0);
+   if(total>45){alert('Your attribute total cannot go above 45 points.'); return;}
+   try{
+     if(startBtn){startBtn.disabled=true; startBtn.textContent='Preparing cast...';}
+     if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
+     const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes});
+     startSeason(queen, document.querySelector('#castSize').value);
+     renderEntrance();
+   }catch(err){
+     console.error(err);
+     alert('Could not start the season. Check the browser console for details.');
+     if(startBtn){startBtn.disabled=false; startBtn.textContent='👑 Start Season 👑';}
+   }
+ });
  document.querySelector('#continueSave').addEventListener('click',()=>{if(loadGame())routeAfterLoad();else alert('No save found.');});
  document.querySelector('#clearSave').addEventListener('click',()=>{clearSave(); alert('Save deleted.');});
  updateCreatorPreview();

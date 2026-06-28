@@ -1,3 +1,11 @@
+const APP_ROOT_ID='app';
+let APP_ROOT_CACHE=null;
+const LOADED_SCRIPT_CACHE={};
+
+function appRoot(){
+  if(!APP_ROOT_CACHE)APP_ROOT_CACHE=document.getElementById(APP_ROOT_ID);
+  return APP_ROOT_CACHE;
+}
 function scrollToTop(){
   requestAnimationFrame(()=>{
     window.scrollTo({top:0,left:0,behavior:'auto'});
@@ -6,8 +14,12 @@ function scrollToTop(){
   });
 }
 function setHTML(html){
+  const root=appRoot();
+  if(!root)return;
   const preserveY = (typeof window !== 'undefined' && typeof window.__preserveScrollY === 'number') ? window.__preserveScrollY : null;
-  document.querySelector('#app').innerHTML=html;
+  const template=document.createElement('template');
+  template.innerHTML=html;
+  root.replaceChildren(template.content);
   if(preserveY !== null){
     window.__preserveScrollY = null;
     requestAnimationFrame(()=>{
@@ -17,6 +29,28 @@ function setHTML(html){
     });
   }else{
     scrollToTop();
+  }
+}
+function loadScriptOnce(src){
+  if(LOADED_SCRIPT_CACHE[src])return LOADED_SCRIPT_CACHE[src];
+  LOADED_SCRIPT_CACHE[src]=new Promise((resolve,reject)=>{
+    if(document.querySelector(`script[src="${src}"]`)){resolve();return;}
+    const script=document.createElement('script');
+    script.src=src;
+    script.async=false;
+    script.onload=()=>resolve();
+    script.onerror=()=>reject(new Error(`Could not load ${src}`));
+    document.head.appendChild(script);
+  });
+  return LOADED_SCRIPT_CACHE[src];
+}
+async function ensureNamePartsLoaded(){
+  if(gameState?.data?.nameParts?.firstNames?.length)return;
+  try{
+    await loadScriptOnce('js/data/nameParts.js');
+    if(window.GAME_DATA?.nameParts)gameState.data.nameParts=window.GAME_DATA.nameParts;
+  }catch(err){
+    console.warn(err);
   }
 }
 

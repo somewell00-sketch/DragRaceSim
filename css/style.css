@@ -2361,3 +2361,51 @@ button.option:active,
  z-index:10!important;
  pointer-events:none!important;
 }
+
+
+/* v30.16 smooth online load: cheaper paints and less UI flicker */
+#app{min-height:100vh;}
+.perf-mode .card,
+.perf-mode .hero,
+.perf-mode .queen-item,
+.perf-mode .home-step-card,
+.perf-mode .home-queen-panel,
+.perf-mode .home-attributes-panel{
+  content-visibility:auto;
+  contain-intrinsic-size:1px 220px;
+}
+.perf-mode button,
+.perf-mode button.option,
+.perf-mode .card.decision-card .option,
+.perf-mode .home-stage *,
+.perf-mode .sidebar *{
+  transition-duration:.08s!important;
+  animation:none!important;
+}
+.perf-mode .card,
+.perf-mode .hero,
+.perf-mode .queen-item.front-runner-card,
+.perf-mode .home-stage .card,
+.perf-mode .home-step-card,
+.perf-mode .home-queen-panel,
+.perf-mode .home-attributes-panel{
+  box-shadow:0 8px 20px rgba(74,20,48,.10)!important;
+}
+.perf-mode .home-stage .home-step-card,
+.perf-mode .home-stage .home-queen-panel,
+.perf-mode .home-stage .home-attributes-panel,
+.perf-mode .home-step-card,
+.perf-mode .home-queen-panel{
+  backdrop-filter:none!important;
+  -webkit-backdrop-filter:none!important;
+}
+.perf-mode button:hover,
+.perf-mode button.option:hover,
+.perf-mode .card.decision-card .option:hover,
+.perf-mode .home-start-panel button:hover{
+  transform:none!important;
+  letter-spacing:inherit!important;
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}
+}
