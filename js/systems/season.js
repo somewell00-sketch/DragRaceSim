@@ -517,7 +517,20 @@ function generateEpisode(){
 }
 function isFinaleReady(){return gameState.queens.filter(q=>!q.isEliminated).length<=gameState.season.finaleSize;}
 
-function trackRecordScore(q){return (q.statistics.wins||0)*12+(q.statistics.highs||0)*5+(q.statistics.safes||0)*1-(q.statistics.lows||0)*2-(q.statistics.bottoms||0)*5+(q.momentum||0)*2;}
+function trackRecordScore(q){
+  // Finale history should respect wins first. Highs support a record, but should not outrank a much stronger winner.
+  const st=q.statistics||{};
+  return (st.wins||0)*100+(st.highs||0)*12+(st.safes||0)*2-(st.lows||0)*6-(st.bottoms||0)*10+(q.momentum||0)*2;
+}
+function compareFinaleTrackRecord(a,b){
+  const sa=a.statistics||{}, sb=b.statistics||{};
+  return (sb.wins||0)-(sa.wins||0)
+    || trackRecordScore(b)-trackRecordScore(a)
+    || (sb.highs||0)-(sa.highs||0)
+    || (sa.bottoms||0)-(sb.bottoms||0)
+    || (sb.safes||0)-(sa.safes||0)
+    || String(a.name||'').localeCompare(String(b.name||''));
+}
 function publicFinaleScore(q){return (q.publicScores?.fans||0)+(q.publicScores?.production||0);}
 function finalLipPerformance(q, song){
   const finalSong=song || sample(gameState.data?.songs||[]) || {title:'Finale Anthem',artist:'Drag Race Orchestra',energy:'high'};
@@ -636,7 +649,7 @@ function prepareFinale(){
   const format=finalists.length>=4?sample(['top4_chosen','top4_lsfyc']):'top3_cut';
   const finale={format,finalistIds:finalists.map(q=>q.id),events:[],duels:[],finalDuel:null,winnerId:null,runnerUpIds:[],finalistOnlyIds:[],thirdFourthIds:[]};
   if(format==='top4_chosen'){
-    const byHistory=[...finalists].sort((a,b)=>trackRecordScore(b)-trackRecordScore(a));
+    const byHistory=[...finalists].sort(compareFinaleTrackRecord);
     const byPublic=[...finalists].sort((a,b)=>publicFinaleScore(b)-publicFinaleScore(a));
     const a=byHistory[0]; let b=byPublic.find(q=>q.id!==a.id)||byHistory[1];
     finale.events.push(`${a.name} is called forward for the strongest track record.`);
@@ -658,7 +671,7 @@ function prepareFinale(){
     finale.runnerUpIds=[finale.finalDuel.loserId];
     finale.finalistOnlyIds=[...finale.thirdFourthIds];
   } else {
-    const ranked=[...finalists].sort((a,b)=>trackRecordScore(b)-trackRecordScore(a));
+    const ranked=[...finalists].sort(compareFinaleTrackRecord);
     const cut=ranked[ranked.length-1];
     const top2=ranked.slice(0,2);
     finale.events.push(`<h2>${cut.name}</h2><p>I'm sorry, my dear, but this is not your time.</p>`);
