@@ -98,7 +98,7 @@ function renderQueenCreator(){
             <span class="creator-portrait-crown">👑</span>
           </div>
           <div class="creator-fields">
-            <label class="home-field home-name-field"><span>Drag name</span><div class="creator-name-row"><input id="qName" value="Your Queen"><button id="rerollQueenName" class="creator-dice-btn" type="button" title="Random name" aria-label="Random name">🎲</button></div></label>
+            <label class="home-field home-name-field"><span>Drag name</span><div class="creator-name-row"><input id="qName" value="Your Queen"> <button id="rerollQueenName" class="creator-dice-btn" type="button" title="Random name" aria-label="Random name">🎲</button></div></label>
             <div class="creator-select-row">
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
               <label class="home-field">Personality<select id="qPersonality">${personalityOptions}</select></label>
