@@ -1,53 +1,92 @@
-// v31 — Narrative Expansion
+// v32 — Narrative Expansion (Enhanced Judge Comments)
 // This file keeps the expanded narrative text banks active when the game is opened directly from index.html.
 // Edit this file for runway narration, judge comments, lipsync narration, social sparks, finale text and other narrative banks.
 (function(){
   const expansion = {
   "runwayDescriptions": {
     "legendary": [
-      "turned the runway into a coronation rehearsal.",
-      "made the category feel richer than it had any right to be.",
-      "gave a look the judges will still be referencing next season.",
-      "walked out and made the lighting department look expensive.",
-      "served a complete fashion sentence with punctuation.",
-      "made every step feel like a magazine cover."
+      "Turned the runway into a coronation rehearsal.",
+      "Made the category feel richer than it had any right to be.",
+      "Gave a look the judges will still be referencing next season.",
+      "Walked out and made the lighting department look expensive.",
+      "Served a complete fashion sentence with punctuation.",
+      "Made every step feel like a magazine cover.",
+      "Elevated the category to art form.",
+      "Left the judges speechless in the best way.",
+      "Created a visual moment that will be remembered.",
+      "Walked with the confidence of someone who knows they look incredible.",
+      "Turned a simple concept into something extraordinary.",
+      "Made the other queens rethink their choices."
     ],
     "great": [
-      "sold the fantasy and kept the styling sharp.",
-      "understood the assignment and added personality.",
-      "looked polished, intentional, and fully present.",
-      "gave the category a clean point of view.",
-      "made a strong visual case for herself.",
-      "brought taste without losing drag."
+      "Sold the fantasy and kept the styling sharp.",
+      "Understood the assignment and added personality.",
+      "Looked polished, intentional, and fully present.",
+      "Gave the category a clean point of view.",
+      "Made a strong visual case for herself.",
+      "Brought taste without losing drag.",
+      "Delivered a look that was both smart and beautiful.",
+      "Executed the concept with precision and flair.",
+      "Showed growth and evolution in her style.",
+      "Balanced drama and elegance perfectly.",
+      "Made a statement without screaming for attention.",
+      "Proved she understands fashion as storytelling."
     ],
     "safe": [
-      "looked good without creating a true moment.",
-      "kept it clean, but not unforgettable.",
-      "gave a pleasant version of the category.",
-      "crossed the runway without causing a crime or a crown.",
-      "did enough to stay in the conversation.",
-      "served solid, if not spectacular."
+      "Looked good without creating a true moment.",
+      "Kept it clean, but not unforgettable.",
+      "Gave a pleasant version of the category.",
+      "Crossed the runway without causing a crime or a crown.",
+      "Did enough to stay in the conversation.",
+      "Served solid, if not spectacular.",
+      "Was fine, but fine is forgettable in this room.",
+      "Met expectations without exceeding them.",
+      "Looked comfortable, but not commanding.",
+      "Did the assignment without adding extra credit.",
+      "Was pleasant but lacked a point of view.",
+      "Looked good, but good is the minimum here."
     ],
     "mixed": [
-      "had a strong idea, but the edit needed tightening.",
-      "brought pieces of a moment, not the full fantasy.",
-      "looked interesting, but not fully resolved.",
-      "made the judges look twice, then wonder why.",
-      "had charm, but the silhouette needed a stronger choice."
+      "Had a strong idea, but the edit needed tightening.",
+      "Brought pieces of a moment, not the full fantasy.",
+      "Looked interesting, but not fully resolved.",
+      "Made the judges look twice, then wonder why.",
+      "Had charm, but the silhouette needed a stronger choice.",
+      "Was ambitious but execution fell short.",
+      "Had a concept that got lost in translation.",
+      "Showed potential but lacked follow-through.",
+      "Was almost there, but almost doesn't count.",
+      "Had great elements that didn't quite come together.",
+      "Was brave in concept but timid in execution.",
+      "Made bold choices that didn't fully pay off."
     ],
     "weak": [
-      "let the category get bigger than the look.",
-      "needed more polish before hitting the main stage.",
-      "had presence, but the outfit was doing side quests.",
-      "gave concept without enough finish.",
-      "needed a clearer fashion decision."
+      "Let the category get bigger than the look.",
+      "Needed more polish before hitting the main stage.",
+      "Had presence, but the outfit was doing side quests.",
+      "Gave concept without enough finish.",
+      "Needed a clearer fashion decision.",
+      "Looked unfinished and rushed.",
+      "The idea was there but the execution was not.",
+      "Showed a lack of preparation or care.",
+      "The category seemed to confuse more than inspire.",
+      "Was underwhelming compared to the competition.",
+      "Felt like a first draft, not a final look.",
+      "Missed the mark completely tonight."
     ],
     "flop": [
-      "missed the category and the emotional support hem.",
-      "looked like the fantasy left in an Uber.",
-      "made the runway feel longer than it was.",
-      "served emergency sewing with confidence.",
-      "needed a rescue mission and a steamer."
+      "Missed the category and the emotional support hem.",
+      "Looked like the fantasy left in an Uber.",
+      "Made the runway feel longer than it was.",
+      "Served emergency sewing with confidence.",
+      "Needed a rescue mission and a steamer.",
+      "Was a disaster from head to toe.",
+      "Made questionable choices that backfired.",
+      "The look was a mess and the confidence made it worse.",
+      "Was the wrong answer to every question asked.",
+      "Looked like she got dressed in the dark.",
+      "The category was lost on her entirely.",
+      "This is what happens when you don't plan ahead."
     ]
   },
   "judgeComments": {
@@ -56,19 +95,67 @@
         "The work is focused, intentional, and very you.",
         "I can see the preparation in every choice.",
         "This is the kind of polish we have been asking for.",
-        "You came in with a point of view and stayed with it."
+        "You came in with a point of view and stayed with it.",
+        "You are showing us who you are and it's working.",
+        "The growth from week one is remarkable.",
+        "You are becoming the queen we knew you could be.",
+        "Every detail was considered and it paid off.",
+        "You took a risk and it landed perfectly.",
+        "This is the standard everyone should be aiming for.",
+        "You are proving that you belong in the top tier.",
+        "Your attention to detail is extraordinary.",
+        "You made it look effortless, which means you worked hard.",
+        "This is exactly what I wanted to see from you.",
+        "You have found your rhythm and it's beautiful.",
+        "You keep raising the bar for yourself.",
+        "Your confidence is growing and it shows.",
+        "This was a masterclass in execution.",
+        "You are becoming unstoppable.",
+        "You have earned your place among the best."
       ],
       "safe": [
         "Nothing here is wrong, but I want a stronger signature.",
         "You are giving us clean work. Now give us a moment.",
         "It is competent, but I need more nerve.",
-        "You are close; now stop editing yourself so much."
+        "You are close; now stop editing yourself so much.",
+        "You played it safe and it shows.",
+        "I want to see the queen behind the performance.",
+        "You are hiding behind 'good' when you could be great.",
+        "The talent is there, but the risk is missing.",
+        "You are doing enough to stay, but not enough to win.",
+        "I need to see more of your personality.",
+        "You are blending in when you should be standing out.",
+        "Safe is not a strategy for the crown.",
+        "You are capable of so much more than this.",
+        "I want to see your edge, not your comfort zone.",
+        "You are letting fear hold you back.",
+        "This was fine, but fine doesn't win.",
+        "You need to take more chances.",
+        "You are playing it too safe for this competition.",
+        "I want to see the fire that got you here.",
+        "Good is the enemy of great."
       ],
       "negative": [
         "I know you can do more than what you gave tonight.",
         "The idea was there, but the execution did not support it.",
         "You needed one clear choice and you gave us three half-choices.",
-        "The polish is not matching your ambition yet."
+        "The polish is not matching your ambition yet.",
+        "You are not living up to your potential.",
+        "This was a step backward for you.",
+        "I am disappointed because I know what you are capable of.",
+        "You are getting in your own way.",
+        "The excuses are louder than the effort.",
+        "You are not taking this seriously enough.",
+        "This was below the standard you set for yourself.",
+        "You need to wake up before it's too late.",
+        "I see the talent, but I don't see the drive.",
+        "You are coasting and it's becoming obvious.",
+        "The cracks are starting to show.",
+        "You are not listening to the feedback.",
+        "This is not the queen I thought you were.",
+        "You are running out of chances.",
+        "The competition is passing you by.",
+        "You need to dig deeper."
       ]
     },
     "ross": {
@@ -76,17 +163,67 @@
         "You made it fun without losing control.",
         "I was smiling because you knew exactly what you were doing.",
         "That had rhythm, charm, and a real sense of play.",
-        "You brought the room into your world."
+        "You brought the room into your world.",
+        "Your comedic timing is getting sharper every week.",
+        "You made me laugh and that's not easy to do.",
+        "You understand the assignment on a deeper level.",
+        "Your delivery was pitch-perfect.",
+        "You are finding your voice and it's entertaining.",
+        "You have a natural charisma that draws people in.",
+        "You made it look easy, which means it wasn't.",
+        "Your instincts are getting better and better.",
+        "You are becoming a real threat in this competition.",
+        "You know how to read a room.",
+        "Your confidence is infectious.",
+        "You are proving that you are more than just a look.",
+        "You have the kind of charm that can't be taught.",
+        "You are growing into a complete performer.",
+        "Your energy is exactly what this show needs.",
+        "You are becoming one to watch."
       ],
       "safe": [
         "I enjoyed parts of it, but I wanted one more surprise.",
         "It was nice. I just want it to become delicious.",
-        "You kept us with you, but you did not take us anywhere unexpected."
+        "You kept us with you, but you did not take us anywhere unexpected.",
+        "You are funny, but you are holding back.",
+        "I want to see you go all the way.",
+        "You are playing it too safe for comedy.",
+        "You have the talent, now trust it.",
+        "I need more commitment from you.",
+        "You are on the right track, but you need to push harder.",
+        "You are being funny, but you could be hilarious.",
+        "I want to see your unique perspective.",
+        "You are hiding behind the material.",
+        "Your timing is off tonight.",
+        "You need to find your rhythm.",
+        "You are capable of more than this.",
+        "The jokes are there, but the delivery needs work.",
+        "You are not fully committing to the bit.",
+        "I want to see the real you.",
+        "You are playing to the room instead of your strengths.",
+        "You need to take more risks with your comedy."
       ],
       "negative": [
         "I wanted to laugh with you more than I did.",
         "The room was ready to go there, but you never fully invited us in.",
-        "The timing kept getting in your way."
+        "The timing kept getting in your way.",
+        "You missed the mark tonight.",
+        "Your comedy fell flat.",
+        "You are trying too hard and it shows.",
+        "You are not trusting your instincts.",
+        "The delivery was forced and unnatural.",
+        "You are thinking too much.",
+        "The jokes were there but the confidence wasn't.",
+        "You need to relax into your performance.",
+        "You are overthinking every moment.",
+        "Your timing was off all night.",
+        "You lost the room early on.",
+        "You need to find your comedic voice.",
+        "This was a step down from your previous work.",
+        "You are not connecting with the audience.",
+        "Your energy is off.",
+        "You are not reading the room well.",
+        "You need to reassess your approach."
       ]
     },
     "carson": {
@@ -94,17 +231,67 @@
         "The styling is doing exactly what it needs to do.",
         "The silhouette is clear and the details are considered.",
         "You look expensive, and more importantly, intentional.",
-        "This is a polished presentation from head to toe."
+        "This is a polished presentation from head to toe.",
+        "Your fashion sense is becoming iconic.",
+        "You understand the power of a strong silhouette.",
+        "Your attention to detail is remarkable.",
+        "You are defining your aesthetic beautifully.",
+        "This is how you make a statement on the runway.",
+        "You are pushing the boundaries of fashion.",
+        "Your styling choices are smart and impactful.",
+        "You look like you belong in a fashion magazine.",
+        "Your taste level is exceptional.",
+        "You are becoming a fashion force.",
+        "This is exactly how you dominate a category.",
+        "Your fashion IQ is off the charts.",
+        "You are elevating the entire competition.",
+        "Your choices are bold and successful.",
+        "You have a natural eye for style.",
+        "You are setting trends."
       ],
       "safe": [
         "The look is pretty, but pretty is not always enough.",
         "I wanted one more visual surprise.",
-        "The styling is clean, but the story is a little quiet."
+        "The styling is clean, but the story is a little quiet.",
+        "You look good, but I want to see great.",
+        "Your fashion choices are safe.",
+        "You are playing it too safe with your looks.",
+        "I want to see more risk-taking.",
+        "Your style is becoming predictable.",
+        "You need to step it up on the runway.",
+        "You are not standing out in the way you could.",
+        "Your looks are consistent but not exciting.",
+        "I want to see more personality in your styling.",
+        "You are blending in with the crowd.",
+        "Your fashion is fine, but it's not memorable.",
+        "You need to make bolder choices.",
+        "You are coasting on your looks.",
+        "I want to see evolution in your style.",
+        "You are capable of more on the runway.",
+        "Your fashion is good but not great.",
+        "You need to find your fashion voice."
       ],
       "negative": [
         "The proportions are fighting you.",
         "The look needed editing before it reached the runway.",
-        "The pieces are not speaking the same language."
+        "The pieces are not speaking the same language.",
+        "Your fashion choices are confused.",
+        "The silhouette is working against you.",
+        "You are not understanding the category.",
+        "Your styling is a mess.",
+        "The details are wrong.",
+        "You are not dressing for your body.",
+        "The look is doing too much.",
+        "You need to simplify.",
+        "Your fashion sense is questionable.",
+        "The execution is sloppy.",
+        "You are not thinking about the full picture.",
+        "Your look is disjointed.",
+        "The styling is fighting the outfit.",
+        "You are not putting the work in.",
+        "Your fashion choices are holding you back.",
+        "You need to reconsider everything.",
+        "This is not working on any level."
       ]
     },
     "guest": {
@@ -112,195 +299,728 @@
         "I do not know if it was perfect, but I loved watching it.",
         "Something about you is very easy to root for.",
         "You gave me a moment I will remember.",
-        "I was charmed, even when it got a little messy."
+        "I was charmed, even when it got a little messy.",
+        "You have star quality.",
+        "I was captivated from start to finish.",
+        "Your presence is undeniable.",
+        "You made a fan out of me tonight.",
+        "I will remember this performance for a long time.",
+        "You have something special.",
+        "I was completely invested in what you were doing.",
+        "You have a natural magnetism.",
+        "I could not take my eyes off you.",
+        "You are a true performer.",
+        "Your charisma is off the charts.",
+        "I loved every moment of that.",
+        "You are a star in the making.",
+        "Your energy is infectious.",
+        "You made me feel something.",
+        "You are unforgettable."
       ],
       "mixed": [
         "I liked the idea more than the full execution.",
         "There was something there, and I wanted it pushed further.",
-        "I was rooting for it, but it needed one more spark."
+        "I was rooting for it, but it needed one more spark.",
+        "I see the potential, but I'm not seeing it fully realized.",
+        "You are almost there, but not quite.",
+        "The concept was strong, but the execution was lacking.",
+        "I wanted to love it more than I did.",
+        "You have good instincts, trust them.",
+        "I'm intrigued but not convinced.",
+        "You are on the right track, keep going.",
+        "There are good elements, but they need to come together.",
+        "I see what you were going for, but it didn't land.",
+        "You are close, but close doesn't cut it.",
+        "I wanted more from you.",
+        "Your potential is obvious, but not yet realized.",
+        "You have the ingredients, but the recipe needs work.",
+        "I'm rooting for you, but you need to step up.",
+        "The pieces are there, but they need to be assembled.",
+        "You are developing, but not there yet.",
+        "I see growth, but I want to see more."
       ],
       "negative": [
         "I could see your heart, but the moment did not fully arrive.",
         "I wanted your confidence to match the idea.",
-        "I do not think this showed your full potential."
+        "I do not think this showed your full potential.",
+        "You fell short of what you're capable of.",
+        "I was underwhelmed tonight.",
+        "You need to do more.",
+        "This wasn't enough.",
+        "I expected more from you.",
+        "You missed the mark.",
+        "You are not living up to your potential.",
+        "I was disappointed.",
+        "You need to work harder.",
+        "This was not your best.",
+        "You are capable of better.",
+        "I wanted to see more fight.",
+        "You gave up too soon.",
+        "Your confidence is not matching your performance.",
+        "You need to believe in yourself more.",
+        "You are holding back.",
+        "You need to push through the fear."
       ]
     }
   },
   "rupaulComments": {
-    "front-runner": [
-      "You reminded everyone why you are one of the queens to beat.",
-      "When you set the bar high, we hold you to it.",
-      "Week after week, you keep shaping this competition."
-    ],
-    "competitive threat": [
-      "Every queen in this room knows you are dangerous.",
-      "You are still very much in this race.",
-      "The crown has had its eye on you for a while."
-    ],
-    "lip sync assassin": [
-      "When the music starts, something in you wakes up.",
-      "You have shown us that you know how to fight.",
-      "No one should feel comfortable facing you on that stage."
-    ],
-    "fan favorite": [
-      "There is something about you people want to root for.",
-      "The audience connects with you, and I can see why.",
-      "You have a warmth that reaches past the runway."
-    ],
-    "villain edit": [
-      "Whether people agree with you or not, they cannot stop watching you.",
-      "You always make us feel something.",
-      "You understand that television needs a pulse."
-    ],
-    "filler queen": [
-      "Do not let this competition pass you by.",
-      "We know there is more to you. Let us see it.",
-      "Safe is not a legacy."
-    ],
-    "rising star": [
-      "You are becoming clearer and more confident every week.",
-      "This is the growth we have been waiting to see.",
-      "You are starting to believe your own story."
-    ],
-    "redemption arc": [
-      "That is the comeback we needed from you.",
-      "You took the note and came back fighting.",
-      "Tonight changed the direction of your story."
-    ],
-    "wildcard": [
-      "With you, I never quite know what is coming next.",
-      "Your unpredictability can be your power.",
-      "The surprise is only useful when you control it."
-    ],
-    "survivor": [
-      "You have proven you know how to fight for your place here.",
-      "Surviving is not the same as thriving, but it still says something.",
-      "You have been tested, and you are still standing."
-    ]
+    "front-runner": {
+      "positive": [
+        "You reminded everyone why you are one of the queens to beat.",
+        "When you set the bar high, we hold you to it.",
+        "Week after week, you keep shaping this competition.",
+        "You are not just playing the game—you are defining it.",
+        "The crown is starting to look like it has your name on it.",
+        "You make winning look effortless, and that is dangerous.",
+        "Every episode, you elevate what it means to be a frontrunner.",
+        "You are building a legacy with every single performance.",
+        "This is what a champion looks like in the making.",
+        "You have turned this competition into your own personal showcase.",
+        "You are the standard everyone is trying to reach.",
+        "Your consistency is becoming legendary.",
+        "You are rewriting what it means to dominate.",
+        "The competition is yours to lose.",
+        "You are making this look too easy."
+      ],
+      "negative": [
+        "Even the strongest queens stumble. What matters is how you recover.",
+        "When you set the bar high, we hold you to it.",
+        "The view from the top can be lonely—do not let it shake you.",
+        "A frontrunner has targets on their back. You just felt the first arrow.",
+        "This is your wake-up call. Champions respond.",
+        "You have been untouchable—until now. How will you handle it?",
+        "The pressure is real, and you just showed us it affects you too.",
+        "Being the best comes with expectations. You did not meet them today.",
+        "This is the moment where legends are tested. Prove yourself.",
+        "Your crown is not secure yet. Tonight proved that.",
+        "Even champions have off nights. Make sure this is your last.",
+        "You are not invincible. Remember that.",
+        "You are being challenged. How will you respond?",
+        "This is a setback, not a defeat. Keep fighting.",
+        "The target on your back just got bigger."
+      ]
+    },
+    "competitive threat": {
+      "positive": [
+        "Every queen in this room knows you are dangerous.",
+        "You are still very much in this race.",
+        "The crown has had its eye on you for a while.",
+        "Your track record speaks volumes. People are watching you closely.",
+        "You have the fire of someone who came to win.",
+        "No one is sleeping on you—and they shouldnt.",
+        "You are the name on everyones lips when they talk about who to beat.",
+        "Your consistency is becoming legendary.",
+        "You have proven that you belong in the top tier of this competition.",
+        "The others are scared of you. Keep it that way.",
+        "You are not just competing—you are conquering.",
+        "Your presence alone makes others uncomfortable.",
+        "You are a force to be reckoned with.",
+        "You are making everyone else step up their game.",
+        "You are the one they are all worried about."
+      ],
+      "negative": [
+        "A threat only stays a threat if they keep delivering.",
+        "You have the potential, but tonight was not your night.",
+        "Do not let the pressure of being a threat overwhelm you.",
+        "Everyone expects greatness from you. Give it to them.",
+        "Being a threat means nothing if you do not show up.",
+        "You have the skills—now show us you have the heart.",
+        "The competition is catching up. Step it up.",
+        "You cannot rest on reputation alone. We need to see it.",
+        "The others are gunning for you. Defend your spot.",
+        "You are a threat, but threats can be eliminated.",
+        "You are playing the game, but are you winning it?",
+        "Your reputation is not enough. Show us more.",
+        "You are being chased. Start running.",
+        "The competition is learning how to beat you.",
+        "You cannot coast on fear alone."
+      ]
+    },
+    "lip sync assassin": {
+      "positive": [
+        "When the music starts, something in you wakes up.",
+        "You have shown us that you know how to fight.",
+        "No one should feel comfortable facing you on that stage.",
+        "You have proven that when the lights go down, you rise up.",
+        "Your lip sync skills are legendary.",
+        "You are the queen everyone fears in a battle.",
+        "You know how to perform under pressure.",
+        "Your ability to command a stage is unmatched.",
+        "You turn every performance into a moment.",
+        "You are the definition of a fighter.",
+        "Your lip syncs are the stuff of Drag Race legend.",
+        "You have the power to send anyone home.",
+        "You are the ultimate survivor.",
+        "You fight like your life depends on it.",
+        "You are a true performer."
+      ],
+      "negative": [
+        "Even assassins have off days. Dont let it define you.",
+        "We know what you can do—now prove it again.",
+        "Your reputation precedes you. Back it up.",
+        "You have the skills, but the fire was missing tonight.",
+        "A lip sync assassin needs to deliver when it counts.",
+        "Do not let the label become your only identity.",
+        "Show us you are more than just a lip sync queen.",
+        "The crown is not won on the lip sync stage alone.",
+        "We have seen what you can do. Where was that tonight?",
+        "You cannot rely on being an assassin forever—evolve.",
+        "Your lip sync skills are not enough to win the crown.",
+        "You need to show us more than just your fighting ability.",
+        "You are a performer, but are you a winner?",
+        "Your lip syncs are not enough anymore.",
+        "You need to step up in other areas."
+      ]
+    },
+    "fan favorite": {
+      "positive": [
+        "There is something about you people want to root for.",
+        "The audience connects with you, and I can see why.",
+        "You have a warmth that reaches past the runway.",
+        "Your charisma is undeniable, and the fans are eating it up.",
+        "People see themselves in you—and that is powerful.",
+        "The love for you extends beyond this room.",
+        "You have built a fanbase that will follow you anywhere.",
+        "Your authenticity resonates with so many people.",
+        "The fans are rallying behind you. That is no small thing.",
+        "You have the kind of star quality that makes people invest in you.",
+        "The audience is on your side.",
+        "You are a people's champion.",
+        "Your connection with the fans is special.",
+        "You are loved for being exactly who you are.",
+        "The fans see you and they love you."
+      ],
+      "negative": [
+        "Fan love is beautiful, but it cannot carry you alone.",
+        "The audience adores you—now show them why you deserve to stay.",
+        "You have the support, but you need to deliver the performances.",
+        "Being a fan favorite comes with responsibility. Step up.",
+        "We all love you, but we need to see the fire.",
+        "The fans are waiting for you to break through.",
+        "Dont rely on popularity to save you.",
+        "You have the heart of the fans—now give them a winner.",
+        "The love is there. Now make it mean something.",
+        "Fan favorites can become champions. Show us you are ready.",
+        "You are popular, but popularity doesn't win.",
+        "You need to earn the love with your performance.",
+        "The fans are cheering, but are you listening?",
+        "You are being carried by the audience. Start walking.",
+        "Love is not enough to win this competition."
+      ]
+    },
+    "villain edit": {
+      "positive": [
+        "Whether people agree with you or not, they cannot stop watching you.",
+        "You always make us feel something.",
+        "You understand that television needs a pulse.",
+        "You are unapologetically yourself, and that takes courage.",
+        "Your presence alone shifts the energy in the room.",
+        "You are the queen everyone loves to hate—and you own it.",
+        "You understand the power of making people react.",
+        "You are giving us drama, and we are living for it.",
+        "You are not here to make friends—and that is valid.",
+        "Your confidence is intimidating, and I respect that.",
+        "You have made yourself unforgettable this season.",
+        "You are the queen everyone is talking about.",
+        "You know how to make good television.",
+        "Your story is one of the most compelling this season.",
+        "You are a star, whether they like it or not."
+      ],
+      "negative": [
+        "Being the villain is fun until it costs you the crown.",
+        "You can be sharp, but do not cut yourself with your own words.",
+        "The drama is entertaining, but is it winning?",
+        "You have made enemies—now make them respect you.",
+        "Your attitude is a choice. Choose wisely.",
+        "Villains can win, but they need the talent to back it up.",
+        "You are playing a dangerous game. Be careful.",
+        "The other queens are tired of you. Prove them wrong.",
+        "Your bark is loud—let us hear your bite.",
+        "Being disliked is not the same as being dominant.",
+        "Your behavior is costing you allies.",
+        "You are creating a reputation that will follow you.",
+        "The audience is turning on you.",
+        "You need to find the line between villain and victim.",
+        "Your edit is becoming toxic."
+      ]
+    },
+    "filler queen": {
+      "positive": [
+        "Do not let this competition pass you by.",
+        "We know there is more to you. Let us see it.",
+        "Safe is not a legacy.",
+        "You are still in this race—act like it.",
+        "This is your moment to wake up and shine.",
+        "You have been quiet, but that does not mean you are not capable.",
+        "I want to see the queen I know you can be.",
+        "It is never too late to make a statement.",
+        "You have the potential. Stop hiding it.",
+        "The competition is heating up—show us you can too.",
+        "This is your wake-up call. Answer it.",
+        "You are not invisible. You just need to step into the light.",
+        "Your moment is coming. Are you ready for it?",
+        "You have more to give than you are showing.",
+        "You are capable of so much more."
+      ],
+      "negative": [
+        "Being filler is a choice. Unmake it.",
+        "You are fading into the background. Fight back.",
+        "The season is moving on without you.",
+        "If you do not step up soon, it will be too late.",
+        "You cannot coast to the crown.",
+        "Passivity will send you home.",
+        "You have been forgettable. Change that narrative.",
+        "The others are leaving you behind.",
+        "Every week is an opportunity. Use it.",
+        "You are running out of chances to impress us.",
+        "You are becoming invisible.",
+        "The competition is forgetting you exist.",
+        "You need to make a move before it's too late.",
+        "You are being left behind.",
+        "Your time is running out."
+      ]
+    },
+    "rising star": {
+      "positive": [
+        "You are becoming clearer and more confident every week.",
+        "This is the growth we have been waiting to see.",
+        "You are starting to believe your own story.",
+        "Your trajectory is one of the most exciting this season.",
+        "You are peaking at exactly the right time.",
+        "Every week you get stronger, sharper, more undeniable.",
+        "You are turning potential into power.",
+        "Your growth is a testament to your determination.",
+        "You are becoming a force to be reckoned with.",
+        "The momentum is yours—dont let it go.",
+        "You are the most improved queen this season.",
+        "Your growth is inspiring to watch.",
+        "You are becoming a serious contender.",
+        "You are proving that hard work pays off.",
+        "Your evolution is remarkable."
+      ],
+      "negative": [
+        "You are rising, but do not let it get to your head.",
+        "Keep climbing—do not get comfortable.",
+        "Rising stars can fall just as quickly.",
+        "Your growth is promising. Now sustain it.",
+        "Do not plateau now. Keep pushing.",
+        "We see your potential—now live up to it.",
+        "The rise is exciting. The finish line is what matters.",
+        "You are getting attention. Now earn it.",
+        "Momentum is fragile. Protect it.",
+        "You are on the upswing. Do not crash.",
+        "You are improving, but so is everyone else.",
+        "Your growth is not enough if you don't sustain it.",
+        "You are climbing, but the competition is too.",
+        "You are getting closer, but not close enough.",
+        "You are rising, but are you rising fast enough?"
+      ]
+    },
+    "redemption arc": {
+      "positive": [
+        "That is the comeback we needed from you.",
+        "You took the note and came back fighting.",
+        "Tonight changed the direction of your story.",
+        "This is what resilience looks like.",
+        "You fell down and got back up stronger.",
+        "Your redemption arc is one of the best stories this season.",
+        "You proved that you can bounce back from anything.",
+        "This is the queen we knew you could be.",
+        "You turned criticism into fuel.",
+        "Your journey is inspiring to watch.",
+        "You have rewritten your narrative tonight.",
+        "Your comeback is legendary.",
+        "You have proven everyone wrong.",
+        "You are the comeback queen.",
+        "You have shown us what you are made of."
+      ],
+      "negative": [
+        "Redemption requires consistency. Keep it going.",
+        "Do not let this comeback be a one-time thing.",
+        "You have saved yourself once. Can you do it again?",
+        "Redemption is earned, not given.",
+        "You bounced back—now stay on top.",
+        "This is a start, but you need to continue.",
+        "One good week does not erase the past.",
+        "You have momentum—use it wisely.",
+        "Do not let this moment slip away.",
+        "You have proven you can fight. Now prove you can win.",
+        "Your redemption is not complete yet.",
+        "You have work to do to fully redeem yourself.",
+        "One moment does not make a comeback.",
+        "You need to sustain this momentum.",
+        "Your story is not finished yet."
+      ]
+    },
+    "wildcard": {
+      "positive": [
+        "With you, I never quite know what is coming next.",
+        "Your unpredictability can be your power.",
+        "The surprise is only useful when you control it.",
+        "You keep us all guessing—and it is thrilling.",
+        "You are impossible to pin down, and that makes you dangerous.",
+        "Your chaos is controlled, and I am living for it.",
+        "You do things your own way, and it works.",
+        "You are the wild card that could take it all.",
+        "Your versatility is your secret weapon.",
+        "You keep this competition fresh and exciting.",
+        "Never change your unpredictable spirit.",
+        "You are the queen nobody can predict.",
+        "Your unpredictability is your strength.",
+        "You are the surprise factor of this season.",
+        "You keep everyone on their toes."
+      ],
+      "negative": [
+        "Unpredictability is exciting until it becomes unreliable.",
+        "Chaos is fun, but so is consistency.",
+        "You keep us guessing—now give us something to root for.",
+        "Wildcards need to land the plane eventually.",
+        "Your unpredictability can be a double-edged sword.",
+        "We love the surprise, but we need the substance.",
+        "You are a wildcard, but wildcards can get cut.",
+        "Your chaos needs to be channeled into success.",
+        "Being unpredictable is not the same as being great.",
+        "Your trick is getting old. Give us more.",
+        "You are inconsistent and it's costing you.",
+        "Your unpredictability is becoming a liability.",
+        "You need to find some stability.",
+        "Chaos is not a strategy.",
+        "You are too unpredictable to trust."
+      ]
+    },
+    "survivor": {
+      "positive": [
+        "You have proven you know how to fight for your place here.",
+        "Surviving is not the same as thriving, but it still says something.",
+        "You have been tested, and you are still standing.",
+        "You have been through the fire and you are still standing.",
+        "Your resilience is admirable.",
+        "You know how to weather the storm.",
+        "You are a fighter, and that is worth respecting.",
+        "You have survived again—now make it count.",
+        "Your ability to escape elimination is a skill.",
+        "You are tough, and that will carry you far.",
+        "Survivors often become champions.",
+        "You are the ultimate survivor.",
+        "You never give up.",
+        "Your fighting spirit is inspiring.",
+        "You are a true competitor."
+      ],
+      "negative": [
+        "Surviving is not winning. Step it up.",
+        "You have survived—now start thriving.",
+        "Being a survivor is not enough to take the crown.",
+        "You escape danger, but do you create success?",
+        "Survival is admirable, but it is not a strategy.",
+        "You have the grit—now get the glory.",
+        "Surviving is a start. Winning is the goal.",
+        "You have avoided elimination—now prove you deserve to stay.",
+        "Your survival instinct is strong. Your winning instinct? Not yet.",
+        "You are here, but are you competing?",
+        "You are surviving, not thriving.",
+        "You need to do more than just survive.",
+        "Survival is not the same as success.",
+        "You are fighting to stay, not fighting to win.",
+        "You need to shift from surviving to conquering."
+      ]
+    }
   },
   "lipsyncNarration": {
     "close": [
       "It came down to tiny details.",
       "Both queens fought until the final beat.",
       "The decision lived in the smallest moments.",
-      "Neither queen let the other breathe."
+      "Neither queen let the other breathe.",
+      "It was too close to call.",
+      "Both queens gave it everything.",
+      "The winner was decided by a hair.",
+      "This was a battle for the ages.",
+      "Both queens deserved to stay.",
+      "The decision was agonizing."
     ],
     "clear": [
       "One queen slowly pulled ahead.",
       "The performance found a clear leader.",
       "By the final chorus, the stronger story was obvious.",
-      "The stage started leaning one way."
+      "The stage started leaning one way.",
+      "One queen took control early and never let go.",
+      "The winner was clear from the first verse.",
+      "One queen was simply better tonight.",
+      "The decision was obvious.",
+      "One performance stood out from the start.",
+      "There was a clear winner."
     ],
     "dominant": [
       "From the first beat, one queen owned the stage.",
       "The winner made the choice feel obvious.",
       "It became less of a duel and more of a takeover.",
-      "One performance swallowed the room."
+      "One performance swallowed the room.",
+      "It was a massacre.",
+      "One queen demolished the other.",
+      "There was no contest.",
+      "One queen was in a different league.",
+      "It was a masterclass in lip syncing.",
+      "The winner was untouchable."
     ],
     "weak": [
       "The song deserved more fire.",
       "The duel never fully took off.",
-      "Both queens struggled to find the moment."
+      "Both queens struggled to find the moment.",
+      "The energy was low on both sides.",
+      "Neither queen gave the performance they needed.",
+      "It was a disappointing showdown.",
+      "Both queens were below their best.",
+      "The spark was missing.",
+      "Neither performance was convincing.",
+      "It was a lackluster battle."
     ],
     "doubleShantay": [
       "Neither queen gave an inch.",
       "The room could not choose a loser.",
-      "Both queens made a case for staying."
+      "Both queens made a case for staying.",
+      "It was too good to send anyone home.",
+      "Both queens are staying.",
+      "The performance was too strong to eliminate anyone.",
+      "Both queens fought for their lives and won.",
+      "It was a draw.",
+      "Both queens deserve another week.",
+      "The competition just got harder."
     ],
     "doubleSashay": [
       "Neither performance met the moment.",
       "The song waited for a spark that never came.",
-      "The stage needed more than either queen gave."
+      "The stage needed more than either queen gave.",
+      "Both queens are going home.",
+      "Neither queen was good enough tonight.",
+      "The performance was disappointing.",
+      "Both queens failed to deliver.",
+      "It was a disaster.",
+      "Neither queen showed what they were capable of.",
+      "The song deserved better."
     ]
   },
   "socialSparks": {
     "friendly": [
       "{a} helps {b} settle her nerves before rehearsal.",
       "{a} and {b} find a tiny joke that breaks the room open.",
-      "{a} quietly tells {b} she believes in her."
+      "{a} quietly tells {b} she believes in her.",
+      "{a} offers {b} a kind word when she needs it most.",
+      "{a} and {b} share a moment of genuine support.",
+      "{a} has {b}'s back when the room gets tense.",
+      "{a} makes {b} laugh at exactly the right moment.",
+      "{a} and {b} bond over their shared struggles.",
+      "{a} gives {b} a pep talk before the challenge.",
+      "{a} checks in on {b} when she looks stressed."
     ],
     "shade": [
       "{a} clocks {b}'s confidence and calls it a full-time job.",
       "{a} says {b} is brave for wearing that much certainty.",
-      "{a} gives {b} a compliment with a knife tucked inside."
+      "{a} gives {b} a compliment with a knife tucked inside.",
+      "{a} throws a read that lands like a dart.",
+      "{a} makes a joke at {b}'s expense that the room feels.",
+      "{a} suggests {b} should stick to what she knows.",
+      "{a} questions {b}'s taste level in front of everyone.",
+      "{a} points out {b}'s flaws with a smile.",
+      "{a} implies {b} is all drag and no depth.",
+      "{a} gives {b} a backhanded compliment that stings."
     ],
     "conflict": [
       "{a} and {b} clash over who keeps interrupting rehearsal.",
       "{a} feels like {b} is taking too much space.",
-      "{a} says {b} is playing for cameras, not the challenge."
+      "{a} says {b} is playing for cameras, not the challenge.",
+      "{a} accuses {b} of being fake.",
+      "{a} and {b} have a heated exchange backstage.",
+      "{a} refuses to work with {b} on the challenge.",
+      "{a} calls {b} out for her attitude.",
+      "{a} and {b} exchange words that cross the line.",
+      "{a} tells {b} she doesn't trust her.",
+      "{a} and {b} get into it over creative differences."
     ],
     "strategy": [
       "{a} starts wondering if {b} is becoming too dangerous.",
       "{a} clocks that {b} may be the one to beat.",
-      "{a} quietly builds a little trust with {b}."
+      "{a} quietly builds a little trust with {b}.",
+      "{a} and {b} form an alliance for the challenge.",
+      "{a} shares tips with {b} to strengthen their bond.",
+      "{a} considers who to take to the finale.",
+      "{a} and {b} agree to watch each other's backs.",
+      "{a} plans to work with {b} to take down a threat.",
+      "{a} confides in {b} about her worries.",
+      "{a} and {b} strategize over how to win."
     ]
   },
   "relationshipShifts": {
     "positive": [
       "{a} leaves the conversation trusting {b} a little more.",
       "{a} respects the way {b} handled the pressure.",
-      "A small moment between {a} and {b} feels surprisingly sincere."
+      "A small moment between {a} and {b} feels surprisingly sincere.",
+      "{a} feels closer to {b} after their talk.",
+      "{a} sees a new side of {b} and likes it.",
+      "{a} and {b} find common ground.",
+      "{a} thanks {b} for being honest with her.",
+      "{a} feels supported by {b}.",
+      "{a} and {b} share a moment of understanding.",
+      "{a} gains respect for {b}."
     ],
     "negative": [
       "{a} walks away from {b} with a colder read.",
       "{a} is starting to question {b}'s intentions.",
-      "The tension between {a} and {b} gets harder to ignore."
+      "The tension between {a} and {b} gets harder to ignore.",
+      "{a} feels betrayed by {b}'s actions.",
+      "{a} questions {b}'s loyalty.",
+      "{a} thinks {b} is playing games.",
+      "{a} distances herself from {b}.",
+      "{a} confronts {b} about her behavior.",
+      "{a} tells {b} she's disappointed in her.",
+      "{a} and {b} have a falling out."
     ],
     "rivalry": [
       "{a} and {b} may not be saying rivalry yet, but the edit is.",
-      "The room can feel a line forming between {a} and {b}."
+      "The room can feel a line forming between {a} and {b}.",
+      "{a} and {b} are eyeing each other like competition.",
+      "{a} and {b} are becoming each other's biggest threats.",
+      "{a} sees {b} as the one to beat.",
+      "{a} and {b} are neck and neck.",
+      "{a} and {b} are becoming rivals.",
+      "{a} and {b} push each other to be better.",
+      "{a} and {b} are the competition to watch.",
+      "{a} and {b} are developing a friendly rivalry."
     ],
     "friendship": [
       "{a} and {b} look less like competitors for a second and more like sisters.",
-      "The bond between {a} and {b} starts to feel real."
+      "The bond between {a} and {b} starts to feel real.",
+      "{a} and {b} become fast friends.",
+      "{a} and {b} share something special.",
+      "{a} and {b} have each other's backs.",
+      "{a} and {b} are becoming inseparable.",
+      "{a} and {b} find strength in their friendship.",
+      "{a} and {b} are the duo to watch.",
+      "{a} and {b} share a sisterhood.",
+      "{a} and {b} are building a lasting bond."
     ]
   },
   "confessionals": {
     "win": [
       "I came here for a crown, not a participation ribbon.",
       "This is the week the judges finally saw the full fantasy.",
-      "Winning feels correct. I am not going to apologize for that."
+      "Winning feels correct. I am not going to apologize for that.",
+      "I dominated and they had no choice but to see it.",
+      "This win is validation for everything I've been doing.",
+      "I told you all I was a threat.",
+      "The judges finally got it right.",
+      "This is the first of many wins.",
+      "I'm just getting started.",
+      "I deserved this win and I'm proud of it."
     ],
     "safe": [
       "Safe is cute once. Safe is not a brand.",
       "I survived, but I need the camera to remember me next week.",
-      "I am still here, but I need to make noise."
+      "I am still here, but I need to make noise.",
+      "Safe is fine, but fine doesn't win.",
+      "I'll take safe for now, but next week I'm coming for the top.",
+      "I'm frustrated because I know I can do better.",
+      "Safe is better than bottom, but I want more.",
+      "I need to step it up if I want the crown.",
+      "Safe is a wake-up call.",
+      "I'm playing it too safe. Time to get risky."
     ],
     "low": [
       "That critique stung because part of me knows they were right.",
       "I did not come here to fade this early.",
-      "I need to turn this around before the edit turns on me."
+      "I need to turn this around before the edit turns on me.",
+      "This is a wake-up call I needed.",
+      "I'm not going to let this define me.",
+      "The judges are right. I need to do better.",
+      "I'm fighting back next week.",
+      "This is not the end of my story.",
+      "I have more to give and I'm going to prove it.",
+      "I'm going to use this as fuel."
     ],
     "bottom": [
       "The lip sync is not where I wanted to be, but it is where I have to prove myself.",
       "If I have to fight, I am fighting in lashes.",
-      "Tonight got real very quickly."
+      "Tonight got real very quickly.",
+      "I'm not going home tonight.",
+      "I've been here before and I survived.",
+      "This is my moment to show what I'm made of.",
+      "The song is my song. I'm going to own it.",
+      "I'm scared, but I'm ready to fight.",
+      "I've been in the bottom and I know how to survive.",
+      "This is the most important performance of my life."
     ]
   },
   "finaleNarratives": {
     "frontRunner": [
       "She entered the finale as one of the queens everyone wanted to beat.",
-      "Her track record made her impossible to ignore."
+      "Her track record made her impossible to ignore.",
+      "She dominated the season from start to finish.",
+      "She was the one to beat all season long.",
+      "Her consistency was unmatched.",
+      "She proved week after week that she deserved the crown.",
+      "She set the standard that everyone else chased.",
+      "Her run was one of the most impressive in Drag Race history.",
+      "She was the frontrunner and she knew it.",
+      "She owned the competition from beginning to end."
     ],
     "fanFavorite": [
       "Her warmth and authenticity kept the audience rooting for her.",
-      "The fans found something in her they wanted to protect."
+      "The fans found something in her they wanted to protect.",
+      "She captured hearts from the first episode.",
+      "Her charisma made her impossible not to love.",
+      "She was the people's champion.",
+      "The audience saw themselves in her.",
+      "Her connection with the fans was unmatched.",
+      "She brought joy to everyone who watched her.",
+      "She was the heart of the season.",
+      "The fans fell in love with her journey."
     ],
     "lipSyncAssassin": [
       "Every time the music started, she reminded everyone why she was still here.",
-      "She turned survival into a signature."
+      "She turned survival into a signature.",
+      "Her lip syncs became legendary moments.",
+      "She fought for her spot every single time.",
+      "She knew how to own a stage.",
+      "Her performances were unforgettable.",
+      "She was the queen no one wanted to face.",
+      "She brought the drama every time she lip synced.",
+      "She was a warrior on that stage.",
+      "Her survival story was one of the best in the season."
     ],
     "villain": [
       "Whether loved or feared, she made sure nobody forgot her.",
-      "She kept the spotlight firmly on herself, even when the room pushed back."
+      "She kept the spotlight firmly on herself, even when the room pushed back.",
+      "She was the queen everyone loved to hate.",
+      "Her presence shook the room every week.",
+      "She gave us the drama we didn't know we needed.",
+      "She was unapologetically herself.",
+      "She made the season unforgettable.",
+      "She was a force to be reckoned with.",
+      "She played the game her way and owned it.",
+      "She was the villain, but she was also a star."
     ],
     "competitiveThreat": [
       "Week after week, she proved she could excel no matter what the competition demanded.",
-      "She pushed the competition from beginning to end."
+      "She pushed the competition from beginning to end.",
+      "She was always in the conversation for the crown.",
+      "Her versatility made her a threat in every challenge.",
+      "She refused to be counted out.",
+      "She was always right there in the top.",
+      "Her consistency was terrifying to the other queens.",
+      "She was the definition of a competitor.",
+      "She made everyone else work harder.",
+      "She was always a step away from the crown."
     ],
     "redemption": [
       "She stumbled, adjusted, and finished stronger than ever.",
-      "Her run became a comeback story."
+      "Her run became a comeback story.",
+      "She proved that it's not how you start, it's how you finish.",
+      "Her journey was one of growth and resilience.",
+      "She turned her season around when it mattered most.",
+      "She showed us what fighting looks like.",
+      "Her redemption arc was the best story of the season.",
+      "She never gave up and it paid off.",
+      "She rose from the ashes.",
+      "She is the definition of a comeback queen."
     ]
   },
   "narrativeTags": {
