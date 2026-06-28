@@ -267,7 +267,7 @@ function renderWorkroom(){
       <h4>Interactions</h4>
       <p><em>What you're picking up from the room...</em></p>
       <ul>${workroomPulse}</ul>
-      ${ep.teams?.length?`<h4>Teams</h4><ul>${ep.teams.map(t=>`<li><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>escapeHtml(gameState.queens.find(q=>q.id===id)?.name||'')).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
+      ${ep.teams?.length?`<h4>Teams</h4><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
     </div>
     ${challengeContentBlock(ep)}
     ${talentContentBlock(ep)}

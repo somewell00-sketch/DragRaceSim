@@ -43,6 +43,29 @@ function personalityColor(q){
 function typeColor(q){
   return QUEEN_TYPE_COLORS[q?.type] || '#A78BFA';
 }
+const EPISODE_TEAM_MARKERS=['💎','🔥','🌙','⚡','🌹','🦋','🍒','🪩'];
+function currentEpisodeTeamForQueen(qId){
+  const ep=window.gameState?.currentEpisode;
+  if(!ep?.teams?.length || !qId)return null;
+  if(ep.statsApplied || window.gameState?.season?.status==='finished')return null;
+  if(ep.participantIds?.length && !ep.participantIds.includes(qId))return null;
+  const teamIndex=ep.teams.findIndex(t=>(t.queenIds||[]).includes(qId));
+  if(teamIndex<0)return null;
+  const team=ep.teams[teamIndex];
+  return {team,index:teamIndex%8,marker:EPISODE_TEAM_MARKERS[teamIndex%EPISODE_TEAM_MARKERS.length]};
+}
+function queenTeamMarkerHtml(q){
+  const info=currentEpisodeTeamForQueen(q?.id);
+  return info ? `<span class="team-name-marker team-marker-${info.index}" title="${escapeHtml(info.team?.name||'Team')}">${escapeHtml(info.marker)}</span>` : '';
+}
+function queenTeamNameHtml(q){
+  const name=escapeHtml(q?.name||'Queen');
+  return `${queenTeamMarkerHtml(q)}${name}`;
+}
+function queenTeamClass(q){
+  const info=currentEpisodeTeamForQueen(q?.id);
+  return info ? ` team-ring team-ring-${info.index}` : '';
+}
 function queenPortraitHtml(q, size='md', extraClass=''){
   const image=q?.portrait?.image || q?.image || q?.portraitUrl || '';
   const type=q?.portrait?.type || (image?'image':'gradient');
@@ -51,11 +74,12 @@ function queenPortraitHtml(q, size='md', extraClass=''){
     : `background:linear-gradient(135deg, ${typeColor(q)} 0%, ${typeColor(q)} 48%, ${personalityColor(q)} 52%, ${personalityColor(q)} 100%)`;
   const title=`${q?.name||'Queen'} — ${queenPersonaType(q)}`;
   const playerClass=q?.isPlayer?' player-portrait':'';
-  return `<span class="queen-portrait portrait-${escapeHtml(size)}${playerClass} ${escapeHtml(extraClass)}" style="${style}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}"></span>`;
+  const teamClass=queenTeamClass(q);
+  return `<span class="queen-portrait portrait-${escapeHtml(size)}${playerClass}${teamClass} ${escapeHtml(extraClass)}" style="${style}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}"></span>`;
 }
 
 function queenDisplayName(q){
-  const name=escapeHtml(q?.name||'Queen');
+  const name=queenTeamNameHtml(q);
   return q?.isPlayer ? `${name} <span class="player-crown" title="Your queen">👑</span>` : name;
 }
 

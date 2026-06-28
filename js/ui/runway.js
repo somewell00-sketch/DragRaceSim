@@ -277,7 +277,7 @@ function runwayWalkCard(p, placements, momentMap, opts={}){
   const q=gameState.queens.find(x=>x.id===p.queenId);
   return `<article class="runway-look runway-${moment}">
     <div class="runway-tags">${runwayTagMarkup(tags)}</div>
-    <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4>${escapeHtml(p.name)}</h4>
+    <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p.name)}</h4>
     <p>${escapeHtml(runwayTone(p,placements))}</p></div></div>
   </article>`;
 }
@@ -287,7 +287,7 @@ function runwaySafeDecisionBlock(ep, placements){
   const safeQueens=placements.filter(p=>p.placement==='SAFE');
   if(!safeQueens.length)return '';
   const safePortraits=`<div class="safe-portraits">${safeQueens.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return q?queenPortraitHtml(q,'sm'):'';}).join('')}</div>`;
-  const safeLine=`${safePortraits}<p>${safeQueens.map(p=>`<strong>${escapeHtml(p.name)}</strong>`).join(', ')}</p>`;
+  const safeLine=`${safePortraits}<p>${safeQueens.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return `<strong>${q?queenTeamNameHtml(q):escapeHtml(p.name)}</strong>`;}).join(', ')}</p>`;
   return activeCount > 6 ? `<div class="card"><h3>I have made some decisions.</h3><p>Based on this week’s challenge and your runway presentation.</p><p>When I call your names, please step forward.</p>${safeLine}<p><strong>You are safe.</strong></p><p>You may untuck backstage.</p><p><strong>The rest of you represent the tops and bottoms of the week.</strong></p></div>` : '';
 }
 
@@ -297,7 +297,7 @@ function teamJudgingSummary(ep){
     ? 'Ru has decided the queens will be judged as groups this week. Team chemistry matters tonight.'
     : 'Ru has decided the queens will be judged individually this week. Group scores will not save anyone.';
   const teamLines=(ep.teams||[]).map(team=>{
-    const names=team.queenIds.map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(n=>`<strong>${escapeHtml(n)}</strong>`).join(', ');
+    const names=team.queenIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean).map(q=>`<strong>${queenTeamNameHtml(q)}</strong>`).join(', ');
     const score=ep.teamScores?.find(t=>t.teamId===team.id);
     const chemistry=score?` <span class="small">Chemistry: ${score.chemistry>0?'strong':score.chemistry<0?'messy':'neutral'}</span>`:'';
     return `<p>${escapeHtml(team.name)}: ${names}${ep.judgingMode==='team'?chemistry:''}</p>`;
