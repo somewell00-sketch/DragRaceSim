@@ -191,7 +191,6 @@
       "Ran out of ideas and time simultaneously.",
       "Just happy to be on TV in that outfit.",
       "Budget of $50 and it showed every penny.",
-      "Wish.com realness.",
       "The outfit and the energy both said 'next.'",
       "Marge Simpson dress realness.",
       "I've seen this on a mannequin. Multiple times.",
@@ -212,7 +211,8 @@
     "Walked with no confidence in an outfit with no hope.",
     "Served a look that made everyone uncomfortable.",
     "Had the judges questioning her taste level entirely.",
-    "Looked like she was cosplaying as a drag queen."
+    "Looked like she was cosplaying as a drag queen.",
+          "Wish.com realness."
   ],
   "flop": [
     "Made the runway feel like a cautionary tale.",
@@ -230,6 +230,7 @@
     "Made the runway feel longer than it actually was.",
     "Had the judges wondering if she understood the assignment at all.",
     "Walked out and made everyone grateful for the other queens."
+    "Michele vomits her lunch after seeing this look."
   ]
   },
   "judgeComments": {
