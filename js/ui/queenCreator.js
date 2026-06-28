@@ -28,6 +28,21 @@ function updateCreatorPreview(){
   const p=(gameState.data.personalities||[]).find(x=>x.id===personalityId)?.name || personalityId;
   if(metaOut)metaOut.textContent=`${p} • ${type}`;
 }
+
+async function randomizeCreatorName(){
+  const input=document.querySelector('#qName');
+  if(!input)return;
+  if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
+  const current=input.value.trim();
+  const usedNames=new Set((gameState.queens||[]).map(q=>q.name).filter(Boolean));
+  if(current && current!=='Your Queen')usedNames.add(current);
+  const name=(typeof generatedQueenName==='function')
+    ? generatedQueenName(0, usedNames)
+    : current || 'Your Queen';
+  input.value=name;
+  updateCreatorPreview();
+}
+
 function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
   const defaultPersonality=(p.find(x=>x.id==='ambitious')||p[0]||{id:'ambitious'}).id;
@@ -80,12 +95,17 @@ function renderQueenCreator(){
             <span class="creator-portrait-crown">👑</span>
           </div>
           <div class="creator-fields">
-            <label class="home-field home-name-field">Drag name<input id="qName" value="Granada Royale"></label>
+            <label class="home-field home-name-field">Drag name
+              <div class="creator-name-row">
+                <input id="qName" value="Your Queen">
+                <button id="randomQueenName" type="button" class="ghost" title="Random name">🎲</button>
+              </div>
+            </label>
             <div class="creator-select-row">
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
               <label class="home-field">Personality<select id="qPersonality">${personalityOptions}</select></label>
             </div>
-            <div class="creator-preview-copy"><strong id="creatorPreviewName">Granada Royale</strong><span id="creatorPreviewMeta">Ambitious • Jack of All Trades</span></div>
+            <div class="creator-preview-copy"><strong id="creatorPreviewName">Your Queen</strong><span id="creatorPreviewMeta">Ambitious • Jack of All Trades</span></div>
           </div>
         </section>
 
@@ -108,6 +128,7 @@ function renderQueenCreator(){
  document.querySelector('#qType').addEventListener('change',()=>{applyTypePreset();updateCreatorPreview();});
  document.querySelector('#qPersonality').addEventListener('change',updateCreatorPreview);
  document.querySelector('#qName').addEventListener('input',updateCreatorPreview);
+ document.querySelector('#randomQueenName')?.addEventListener('click',()=>randomizeCreatorName());
  document.querySelectorAll('[data-attr]').forEach(input=>input.addEventListener('input',(e)=>updateTotal(e.target)));
  document.querySelector('#startSeason').addEventListener('click',async()=>{
    const startBtn=document.querySelector('#startSeason');
@@ -130,6 +151,7 @@ function renderQueenCreator(){
  document.querySelector('#continueSave').addEventListener('click',()=>{if(loadGame())routeAfterLoad();else alert('No save found.');});
  document.querySelector('#clearSave').addEventListener('click',()=>{clearSave(); alert('Save deleted.');});
  updateCreatorPreview();
+ randomizeCreatorName();
  updateTotal();
 }
 function applyTypePreset(){const preset=getTypePreset(document.querySelector('#qType').value); document.querySelectorAll('[data-attr]').forEach(i=>{i.value=preset[i.dataset.attr]||7;}); updateTotal();}
