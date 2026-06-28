@@ -409,7 +409,13 @@ function renderFinalePart1(){
   const finalists=finale.finalistIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const semiRows=(finale.format==='top4_lsfyc')?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'';
   const chosenEvents=(finale.events||[]).map(e=>`<li>${escapeHtml(e)}</li>`).join('');
-  const sashays=(finale.thirdFourthIds||[]).length?`<section class="card subtle"><h2>Thank You, Finalists</h2><p>${finale.thirdFourthIds.map(id=>`<strong>${escapeHtml(qName(id))}</strong>`).join(' and ')} sashay away before the final crown decision.</p><p>Your work this season helped define the competition.</p></section>`:'';
+const sashays = (finale.thirdFourthIds || []).length
+  ? `<section class="card subtle">
+      <h2>${finale.thirdFourthIds.map(id => escapeHtml(qName(id))).join(' & ')}</h2>
+      <p>Your work this season helped define the competition. But this is not your moment.</p>
+      <p>Now, sashay away.</p>
+    </section>`
+  : '';
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(1,'Finalists')}<h1>The Grand Finale Begins</h1><p>${escapeHtml(format)}. The finalists return to the stage before Ru makes the final cut.</p></section>
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
