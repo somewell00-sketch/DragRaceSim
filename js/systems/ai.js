@@ -40,6 +40,7 @@ function chooseLipSyncMoves(song,q){
   else if(q.inventory?.reveals>1 && q.attributes.runway>=8 && Math.random()<0.12) strategy='multiple_reveals';
   else if(high && q.attributes.lipSync>=8) strategy=Math.random()<0.55?'dance':'stunts';
   else if(emotional && q.attributes.acting>=7) strategy='emotion';
+  else if(p?.risk>=8 && Math.random()<0.20) strategy='overshadow';
   else if(p?.risk>=8 && Math.random()<0.35) strategy='stunts';
   else if(p?.consistency>=8) strategy='play_safe';
   return lipSyncMovesFromStrategy(strategy, song);

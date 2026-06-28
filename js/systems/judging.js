@@ -7,7 +7,8 @@ const LIP_SYNC_STRATEGIES={
   save_reveal:{label:'Save the Reveal for the Climax',text:'She waits for the song to peak before revealing the second look.'},
   reveal_early:{label:'Reveal Early',text:'She reveals early and tries to ride that first wave of shock.'},
   multiple_reveals:{label:'Multiple Reveals',text:'She layers reveal after reveal, hoping the spectacle lands.'},
-  play_safe:{label:'Play It Safe',text:'She keeps it clean, controlled, and low-risk.'}
+  play_safe:{label:'Play It Safe',text:'She keeps it clean, controlled, and low-risk.'},
+  overshadow:{label:'Overshadow Your Opponent',text:'She tries to steal focus from her opponent. High risk, high reward.'}
 };
 function lipSyncMovesFromStrategy(strategy, song){
   const high=song?.energy==='high';
@@ -19,7 +20,8 @@ function lipSyncMovesFromStrategy(strategy, song){
     save_reveal:{start:high?'controlled':'lyrics',middle:'judges',finale:'reveal',strategy},
     reveal_early:{start:'explosive',middle:'judges',finale:'emotional',strategy},
     multiple_reveals:{start:'explosive',middle:'acrobatics',finale:'reveal',strategy},
-    play_safe:{start:'controlled',middle:'face',finale:'emotional',strategy}
+    play_safe:{start:'controlled',middle:'face',finale:'emotional',strategy},
+    overshadow:{start:'explosive',middle:'judges',finale:high?'stunt':'emotional',strategy}
   };
   return map[strategy]||map.sell_lyrics;
 }
@@ -55,6 +57,8 @@ function lipSyncStrategyScore(strategy, song, q){
       return clamp10(5.0 + (a.runway||0)*0.22 + (a.cunt||0)*0.10 + rand(-3.0,3.2));
     case 'play_safe':
       return clamp10(4.8 + (a.lipSync||0)*0.16 + rand(-0.7,0.7));
+    case 'overshadow':
+      return clamp10((high?5.0:4.5) + (a.cunt||0)*0.22 + (a.lipSync||0)*0.18 + rand(-2.6,2.8));
     default:
       return clamp10(4.8 + rand(-1,1));
   }
@@ -386,7 +390,7 @@ function resolveLipSync(playerMoves=null){
     return null;
   }
 
-  const results=bottom.map(q=>{
+  const rawResults=bottom.map(q=>{
     const moves=q.id===gameState.playerQueenId&&playerMoves?playerMoves:chooseLipSyncMoves(song,q);
     if(!moves.strategy){
       if(moves.finale==='reveal') moves.strategy='save_reveal';
@@ -402,7 +406,7 @@ function resolveLipSync(playerMoves=null){
     const productionScore=clamp(((q.publicScores?.production||0)+30)/6,0,10); // soft production scale, 10%
     const priorLipSyncPenalty=((q.statistics.lipSyncWins||0)+(q.statistics.lipSyncLosses||0))*0.5;
 
-    const score10=Math.round(clamp(
+    const baseScore10=Math.round(clamp(
       weeklyPerformance*0.40 +
       ability*0.40 +
       momentumScore*0.10 +
@@ -414,17 +418,44 @@ function resolveLipSync(playerMoves=null){
     return {
       queenId:q.id,
       name:q.name,
-      rawScore:score10,
-      score:score10,
-      score10,
+      rawScore:baseScore10,
+      score:baseScore10,
+      score10:baseScore10,
       weeklyPerformance:Math.round(weeklyPerformance*10)/10,
+      executionQuality:Math.round(weeklyPerformance*10)/10,
       ability:Math.round(ability*10)/10,
       momentumScore:Math.round(momentumScore*10)/10,
       productionScore:Math.round(productionScore*10)/10,
       bottomPenalty:priorLipSyncPenalty,
+      strategyEffect:null,
       moves
     };
-  }).sort((a,b)=>b.score10-a.score10);
+  });
+
+  rawResults.forEach(r=>{
+    if(r.moves?.strategy!=='overshadow') return;
+    const opponent=rawResults.find(o=>o.queenId!==r.queenId);
+    if(!opponent) return;
+    const success=r.weeklyPerformance>=7;
+    if(success){
+      const bonus=r.weeklyPerformance>=9?0.9:0.6;
+      const opponentPenalty=r.weeklyPerformance>=9?0.9:0.6;
+      r.score10=Math.round(clamp(r.score10+bonus,0,10)*10)/10;
+      r.score=r.score10;
+      opponent.score10=Math.round(clamp(opponent.score10-opponentPenalty,0,10)*10)/10;
+      opponent.score=opponent.score10;
+      r.strategyEffect={type:'overshadow',success:true,bonus,opponentPenalty};
+      opponent.strategyEffect=opponent.strategyEffect||{type:'overshadowed',sourceQueenId:r.queenId,penalty:opponentPenalty};
+    } else {
+      const penalty=r.weeklyPerformance<5.1?1.0:0.6;
+      r.score10=Math.round(clamp(r.score10-penalty,0,10)*10)/10;
+      r.score=r.score10;
+      r.productionScore=Math.round(clamp(r.productionScore-0.5,0,10)*10)/10;
+      r.strategyEffect={type:'overshadow',success:false,penalty};
+    }
+  });
+
+  const results=rawResults.sort((a,b)=>b.score10-a.score10);
 
   if(ep.special==='premiere_no_elim'){
     const winner=results[0], loser=results[1];
