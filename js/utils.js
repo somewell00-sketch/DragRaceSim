@@ -3,7 +3,7 @@ function sample(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
 function rand(min,max){return Math.round((Math.random()*(max-min)+min)*10)/10;}
 function weightedAttributeScore(attributes,weights){return Object.entries(weights).reduce((t,[a,w])=>t+(attributes[a]||0)*10*w,0);}
-function riskRoll(risk){if(risk==='safe')return rand(-4,4); if(risk==='unexpected')return Math.random()>.5?rand(5,13):rand(-13,-5); return rand(-10,10);}
+function riskRoll(risk){if(risk==='safe')return rand(-5,5); if(risk==='unexpected')return Math.random()>.5?rand(5,14):rand(-14,-5); return rand(-12,12);}
 function placementBadge(p){const cls={WIN:'win',HIGH:'high',SAFE:'safe',TOP2:'top2',LOW:'low',BTM:'bottom','LIPSYNC WIN':'bottom',ELIM:'elim',WINNER:'winner',RUNNERUP:'runnerup',FINALIST:'finalist'}[p]||'';const label=p==='LIPSYNC WIN'?'BTM':p;return `<span class="badge ${cls}">${label}</span>`;}
 function relationLabel(a,r){
   return relationshipEmojiFromScore(a,r);

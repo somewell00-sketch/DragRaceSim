@@ -368,7 +368,7 @@ function finaleRoleBadge(role){
 }
 function finaleCard(q){
   const st=q.statistics||{};
-  return `<article class="queen-item finale-queen-card">${queenPortraitHtml(q,'lg')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}<span class="finale-stats">${st.wins||0} WIN • ${st.highs||0} HIGH • ${st.bottoms||0} BTM</span>${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p></div></article>`;
+  return `<article class="queen-item finale-queen-card">${queenPortraitHtml(q,'lg')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}<span class="finale-stats">${st.wins||0} WIN • ${st.bottoms||0} BTM</span>${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p></div></article>`;
 }
 function finalDuelScoreRows(finalDuel){
   return Object.entries(finalDuel.decisionScores||{}).map(([id,score])=>{

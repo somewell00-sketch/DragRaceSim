@@ -79,10 +79,18 @@ function getCritiqueText(placement, challengeId, risk, success){
 
 
 
+function recentPlacementStreak(q, placement){
+  const history=[...(q?.episodeHistory||[])].reverse();
+  let count=0;
+  for(const h of history){
+    if(h.placement===placement) count++;
+    else break;
+  }
+  return count;
+}
 function getJudgesExpectationPenalty(q){
-  // v18.11: Judges' Expectations. The more a queen proves herself,
-  // the higher the bar becomes. This never blocks a WIN by itself;
-  // it only makes repeated dominance harder and more earned.
+  // Original Judges' Expectations throttle restored: the more a queen proves herself,
+  // the higher the bar becomes. This keeps 4+ WIN runs rare without blocking them.
   const st=q?.statistics||{};
   const wins=st.wins||0;
   const highs=st.highs||0;
@@ -210,6 +218,9 @@ function assignIndividualPlacements(scored){
   if(scored[1])scored[1].placement='HIGH';
   if(scored[2])scored[2].placement='HIGH';
   if(scored.length>5 && scored[scored.length-3])scored[scored.length-3].placement='LOW';
+  // Larger casts should not have only one LOW every episode. Adding one more
+  // low critique in the lower middle creates more natural vulnerability arcs.
+  if(scored.length>=8 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
   if(scored[scored.length-2])scored[scored.length-2].placement='BTM';
   if(scored[scored.length-1])scored[scored.length-1].placement='BTM';
 }
@@ -268,9 +279,10 @@ function assignTeamPlacements(scored, ep){
   // Do not add extra lows in four-duo episodes, because those already have a clean spread.
   if(teams.length>2 && !isDuoEpisode){
     const secondWorst=teams[teams.length-2];
-    if(secondWorst && secondWorst.score<=worst.score+1.2){
+    if(secondWorst && secondWorst.score<=worst.score+1.6){
       const swMembers=scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).sort((a,b)=>a.individualScore-b.individualScore);
       if(swMembers[0] && swMembers[0].placement==='SAFE')swMembers[0].placement='LOW';
+      if(swMembers[1] && swMembers.length>=4 && secondWorst.score<=worst.score+0.9 && swMembers[1].placement==='SAFE')swMembers[1].placement='LOW';
     }
   }
 }
@@ -289,6 +301,48 @@ function challengeDefinitionForEpisode(ep){
   if(ep.challengeType==='talent' && typeof makeTalentChallenge==='function') return makeTalentChallenge();
   return {id:ep.challengeType||'unknown', name:ep.challengeName||'Challenge', runwayWeight:.15, weights:{cunt:.30,lipSync:.20,acting:.20,runway:.20,makeup:.10}};
 }
+
+function episodeFormModifier(q, ep){
+  if(!q || !ep)return {score:0,label:''};
+  const arc=(typeof ensurePerformanceArc==='function')?ensurePerformanceArc(q):q.performanceArc;
+  const week=ep.number||0;
+  const isPeak=(arc?.peakWeeks||[]).includes(week);
+  const isBad=(arc?.badWeeks||[]).includes(week);
+  if(isPeak){
+    const comeback=(q.momentum||0)<0?0.45:0;
+    return {score:Math.round((1.55+comeback)*10)/10,label:'Peak week'};
+  }
+  if(isBad){
+    const pressure=(q.statistics?.wins||0)>=2?0.35:0;
+    return {score:Math.round((-1.55-pressure)*10)/10,label:'Bad week'};
+  }
+  return {score:0,label:''};
+}
+function winStreakFatigue(q){
+  // Keep fatigue as a small episode-form wobble only. Total WIN control belongs
+  // to the restored win redistribution throttle above, so this should not stack hard.
+  const streak=recentPlacementStreak(q,'WIN');
+  if(streak>=3)return -0.75;
+  if(streak>=2)return -0.35;
+  return 0;
+}
+function vulnerabilityPressureModifier(q, ep){
+  // Soft balance pass: queens who have stayed untouched for several episodes
+  // become a little more exposed to a LOW if they have only an average week.
+  // This does not force bottoms; it just makes perfect clean runs less common.
+  const st=q.statistics||{};
+  const competed=st.episodesCompeted||0;
+  if(competed<3)return 0;
+  if((st.lows||0)>0 || (st.bottoms||0)>0)return 0;
+  const week=ep?.number||0;
+  if(week<4)return 0;
+  let pressure=-0.35;
+  if((st.wins||0)>=1)pressure-=0.25;
+  if((st.highs||0)>=2)pressure-=0.20;
+  if((q.momentum||0)>=2)pressure-=0.15;
+  return Math.round(pressure*10)/10;
+}
+
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -301,13 +355,16 @@ function calculateEpisodeResults(playerChoices={}){
     const qEffects=currentQueenEffects(q);
     const risk=q.id===gameState.playerQueenId?playerChoices.risk:(qEffects.risk||chooseAIRisk(q));
     const base=weightedAttributeScore(q.attributes,challenge.weights);
-    if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5,5);
+    if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5.5,5.5);
     const runway=q.attributes.runway*3+ep.runwayRolls[q.id];
     const production=clamp((q.publicScores.production/8) * ((q.statistics?.wins||0)>=4 ? 0.5 : 1),-2,2);
-    const momentum=q.momentum;
+    const momentum=q.momentum||0;
+    const episodeForm=episodeFormModifier(q,ep);
+    const fatigue=winStreakFatigue(q);
+    const vulnerabilityPressure=vulnerabilityPressureModifier(q,ep);
     const riskBonus=riskRoll(risk);
     const miniBonus=q.id===ep.miniWinnerId?3:0;
-    if(q.id!==gameState.playerQueenId && ep.eventRolls[q.id]===undefined) ep.eventRolls[q.id]=rand(-1,1);
+    if(q.id!==gameState.playerQueenId && ep.eventRolls[q.id]===undefined) ep.eventRolls[q.id]=rand(-1.25,1.25);
     const eventBonus=q.id===gameState.playerQueenId?(ep.event?.score||0):(ep.eventRolls[q.id]||0);
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
     const energyStressMod=queenEnergyStressMod(q);
@@ -316,13 +373,13 @@ function calculateEpisodeResults(playerChoices={}){
     // should be felt directly. The runway attribute itself is still weighted by the
     // challenge's runwayWeight below, but choices like "Prioritize the runway" or
     // runway presentation moments are no longer diluted by that multiplier.
-    const choiceBonus=(effectSource.performance||0)+(effectSource.runway||0);
+    const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
-    const individualScore=base+runway*challenge.runwayWeight+production+momentum+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const individualScore=base+runway*challenge.runwayWeight+production+momentum+episodeForm.score+fatigue+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round(base*10)/10,runway:Math.round(runway*10)/10,production:Math.round(production*10)/10,momentum,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round(base*10)/10,runway:Math.round(runway*10)/10,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
@@ -353,10 +410,13 @@ function calculateEpisodeResults(playerChoices={}){
     const success=s.score>=scored[Math.floor(scored.length/2)].score;
     const isPlayer=s.queenId===gameState.playerQueenId;
     const pe=isPlayer?(ep.playerEffects||{}):(ep.queenEffects?.[s.queenId]||{});
-    const extra=` • Choices ${((pe.performance||0)+(pe.runway||0))>=0?'+':''}${(pe.performance||0)+(pe.runway||0)} • Energy/Stress ${s.energyStressMod>=0?'+':''}${s.energyStressMod}`;
+    const cleanText=s.vulnerabilityPressure?` • Vulnerability ${s.vulnerabilityPressure}`:'';
+    const extra=` • Choices ${((pe.performance||0)+(pe.runway||0))>=0?'+':''}${(pe.performance||0)+(pe.runway||0)} • Energy/Stress ${s.energyStressMod>=0?'+':''}${s.energyStressMod}${cleanText}`;
     const teamText=ep.teams?.length?(ep.judgingMode==='team'?` • Team ${s.teamName||'team'} ${s.teamBonus>=0?'+':''}${s.teamBonus}`:' • Judged individually'):'';
     const winThrottleText=s.winThrottlePenalty?` • Judges' expectations ${s.winThrottlePenalty}`:'';
-    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${extra}${teamText}${winThrottleText}`;
+    const formText=s.episodeForm?` • ${s.episodeFormLabel||'Episode form'} ${s.episodeForm>=0?'+':''}${s.episodeForm}`:'';
+    const fatigueText=s.fatigue?` • Fatigue ${s.fatigue}`:'';
+    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${extra}${teamText}${winThrottleText}`;
     s.critique=getCritiqueText(s.placement,ep.challengeType,s.risk,success);
     if(ep.judgingMode==='team' && s.teamName){
       const teamScore=ep.teamScores?.find(t=>t.teamId===s.teamId);
@@ -406,7 +466,7 @@ function resolveLipSync(playerMoves=null){
 
     const weeklyPerformance=lipSyncStrategyScore(moves.strategy, song, q); // 40%
     const ability=clamp((q.attributes.lipSync||0)*0.82 + (q.attributes.cunt||0)*0.18,0,10); // 40%
-    const momentumScore=clamp(((q.momentum||0)+5),0,10); // -5..+5 -> 0..10, 10%
+    const momentumScore=clamp(((q.momentum||0)+2)*2.5,0,10); // -2..+2 -> 0..10, 10%
     const productionScore=clamp(((q.publicScores?.production||0)+30)/6,0,10); // soft production scale, 10%
     const priorLipSyncPenalty=((q.statistics.lipSyncWins||0)+(q.statistics.lipSyncLosses||0))*0.5;
 

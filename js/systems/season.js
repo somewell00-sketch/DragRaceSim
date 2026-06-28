@@ -1,6 +1,6 @@
 function randomAmbition(){return Math.max(1,Math.min(5,Math.ceil(Math.random()*5)));}
-function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[]};}
-function hydrateQueen(q){return {...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[]};}
+function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
+function hydrateQueen(q){return {...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
 function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7}));}
 function randomizeAttributes(base){
   const randomized={};
@@ -53,7 +53,29 @@ function pickFinaleSize(castSize){
   if(castSize<=9)return 3;
   return Math.random()<0.2?3:4;
 }
-function startSeason(playerQueen, castSize='random'){const data=gameState.data; resetState(); gameState.data=data; const allowedCastSizes=[8,9,10,11,12,13,14,15,16]; const resolvedCastSize=String(castSize)==='random'?sample(allowedCastSizes):Math.max(8,Math.min(16,Number(castSize||14))); gameState.settings.castSize=resolvedCastSize; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
+
+function initializePerformanceArcs(){
+  const regularEpisodes=Math.max(1,(gameState.queens?.length||0)-(gameState.season?.finaleSize||4));
+  const weeks=Array.from({length:regularEpisodes},(_,i)=>i+1);
+  gameState.queens.forEach(q=>{
+    const peakCount=regularEpisodes>=9?3:2;
+    const badCount=regularEpisodes>=10?2:1;
+    const shuffled=shuffle(weeks);
+    const peakWeeks=shuffled.slice(0,peakCount).sort((a,b)=>a-b);
+    const badWeeks=shuffled.slice(peakCount,peakCount+badCount).sort((a,b)=>a-b);
+    q.performanceArc={peakWeeks,badWeeks};
+  });
+}
+function ensurePerformanceArc(q){
+  if(!q)return null;
+  const regularEpisodes=Math.max(1,(gameState.queens?.length||0)-(gameState.season?.finaleSize||4));
+  if(!q.performanceArc){
+    const weeks=shuffle(Array.from({length:regularEpisodes},(_,i)=>i+1));
+    q.performanceArc={peakWeeks:weeks.slice(0,regularEpisodes>=9?3:2).sort((a,b)=>a-b),badWeeks:weeks.slice(3,3+(regularEpisodes>=10?2:1)).sort((a,b)=>a-b)};
+  }
+  return q.performanceArc;
+}
+function startSeason(playerQueen, castSize='random'){const data=gameState.data; resetState(); gameState.data=data; const allowedCastSizes=[8,9,10,11,12,13,14,15,16]; const resolvedCastSize=String(castSize)==='random'?sample(allowedCastSizes):Math.max(8,Math.min(16,Number(castSize||14))); gameState.settings.castSize=resolvedCastSize; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
   if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';
@@ -593,14 +615,27 @@ function finaleLipRating(lipScore){
   // finalLipPerformance is roughly a 0-65 raw score. Turn it into a 0-100 rating.
   return clamp(lipScore*1.55, 0, 100);
 }
+
+function finaleWinBottomBonus(q){
+  // Small finale edge: the final lip sync still matters most, but a cleaner and stronger
+  // season record gives a light nudge. Previous lip sync appearances do not affect the
+  // actual final lip-sync performance.
+  const st=q.statistics||{};
+  const wins=st.wins||0;
+  const bottoms=st.bottoms||0;
+  const lows=st.lows||0;
+  const raw=(wins*1.6) - (bottoms*0.75) - (lows*0.20);
+  return Math.round(clamp(raw,-3,7)*10)/10;
+}
+
 function finaleMomentumBonus(q){
   const last=(q.episodeHistory||[]).filter(h=>String(h.episode)!=='Finale').slice(-4);
   let bonus=0;
   last.forEach(h=>{
     if(h.placement==='WIN')bonus+=1.2;
     else if(h.placement==='HIGH' || h.placement==='TOP2')bonus+=0.6;
-    else if(h.placement==='LOW')bonus-=0.7;
-    else if(h.placement==='BTM' || h.placement==='ELIM')bonus-=1.1;
+    else if(h.placement==='LOW')bonus-=0.5;
+    else if(h.placement==='BTM' || h.placement==='ELIM')bonus+=0;
   });
   bonus+=(q.momentum||0)*0.25;
   const p=q.personalityId||'';
@@ -628,12 +663,14 @@ function finaleClutchChoke(q){
 }
 function finalDecisionScore(q, lip=0, opponent=null, extras=null){
   // v24 Crowning Rewrite: the final lip sync now matters more than track record.
-  // 45% final lip sync, 35% season history, 10% fans, 10% production.
-  const score=finaleLipRating(lip)*0.45 + finaleHistoryRating(q)*0.35 + finalePublicRating(q,'fans')*0.10 + finalePublicRating(q,'production')*0.10;
+  // 50% final lip sync, 30% season history, 10% fans, 10% production.
+  // Bottom/lip-sync history remains part of track record, but it no longer drags down the final lip-sync performance itself.
+  const score=finaleLipRating(lip)*0.50 + finaleHistoryRating(q)*0.30 + finalePublicRating(q,'fans')*0.10 + finalePublicRating(q,'production')*0.10;
+  const winBottom=finaleWinBottomBonus(q);
   const momentum=finaleMomentumBonus(q);
   const underdog=opponent?finaleUnderdogBonus(q,opponent):0;
   const clutch=extras || {bonus:0,note:''};
-  return Math.round((score + momentum + underdog + (clutch.bonus||0))*10)/10;
+  return Math.round((score + winBottom + momentum + underdog + (clutch.bonus||0))*10)/10;
 }
 function controlledFinaleRandom(diff){
   // Small variance: mostly matters when the result is already close.
@@ -668,8 +705,8 @@ function makeFinalDuel(a,b,label='Final Lip Sync'){
     queenIds:[a.id,b.id],
     lipScores:{[a.id]:Math.round(la*10)/10,[b.id]:Math.round(lb*10)/10},
     finaleRatings:{
-      [a.id]:{lip:Math.round(finaleLipRating(la)*10)/10,history:Math.round(finaleHistoryRating(a)*10)/10,fans:Math.round(finalePublicRating(a,'fans')*10)/10,production:Math.round(finalePublicRating(a,'production')*10)/10,momentum:finaleMomentumBonus(a),underdog:finaleUnderdogBonus(a,b),clutch:clutchA.bonus,random:Math.round(randomA*10)/10},
-      [b.id]:{lip:Math.round(finaleLipRating(lb)*10)/10,history:Math.round(finaleHistoryRating(b)*10)/10,fans:Math.round(finalePublicRating(b,'fans')*10)/10,production:Math.round(finalePublicRating(b,'production')*10)/10,momentum:finaleMomentumBonus(b),underdog:finaleUnderdogBonus(b,a),clutch:clutchB.bonus,random:Math.round(randomB*10)/10}
+      [a.id]:{lip:Math.round(finaleLipRating(la)*10)/10,history:Math.round(finaleHistoryRating(a)*10)/10,fans:Math.round(finalePublicRating(a,'fans')*10)/10,production:Math.round(finalePublicRating(a,'production')*10)/10,momentum:finaleMomentumBonus(a),winBottom:finaleWinBottomBonus(a),underdog:finaleUnderdogBonus(a,b),clutch:clutchA.bonus,random:Math.round(randomA*10)/10},
+      [b.id]:{lip:Math.round(finaleLipRating(lb)*10)/10,history:Math.round(finaleHistoryRating(b)*10)/10,fans:Math.round(finalePublicRating(b,'fans')*10)/10,production:Math.round(finalePublicRating(b,'production')*10)/10,momentum:finaleMomentumBonus(b),winBottom:finaleWinBottomBonus(b),underdog:finaleUnderdogBonus(b,a),clutch:clutchB.bonus,random:Math.round(randomB*10)/10}
     },
     finaleNotes:{[a.id]:clutchA.note,[b.id]:clutchB.note,judgePreference},
     strategies:{[a.id]:pa.strategy,[b.id]:pb.strategy},

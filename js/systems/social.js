@@ -307,22 +307,22 @@ function buildDynamicPlayerEffects(kind,target=null){
     return {effects:{fans:3,confidence:4,queens:3,stress:-2,relationships:relationshipEffectsFor(targets,24,9)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
   }
   if(kind==='askHelp' && target){
-    return {effects:{challengeBonus:0.4,stress:-8,confidence:3,affinity:28,respect:10},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a small challenge boost.`};
+    return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:28,respect:10},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
   }
   if(kind==='comfort' && target){
-    return {effects:{fans:2,affinity:28,respect:10},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
+    return {effects:{fans:2,confidence:2,momentum:1,affinity:28,respect:10},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
   }
   if(kind==='provoke' && target){
-    return {effects:{production:6,stress:5,affinity:-26,respect:-10},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
+    return {effects:{production:6,stress:7,momentum:-1,affinity:-26,respect:-10},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
   }
   if(kind==='apologize' && target){
     return {effects:{production:0,fans:1,stress:-4,affinity:26,respect:8},note:`You apologize to ${target.name}. The damage is repaired enough for the rivalry to cool, even if trust is not automatic.`};
   }
   if(kind==='makeDrama'){
-    return {effects:{production:8,fans:2,stress:7,queens:-2,relationships:relationshipEffectsFor(targets,-20,-6)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
+    return {effects:{production:8,fans:2,stress:8,queens:-2,momentum:-1,relationships:relationshipEffectsFor(targets,-20,-6)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
   }
   if(kind==='buildAlliance' && target){
-    return {effects:{production:1,fans:1,stress:1,affinity:22,respect:14},note:`You and ${target.name} form an alliance. This can now affect social sparks, Untucked tension, narrative events, and future strategic beats.`};
+    return {effects:{production:1,fans:1,confidence:3,momentum:1,stress:1,affinity:22,respect:14},note:`You and ${target.name} form an alliance. This can now affect social sparks, Untucked tension, narrative events, and future strategic beats.`};
   }
   return null;
 }
@@ -343,7 +343,7 @@ function applyTargetedPrepChoice(choice,target){
   if(choice.dynamicEffect==='askHelp' && target){
     const built=buildDynamicPlayerEffects('askHelp',target);
     applyPlayerEffects(built.effects,built.note,target.id);
-    applyQueenEffects(target,{challengeBonus:0.2,confidence:2,stress:-3,production:1,fans:1},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
+    applyQueenEffects(target,{challengeBonus:0.8,confidence:3,stress:-3,production:1,fans:1},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
     addStoryFlag(target.id,'warm_moment',`${target.name} helped the player prepare.`,1);
     episodeSocialNote('workroom',built.note);
     return;
@@ -423,7 +423,7 @@ function applySabotageAttempt(targetId){
   if(success){
     const note=`Your sabotage lands. ${target.name} takes a challenge penalty, gets stressed, and the relationship gets much worse.`;
     applyPlayerEffects({production:6,fans:1,stress:4,affinity:-30,respect:-12},note,target.id);
-    applyQueenEffects(target,{challengeBonus:-0.6,stress:14,confidence:-5},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
+    applyQueenEffects(target,{challengeBonus:-1.6,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
     maybeVillainEdit(player,0.22,`successfully sabotaged ${target.name}`);
     episodeSocialNote('workroom',note);
   }else{
@@ -655,6 +655,7 @@ function ensureQueenV14Stats(q){
   ensureQueenSocialStats(q);
   if(q.confidence===undefined) q.confidence=50;
   if(q.episodeModifiers===undefined) q.episodeModifiers={performance:0,runway:0};
+  if(typeof ensurePerformanceArc==='function') ensurePerformanceArc(q);
   if(q.publicScores.production===undefined) q.publicScores.production=0;
   if(q.publicScores.queens===undefined) q.publicScores.queens=0;
   if(q.publicScores.fans===undefined) q.publicScores.fans=0;

@@ -7,7 +7,7 @@ const GAMEPLAY_EFFECT_LIMITS = {
   stress: [0, 100],
   energy: [0, 100],
   confidence: [0, 100],
-  momentum: [-5, 5],
+  momentum: [-2, 2],
   relationship: [-100, 100]
 };
 
