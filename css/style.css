@@ -3663,3 +3663,15 @@ button.creator-dice-btn:hover,
   -webkit-line-clamp:unset!important;
   -webkit-box-orient:initial!important;
 }
+
+.badge.win.lip-sync-win{background:#0f2747!important;color:#fff!important;border-color:rgba(255,255,255,.45)!important;font-weight:800;}
+.lipstick-reveal{margin:1.1rem 0;padding:1rem 1.1rem;border:1px solid rgba(255,255,255,.16);border-radius:18px;background:linear-gradient(135deg,rgba(15,39,71,.22),rgba(255,255,255,.04));text-align:center;}
+.lipstick-reveal-kicker{margin:0;color:rgba(255,255,255,.78);letter-spacing:.08em;text-transform:uppercase;font-size:.78rem;font-weight:700;}
+.lipstick-reveal-dots{margin:.2rem 0;color:rgba(255,255,255,.55);letter-spacing:.35em;}
+.lipstick-reveal-name{margin:.1rem 0 0;font-size:clamp(2rem,5vw,3.5rem);line-height:1;font-weight:900;color:#fff;}
+
+.legacy-lipsync-win{font-size:clamp(1.45rem,3vw,2.25rem);line-height:1.15;margin-bottom:.85rem;color:#fff;}
+.legacy-lipsync-safe{font-size:1.05rem;}
+.legacy-power-line{margin:1rem 0;font-size:1.05rem;}
+
+.legacy-power-line{margin:1rem 0 .65rem;font-weight:750;color:rgba(255,255,255,.88);}

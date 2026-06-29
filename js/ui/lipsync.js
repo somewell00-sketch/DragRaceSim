@@ -1,19 +1,56 @@
 function renderLipSync(){
   const ep=gameState.currentEpisode;
-  const duelIds=ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens;
+  const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
+  const duelIds=isLegacy ? (ep.top2Queens||[]) : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens);
   const bottom=duelIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
-  const badge=ep.special==='premiere_no_elim'?'Top 2 Lip Sync':'Lip Sync For Your Life';
-  const intro=ep.special==='premiere_no_elim'
+  const badge=(ep.special==='premiere_no_elim'||isLegacy)?'Top 2 Lip Sync':'Lip Sync For Your Life';
+  const intro=(ep.special==='premiere_no_elim'||isLegacy)
     ? 'Two top queens stand before me.'
     : 'Two queens stand before me.';
-  const prompt=ep.special==='premiere_no_elim'
-    ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-    : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.";
-  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('The music starts...', ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE', ep.special==='premiere_no_elim'?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div><div class="card" id="step"></div></section>${queenSidebar()}</main>`);
+  const prompt=isLegacy
+    ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : (ep.special==='premiere_no_elim'
+      ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
+      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.");
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('The music starts...', isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div><div class="card" id="step"></div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLipSync));
-  if(playerInBottom){renderLipSyncStrategyChoice();} else {const result=resolveLipSync(); applyEpisodeStats(); renderLipSyncResult(result);}
+  if(isLegacy && playerInBottom && !ep.playerLegacyLipstickChosen){
+    renderLegacyLipstickChoice(()=>renderLipSyncStrategyChoice());
+  } else if(playerInBottom){
+    renderLipSyncStrategyChoice();
+  } else {
+    const result=resolveLipSync();
+    applyEpisodeStats();
+    renderLipSyncResult(result);
+  }
 }
+
+function renderLegacyLipstickChoice(onContinue){
+  const ep=gameState.currentEpisode;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const bottomQueens=(ep.bottomQueens||[])
+    .map(id=>gameState.queens.find(q=>q.id===id))
+    .filter(Boolean)
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  const step=document.querySelector('#step');
+  if(!step || !player || !bottomQueens.length){
+    ep.playerLegacyLipstickChosen=true;
+    saveGame();
+    onContinue?.();
+    return;
+  }
+  step.classList.add('decision-card','important');
+  step.innerHTML=`<h3>Choose Your Lipstick</h3><p>You are in the Top 2. Before the lip sync, choose which bottom queen you would eliminate if you win.</p><p class="small">Your choice stays secret unless you win the lip sync.</p><div class="options">${bottomQueens.map(q=>choiceButtonHtml({id:q.id,attr:'data-lipstick-choice',label:`💄 ${escapeHtml(q.name)}`,desc:'Choose this lipstick.'})).join('')}</div>`;
+  document.querySelectorAll('[data-lipstick-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+    ep.legacyVotes=ep.legacyVotes||{};
+    ep.legacyVotes[player.id]=btn.dataset.lipstickChoice;
+    ep.playerLegacyLipstickChosen=true;
+    saveGame();
+    onContinue?.();
+  }));
+}
+
 function renderLipSyncStrategyChoice(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   const reveals=player?.inventory?.reveals||0;
@@ -30,7 +67,7 @@ function renderLipSyncStrategyChoice(){
   ];
   const step=document.querySelector('#step');
   step.classList.add('decision-card','important');
-  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>You are in the Bottom. Choose the story you want to tell on stage.</p><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
+  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>${getSeasonFormat()==='legacy'?'You are in the Top 2. Choose the story you want to tell on stage.':'You are in the Bottom. Choose the story you want to tell on stage.'}</p><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
     const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
     return choiceButtonHtml({id,attr:'data-strategy',label,desc,disabled});
   }).join('')}</div>`;
@@ -888,6 +925,13 @@ function lipSyncNarrative(result){
 }
 function lipSyncDecisionText(result){
   const ep=gameState.currentEpisode;
+  if(result.outcome==='legacyElimination'){
+    const winner=gameState.queens.find(q=>q.id===result.survivorId);
+    const loser=result.results.find(r=>r.queenId!==result.survivorId);
+    const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
+    const bottoms=(ep.bottomQueens||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).sort((a,b)=>a.localeCompare(b));
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are a winner, baby!</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p><p class="legacy-bottom-call">The bottom queens<br><strong>${bottoms.join(',<br>')}</strong><br>please step forward.</p><p class="legacy-power-line"><strong>${escapeHtml(winner?.name||'Winner')}</strong>, with great power comes great responsibility.<br><br>Who have you decided to give the chop?</p><p><strong>${escapeHtml(winner?.name||'The winning queen')}</strong> reveals the lipstick...</p><div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(eliminated?.name||'a bottom queen')}.</p></div><p>${escapeHtml(eliminated?.name||'My dear')}, sashay away.</p>`;
+  }
   if(result.outcome==='top2Win'){
     const winner=gameState.queens.find(q=>q.id===result.survivorId);
     const loser=result.results.find(r=>r.queenId!==result.survivorId);
@@ -901,12 +945,15 @@ function lipSyncDecisionText(result){
 }
 function renderLipSyncResult(result){
   const ep=gameState.currentEpisode;
-  const badge=ep.special==='premiere_no_elim'?'Top 2 Lip Sync':'Lip Sync For Your Life';
-  const intro=ep.special==='premiere_no_elim'?'Two top queens stand before me.':'Two queens stand before me.';
-  const prompt=ep.special==='premiere_no_elim'
-    ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-    : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.";
-  document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE', ep.special==='premiere_no_elim'?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
+  const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
+  const badge=(ep.special==='premiere_no_elim'||isLegacy)?'Top 2 Lip Sync':'Lip Sync For Your Life';
+  const intro=(ep.special==='premiere_no_elim'||isLegacy)?'Two top queens stand before me.':'Two queens stand before me.';
+  const prompt=isLegacy
+    ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : (ep.special==='premiere_no_elim'
+      ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
+      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.");
+  document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
   <div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>
   <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ✦ ✦ 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
   <div class="card">${lipSyncDecisionText(result)}<p>If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue spotlight-cue">💡 ✦ 💡</p></div>

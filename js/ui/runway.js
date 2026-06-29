@@ -545,9 +545,13 @@ function renderJudgesCritiques(){
   }else if(winners.length>1){
     topAnnouncements.push(`<p><strong>Condragulations, ${winners.map(w=>escapeHtml(w.name)).join(' and ')}. You are the winners of this week’s challenge.</strong></p>`);
   }
-  if(worst)bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===worst.queenId),'xs')} <strong>${escapeHtml(worst.name)}</strong>, I’m sorry, but you are up for elimination.</p>`);
+  bottomSorted.forEach((b,idx)=>{
+    const line = idx===0
+      ? `I’m sorry, but you are up for elimination.`
+      : `I’m sorry, my dear, but you are also up for elimination.`;
+    bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===b.queenId),'xs')} <strong>${escapeHtml(b.name)}</strong>, ${line}</p>`);
+  });
   lowQueens.forEach(l=>bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===l.queenId),'xs')} <strong>${escapeHtml(l.name)}</strong>, you are safe.</p>`));
-  if(secondWorst)bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===secondWorst.queenId),'xs')} <strong>${escapeHtml(secondWorst.name)}</strong>, I’m sorry, my dear, but you are also up for elimination.</p>`);
   setHTML(`<main class="layout"><section class="screen">
     <div class="hero"><span class="badge">Judges</span><h2>Judges’ Critiques</h2><p>The safe queens are backstage. The tops and bottoms remain on the main stage.</p></div>
     <div class="card"><h3>Critiques</h3><div class="critique-list">${critiques}</div></div>

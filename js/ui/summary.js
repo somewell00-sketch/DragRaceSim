@@ -461,6 +461,7 @@ function calculateFanFavorite(playerVoteId=null){
   return gameState.season.fanFavorite;
 }
 function fanFavoriteAnnouncementHtml(){
+  if(typeof hasMissCongeniality==='function' && !hasMissCongeniality())return '';
   const fan=gameState.season?.fanFavorite;
   if(!fan?.winnerId)return '';
   const winner=gameState.queens.find(q=>q.id===fan.winnerId);
@@ -477,11 +478,14 @@ function fanFavoriteAnnouncementHtml(){
 function renderFinaleGrandFinale(){
   const finalists=gameState.queens.filter(q=>!q.isEliminated);
   const returning=eliminatedQueensForFinaleReturn();
-  const existingVote=gameState.season?.fanFavorite;
+  const showMissCongeniality=typeof hasMissCongeniality==='function'?hasMissCongeniality():true;
+  const existingVote=showMissCongeniality?gameState.season?.fanFavorite:{winnerId:null};
   const voteOptions=(gameState.queens||[]).filter(q=>q.id!==gameState.playerQueenId).slice().sort((a,b)=>a.name.localeCompare(b.name));
-  const voteHtml=existingVote
-    ? `<p>The votes have been locked.</p><p class="small">Your vote: ${escapeHtml(qName(existingVote.playerVoteId))}</p>`
-    : `<p>Who has your vote for Miss Congeniality?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`;
+  const voteHtml=showMissCongeniality
+    ? (existingVote
+      ? `<p>The votes have been locked.</p><p class="small">Your vote: ${escapeHtml(qName(existingVote.playerVoteId))}</p>`
+      : `<p>Who has your vote for Miss Congeniality?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`)
+    : `<p class="small">This format skips Miss Congeniality voting.</p>`;
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>Grand Finale</h1><p>Welcome to the Grand Finale. Tonight, the full cast returns before the crown is decided.</p></section>
     <section class="card">
@@ -489,12 +493,12 @@ function renderFinaleGrandFinale(){
       <p>From the first queen to leave to the last queen before the finale, the cast returns to the stage and receives their applause.</p>
       ${returning.length?`<ol class="finale-return-list">${returning.map(finaleReturnLine).join('')}</ol>`:'<p>Every queen still standing has reached the finale.</p>'}
     </section>
-    <section class="card important decision-card">
+    ${showMissCongeniality?`<section class="card important decision-card">
       <h2>Miss Congeniality Vote</h2>
       ${voteHtml}
-    </section>
+    </section>`:''}
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
-    ${existingVote?'<button id="continueFinaleIntro">Continue</button>':''}
+    ${(existingVote||!showMissCongeniality)?'<button id="continueFinaleIntro">Continue</button>':''}
   </main>`);
   document.querySelectorAll('[data-fan-favorite-vote]').forEach(btn=>btn.addEventListener('click',()=>{
     calculateFanFavorite(btn.dataset.fanFavoriteVote);
@@ -541,7 +545,7 @@ const sashays = (finale.thirdFourthIds || []).length
       <p>Now, sashay away.</p>
     </section>`
   : '';
-  if(!gameState.season?.fanFavorite) calculateFanFavorite(null);
+  if((typeof hasMissCongeniality!=='function' || hasMissCongeniality()) && !gameState.season?.fanFavorite) calculateFanFavorite(null);
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(2,'Final Cut')}<h1>The Grand Finale Continues</h1><p>${escapeHtml(format)}. Ru makes the final cut before the last lip sync.</p></section>
     ${semiRows}

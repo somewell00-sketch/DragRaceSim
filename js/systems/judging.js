@@ -402,6 +402,19 @@ function ensureBallRunwayScores(ep,q){
   return {scores,composite:Math.round(composite*10)/10,weights};
 }
 
+
+function applyLegacyPlacements(scored, ep){
+  scored.forEach(s=>s.placement='SAFE');
+  if(scored[0])scored[0].placement='WIN';
+  if(scored[1])scored[1].placement='WIN';
+  const bottomCount=Math.min(3, Math.max(0, scored.length-2));
+  scored.slice(-bottomCount).forEach(s=>s.placement='BTM');
+  if(scored[2] && scored[2].placement==='SAFE')scored[2].placement='HIGH';
+  ep.top2Queens=scored.slice(0,2).map(s=>s.queenId);
+  ep.bottomQueens=scored.slice(-bottomCount).map(s=>s.queenId);
+  ep.legacyVotes={};
+  ep.top2Queens.forEach(id=>{ep.legacyVotes[id]=chooseLipstick(id, ep.bottomQueens);});
+}
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -448,6 +461,10 @@ function calculateEpisodeResults(playerChoices={}){
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
 
+  if(getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+    applyLegacyPlacements(scored, ep);
+  }
+
   if(ep.special==='premiere_no_elim'){
     scored.forEach(s=>s.placement='SAFE');
     if(scored[0])scored[0].placement='TOP2';
@@ -461,7 +478,7 @@ function calculateEpisodeResults(playerChoices={}){
   // Do not run win redistribution here, because that would create a challenge WIN
   // before the lip sync has happened. The two best queens remain TOP2 until
   // resolveLipSync() promotes only the lip sync winner to WIN.
-  if(ep.special!=='premiere_no_elim'){
+  if(ep.special!=='premiere_no_elim' && getSeasonFormat()!=='legacy'){
     applyPassiveWinCap(scored,ep);
     applyWinThrottles(scored,ep);
   }
@@ -503,7 +520,7 @@ function calculateEpisodeResults(playerChoices={}){
     }
   });
   ep.placements=scored;
-  ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,2).map(s=>s.queenId);
+  ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,['legacy','assassin'].includes(getSeasonFormat())?3:2).map(s=>s.queenId);
   saveGame();
   return scored;
 }
@@ -546,7 +563,7 @@ function recordIconicLipSync(ep, lipSyncResult){
 function resolveLipSync(playerMoves=null){
   const ep=gameState.currentEpisode;
   const song=ep.song;
-  const bottom=(ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)
+  const bottom=((getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)) ? (ep.top2Queens||[]) : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens))
     .map(id=>gameState.queens.find(q=>q.id===id))
     .filter(Boolean);
   if(bottom.length<2){
@@ -638,6 +655,24 @@ function resolveLipSync(playerMoves=null){
     return ep.lipSyncResult;
   }
 
+  if(getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+    const winner=results[0], loser=results[1];
+    const bottomIds=ep.bottomQueens||[];
+    const votes={};
+    (ep.legacyVotes?Object.values(ep.legacyVotes):[]).forEach(id=>{if(id)votes[id]=(votes[id]||0)+1;});
+    const winnerLipstick=ep.legacyVotes?.[winner.queenId];
+    const eliminatedQueenId=(winnerLipstick && bottomIds.includes(winnerLipstick)) ? winnerLipstick : (bottomIds[0] || loser?.queenId);
+    ep.placements.forEach(p=>{
+      if((ep.top2Queens||[]).includes(p.queenId)){p.placement='WIN'; p.lipSyncWinner=(p.queenId===winner.queenId);}
+      if(p.queenId===eliminatedQueenId)p.legacyEliminated=true;
+    });
+    ep.lipSyncResult={song,results,outcome:'legacyElimination',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId,eliminatedQueenIds:[eliminatedQueenId],difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10,legacyVotes:ep.legacyVotes||{},groupVotes:votes};
+    recordIconicLipSync(ep, ep.lipSyncResult);
+    ep.eliminatedQueenId=eliminatedQueenId;
+    saveGame();
+    return ep.lipSyncResult;
+  }
+
   const survivor=results[0], eliminated=results[1];
   const diff=Math.abs(results[0].score10-results[1].score10);
   let outcome='normal';
@@ -681,7 +716,7 @@ function applyEpisodeStats(){
     const q=gameState.queens.find(x=>x.id===p.queenId);
     if(!q)continue;
     q.statistics.episodesCompeted++;
-    q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM'});
+    q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM' || !!p.lipSyncWinner,lipSyncWinner:!!p.lipSyncWinner});
     if(p.placement==='WIN'){
       q.statistics.wins++;
       if(typeof applyChallengeWinRelationshipPenalty==='function')applyChallengeWinRelationshipPenalty(q,ep);
@@ -693,7 +728,12 @@ function applyEpisodeStats(){
     applyChoiceEffects(placementEffects[p.placement]||{},{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
   }
   if(ep.lipSyncResult){
-    if(ep.lipSyncResult.outcome==='top2Win'){
+    if(ep.lipSyncResult.outcome==='legacyElimination'){
+      const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+      const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
+      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Legacy lip sync win.',source:'lip-sync-result',save:false}); }
+      if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
+    } else if(ep.lipSyncResult.outcome==='top2Win'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
       if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }
       ep.eliminatedQueenId=null;

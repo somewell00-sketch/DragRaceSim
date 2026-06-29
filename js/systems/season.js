@@ -1,4 +1,97 @@
 function randomAmbition(){return Math.max(1,Math.min(5,Math.ceil(Math.random()*5)));}
+
+function getSeasonFormat(){return gameState.season?.format || gameState.settings?.seasonFormat || 'regular';}
+function isAllStarsFormat(format=getSeasonFormat()){return ['legacy','assassin','no_elimination','brackets'].includes(format);}
+function usesLegacyLipSync(format=getSeasonFormat()){return ['legacy','no_elimination','brackets'].includes(format);}
+function usesGroupVote(format=getSeasonFormat()){return format==='assassin' || format==='brackets';}
+function hasEliminationsDuringSeason(format=getSeasonFormat()){return format==='regular' || format==='legacy' || format==='assassin';}
+function hasMissCongeniality(format=getSeasonFormat()){return format==='regular';}
+function getDefaultRegularCastSizes(){return [8,9,10,11,12,13,14,15,16];}
+function getAllowedCastSizes(format='regular'){
+  if(format==='brackets')return [18];
+  if(['legacy','assassin','no_elimination'].includes(format))return [8,9,10];
+  return getDefaultRegularCastSizes();
+}
+function normalizeSeasonFormat(format){
+  return ['regular','legacy','assassin','no_elimination','brackets'].includes(format)?format:'regular';
+}
+function resolveCastSizeForFormat(castSize, format='regular'){
+  const allowed=getAllowedCastSizes(format);
+  if(String(castSize)==='random')return sample(allowed);
+  const requested=Number(castSize||allowed[allowed.length-1]);
+  if(allowed.includes(requested))return requested;
+  return allowed.reduce((best,n)=>Math.abs(n-requested)<Math.abs(best-requested)?n:best, allowed[0]);
+}
+function getEpisodeQueenIds(){
+  const format=getSeasonFormat();
+  if(format==='brackets' && gameState.season?.brackets){
+    const group=gameState.season.brackets.currentGroup;
+    return (gameState.season.brackets.groups?.[group]||[]).filter(id=>!gameState.queens.find(q=>q.id===id)?.isEliminated);
+  }
+  return (gameState.queens||[]).filter(q=>!q.isEliminated).map(q=>q.id);
+}
+function getEpisodeQueens(){
+  const ids=new Set(getEpisodeQueenIds());
+  return (gameState.queens||[]).filter(q=>ids.has(q.id));
+}
+function chooseLipstick(topQueenId, bottomIds){
+  const top=gameState.queens.find(q=>q.id===topQueenId);
+  const candidates=(bottomIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  if(!top || !candidates.length)return bottomIds?.[0]||null;
+
+  const topPersonality=String(top.personalityId||top.personality||'').toLowerCase();
+  const isStrategic=['strategic','calculating','ambitious','competitive','shady'].some(k=>topPersonality.includes(k));
+  const isLoyal=['sweet','sweetheart','kind','loyal','warm','motherly'].some(k=>topPersonality.includes(k));
+  const isDrama=['dramatic','chaotic','shady','villain'].some(k=>topPersonality.includes(k));
+
+  const scored=candidates.map(q=>{
+    const rel=gameState.relationships?.[top.id]?.[q.id]||{};
+    const affinity=Number(rel.affinity)||0;
+    const respect=Number(rel.respect)||0;
+    const wins=Number(q.statistics?.wins)||0;
+    const highs=Number(q.statistics?.highs)||0;
+    const lows=Number(q.statistics?.lows)||0;
+    const bottoms=Number(q.statistics?.bottoms)||0;
+    const lipSyncLosses=Number(q.statistics?.lipSyncLosses)||0;
+
+    // Positive score means this bottom queen is more likely to be chopped.
+    const threat=(wins*16)+(highs*5)-(bottoms*3);
+    const trackRecordCase=(bottoms*12)+(lows*4)+(lipSyncLosses*5)-(wins*8)-(highs*2);
+    const rivalry=affinity<0?Math.abs(affinity)*0.55:0;
+    const friendship=affinity>0?affinity*0.72:0;
+    const respectProtection=respect>0?respect*0.18:0;
+    const respectThreat=respect<0?Math.abs(respect)*0.12:0;
+    const productionAttention=Math.max(0, Number(q.publicScores?.production)||0)*0.06;
+
+    let score=0;
+    score+=trackRecordCase*0.70;
+    score+=threat*(isStrategic?0.95:0.45);
+    score+=rivalry*(isDrama?1.25:0.85);
+    score-=friendship*(isLoyal?1.45:0.95);
+    score-=respectProtection;
+    score+=respectThreat;
+    score+=productionAttention;
+    score+=rand(-8,8);
+
+    return {id:q.id,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  return scored[0]?.id||candidates[0].id;
+}
+function storedVoteFor(voterId){return gameState.currentEpisode?.legacyVotes?.[voterId] || gameState.currentEpisode?.groupVotes?.[voterId] || null;}
+function getMostVotedQueenIds(votesByQueenId){
+  const entries=Object.entries(votesByQueenId||{});
+  if(!entries.length)return [];
+  const max=Math.max(...entries.map(([,v])=>Number(v)||0));
+  return entries.filter(([,v])=>(Number(v)||0)===max).map(([id])=>id);
+}
+function resolveVoteResult(votesByQueenId, tieBreakerQueenId, bottomIds=[]){
+  const tiedIds=getMostVotedQueenIds(votesByQueenId).filter(id=>!bottomIds.length || bottomIds.includes(id));
+  if(tiedIds.length<=1)return tiedIds[0]||bottomIds[0]||null;
+  const tieBreakerChoice=storedVoteFor(tieBreakerQueenId);
+  if(tieBreakerChoice && tiedIds.includes(tieBreakerChoice))return tieBreakerChoice;
+  return tiedIds[0];
+}
 function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,location:'wherever you are',isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
 function hydrateQueen(q){return {...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
 function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7}));}
@@ -56,7 +149,8 @@ function makeGeneratedQueen(index, usedNames=new Set()){
 }
 function makeExtraQueen(index){return makeGeneratedQueen(index,new Set());}
 function buildNpcCast(size){
-  const needed=Math.max(7,Math.min(15,Number(size||14)-1));
+  const maxNpc=Number(size||14)>=18?17:15;
+  const needed=Math.max(7,Math.min(maxNpc,Number(size||14)-1));
   const usedNames=new Set();
   const cast=[];
   for(let i=1;i<=needed;i++) cast.push(makeGeneratedQueen(i, usedNames));
@@ -90,7 +184,7 @@ function ensurePerformanceArc(q){
   }
   return q.performanceArc;
 }
-function startSeason(playerQueen, castSize='random'){const data=gameState.data; resetState(); gameState.data=data; const allowedCastSizes=[8,9,10,11,12,13,14,15,16]; const resolvedCastSize=String(castSize)==='random'?sample(allowedCastSizes):Math.max(8,Math.min(16,Number(castSize||14))); gameState.settings.castSize=resolvedCastSize; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
+function startSeason(playerQueen, castSize='random', seasonFormat='regular'){const data=gameState.data; resetState(); gameState.data=data; const format=normalizeSeasonFormat(seasonFormat); const resolvedCastSize=resolveCastSizeForFormat(castSize,format); gameState.settings.castSize=resolvedCastSize; gameState.settings.seasonFormat=format; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',format,finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
   if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';
@@ -417,7 +511,8 @@ function choosePremiereFormat(castSize){
 }
 function setupPremiereStructure(){
   const castSize=gameState.queens.length;
-  const format=choosePremiereFormat(castSize);
+  const seasonFormat=getSeasonFormat();
+  const format=seasonFormat==='regular'?choosePremiereFormat(castSize):'normal';
   const useTalent=Math.random()<0.5;
   gameState.season.premiere={format,useTalent,phase:0,complete:false};
   if(format.startsWith('double')){
@@ -481,6 +576,7 @@ function currentEpisodeParticipantNames(){
 }
 
 function shouldTriggerLalaparuza(activeCount){
+  if(getSeasonFormat()!=='regular')return false;
   if(gameState.season?.lalaparuzaDone || gameState.season?.lalaparuzaChecked)return false;
   if(activeCount!==8)return false;
   gameState.season.lalaparuzaChecked=true;
@@ -501,7 +597,8 @@ function shouldOfferReunionSmackdown(){
 
 function generateEpisode(){
   const premiereIds=nextPremiereParticipantIds();
-  const fullActive=gameState.queens.filter(q=>!q.isEliminated);
+  const episodeIds=getEpisodeQueenIds();
+  const fullActive=gameState.queens.filter(q=>!q.isEliminated && episodeIds.includes(q.id));
   const active=premiereIds?fullActive.filter(q=>premiereIds.includes(q.id)):fullActive;
   const activeCount=active.length;
   const fullActiveCount=fullActive.length;
