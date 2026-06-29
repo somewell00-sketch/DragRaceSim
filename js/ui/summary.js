@@ -418,14 +418,14 @@ function fanFavoriteScoreFor(voter, candidate){
   const pub=candidate?.publicScores||{};
   const st=candidate?.statistics||{};
   let score=0;
-  score += affinity*0.55;
-  score += respect*0.35;
-  score += (Number(pub.queens)||0)*0.25;
-  score += (Number(pub.fans)||0)*0.20;
+  score += affinity*0.88;
+  score += respect*0.62;
+  score += (Number(pub.queens)||0)*0.48;
+  score += (Number(pub.fans)||0)*0.24;
   score += (Number(pub.production)||0)*0.10;
-  score += (st.wins||0)*2 + (st.highs||0);
-  score -= (st.bottoms||0)*0.8;
-  score += rand(-10,10);
+  score += (st.wins||0)*1.30 + (st.highs||0)*0.65;
+  score -= (st.bottoms||0)*0.40;
+  score += rand(-8,8);
   return score;
 }
 function calculateFanFavorite(playerVoteId=null){
@@ -467,9 +467,9 @@ function fanFavoriteAnnouncementHtml(){
   const playerPick=gameState.queens.find(q=>q.id===fan.playerVoteId);
   const tieLine=(fan.tiedIds||[]).length>1 ? '<p class="small">The vote was tied, so production favorite broke the tie.</p>' : '';
   return `<section class="card important fan-favorite-reveal">
-    <h2>⭐ Fan Favorite</h2>
+    <h2>⭐ Miss Congeniality</h2>
     <p>The queens have voted${playerPick?`, and your vote went to <strong>${escapeHtml(playerPick.name)}</strong>`:''}.</p>
-    <p>The Fan Favorite of the season is...</p>
+    <p>The Miss Congeniality of the season is...</p>
     <p class="fan-favorite-winner-name"><strong>${escapeHtml(winner?.name||'A queen')}!</strong></p>
     ${tieLine}
   </section>`;
@@ -481,7 +481,7 @@ function renderFinaleGrandFinale(){
   const voteOptions=(gameState.queens||[]).filter(q=>q.id!==gameState.playerQueenId).slice().sort((a,b)=>a.name.localeCompare(b.name));
   const voteHtml=existingVote
     ? `<p>The votes have been locked.</p><p class="small">Your vote: ${escapeHtml(qName(existingVote.playerVoteId))}</p>`
-    : `<p>Who has your vote for Fan Favorite?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`;
+    : `<p>Who has your vote for Miss Congeniality?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`;
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>Grand Finale</h1><p>Welcome to the Grand Finale. Tonight, the full cast returns before the crown is decided.</p></section>
     <section class="card">
@@ -490,7 +490,7 @@ function renderFinaleGrandFinale(){
       ${returning.length?`<ol class="finale-return-list">${returning.map(finaleReturnLine).join('')}</ol>`:'<p>Every queen still standing has reached the finale.</p>'}
     </section>
     <section class="card important decision-card">
-      <h2>Fan Favorite Vote</h2>
+      <h2>Miss Congeniality Vote</h2>
       ${voteHtml}
     </section>
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>

@@ -24,13 +24,13 @@ const PREP_CHOICES = {
   rehearse: {
     label:'Rehearse until it hurts',
     description:'Better challenge prep, but it costs energy.',
-    effects:{performance:4, energy:-14, stress:8, production:1, queens:0, fans:0},
+    effects:{performance:4, energy:-14, stress:8, production:1.2, queens:0, fans:0},
     text:'You work the material until your brain has contour lines. It helps, but you are tired.'
   },
   runway: {
     label:'Prioritize the runway',
     description:'Boost your visual presentation but split your focus.',
-    effects:{performance:-2, runway:7, energy:-9, stress:4, production:1, queens:0, fans:3},
+    effects:{performance:-2, runway:7, energy:-9, stress:4, production:1.25, queens:0, fans:3.8},
     text:'You pour extra time into the look. The fantasy gets stronger, but the challenge gets less rehearsal.'
   },
   ask_help: {
@@ -50,7 +50,7 @@ const PREP_CHOICES = {
   rest: {
     label:'Protect your energy',
     description:'Recover now, even if the challenge gets less polish.',
-    effects:{performance:-2, energy:14, stress:-8, production:-1, queens:1, fans:0},
+    effects:{performance:-2, energy:14, stress:-8, production:-1.2, queens:1.25, fans:0},
     text:'You take a breath and stop spiraling. The challenge may suffer, but your body thanks you.'
   }
 };
@@ -59,21 +59,21 @@ const CHALLENGE_APPROACHES = {
   safe: {
     label:'Play it safe',
     description:'Consistent and controlled. Less likely to flop, less likely to win.',
-    effects:{performance:1, energy:-4, stress:-2, production:-1, queens:1, fans:0},
+    effects:{performance:1, energy:-4, stress:-2, production:-1.25, queens:1.25, fans:0},
     risk:'safe',
     text:'You choose control over chaos.'
   },
   risk: {
     label:'Go all in',
     description:'Bigger upside, bigger crash potential.',
-    effects:{performance:2, energy:-9, stress:7, production:2, queens:0, fans:2},
+    effects:{performance:2, energy:-9, stress:7, production:2.5, queens:0, fans:2.5},
     risk:'risk',
     text:'You swing for the crown, knowing the bottom is also watching.'
   },
   unexpected: {
     label:'Do something unexpected',
     description:'Very television. Could be iconic. Could be cursed.',
-    effects:{performance:0, energy:-7, stress:9, production:3, queens:-1, fans:3},
+    effects:{performance:0, energy:-7, stress:9, production:3.8, queens:-1.25, fans:3.8},
     risk:'unexpected',
     text:'You choose the option that makes a producer sit upright.'
   }
@@ -83,19 +83,19 @@ const JUDGE_RESPONSES = {
   accept: {
     label:'Accept the critique',
     description:'Humble, composed, and hard to punish.',
-    effects:{production:2, queens:2, fans:1, stress:-4},
+    effects:{production:2.4, queens:2.5, fans:1.25, stress:-4},
     text:'You take the notes with grace. The panel respects the professionalism.'
   },
   explain: {
     label:'Explain your choices',
     description:'Can clarify the concept, but risks sounding defensive.',
-    effects:{production:1, queens:0, fans:1, stress:2},
+    effects:{production:1.2, queens:0, fans:1.2, stress:2},
     text:'You explain the thought behind the work. It helps a little, but the room stays cautious.'
   },
   confident: {
     label:'Answer with confidence',
     description:'Potentially iconic. Potentially a mistake.',
-    effects:{production:2, queens:-1, fans:3, stress:4},
+    effects:{production:2.5, queens:-1.25, fans:3.8, stress:4},
     text:'You stand ten toes down. It is bold, maybe too bold, but it reads as television.'
   }
 };
@@ -149,49 +149,49 @@ const SOCIAL_EVENTS = [
     type:'help',
     text:'{a} helps {b} fix a stubborn piece of construction.',
     playerText:'{a} helps you with a tricky detail before the challenge.',
-    effects:{performance:2, queens:1, affinity:6, respect:3}
+    effects:{performance:2, queens:1.25, affinity:8, respect:4}
   },
   {
     id:'shade_spark',
     type:'conflict',
     text:'{a} throws a read at {b}. The room laughs, then gets quiet.',
     playerText:'{a} throws a read at you. The room laughs, then gets quiet.',
-    effects:{production:2, fans:1, affinity:-13, respect:-3, stress:5}
+    effects:{production:2.6, fans:0.75, affinity:-16, respect:-4, stress:5}
   },
   {
     id:'alliance_whisper',
     type:'alliance',
     text:'{a} and {b} whisper in the corner. A small alliance might be forming.',
     playerText:'{a} pulls you aside. A small alliance might be forming.',
-    effects:{queens:3, affinity:12, respect:5}
+    effects:{queens:3.8, affinity:15, respect:6}
   },
   {
     id:'ru_walks_in',
     type:'production',
     text:'Ru enters the workroom early and the room snaps into panic mode.',
     playerText:'Ru enters early and asks you one pointed question.',
-    effects:{production:2, performance:1, stress:4}
+    effects:{production:2.4, performance:1, stress:4}
   },
   {
     id:'guest_mentor',
     type:'production',
     text:'The guest judge visits the workroom and gives the cast a few notes.',
     playerText:'The guest judge gives you a note that unlocks the challenge a little.',
-    effects:{performance:2, production:1, fans:1}
+    effects:{performance:2, production:1.25, fans:1.25}
   },
   {
     id:'sabotage_light',
     type:'sabotage',
     text:'A small resource mix-up sends {b} spiraling for a minute.',
     playerText:'A small resource mix-up hits your station and shakes your focus.',
-    effects:{performance:-2, stress:5, production:1}
+    effects:{performance:-2, stress:5, production:1.25}
   },
   {
     id:'crying_moment',
     type:'emotion',
     text:'{a} breaks down for a second, and the room softens.',
     playerText:'A vulnerable conversation catches you off guard.',
-    effects:{fans:2, queens:2, stress:-2, affinity:9, respect:3}
+    effects:{fans:2.5, queens:2.5, stress:-2, affinity:11, respect:4}
   }
 ];
 
@@ -252,7 +252,7 @@ function addStoryFlag(queenId,type,reason,strength=1){
 function maybeVillainEdit(queen, chance, reason){
   if(!queen || Math.random()>=chance) return false;
   addStoryFlag(queen.id,'villain_edit',reason,1);
-  applyChoiceEffects({production:2,fans:-1},{queen,note:`Villain edit spark: ${reason}`,source:'narrative-flag',save:false});
+  applyChoiceEffects({production:4,fans:-0.75},{queen,note:`Villain edit spark: ${reason}`,source:'narrative-flag',save:false});
   return true;
 }
 function createAlliance(aId,bId,source='untucked'){
@@ -289,7 +289,7 @@ function reinforceAlliances(){
     if(Math.random()<0.45){
       const text=`${qa.name} and ${qb.name}'s alliance quietly affects the social temperature this week.`;
       notes.push(text);
-      applyChoiceEffects({production:1},{queen:qa,note:text,source:'alliance-pulse',save:false});
+      applyChoiceEffects({production:1.25,queens:1.25},{queen:qa,note:text,source:'alliance-pulse',save:false});
     }
   });
   ep.allianceReinforcementDone=true;
@@ -301,28 +301,28 @@ function buildDynamicPlayerEffects(kind,target=null){
   const targets=randomLiveQueens(3,[player?.id,target?.id]);
   const names=targets.map(q=>q.name).join(', ');
   if(kind==='stealRoom'){
-    return {effects:{production:8,fans:2,stress:6,queens:-2,relationships:relationshipEffectsFor(targets,-22,-6)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
+    return {effects:{production:13,fans:0.5,stress:6,queens:-4,relationships:relationshipEffectsFor(targets,-35,-10)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
   }
   if(kind==='keepWarm'){
-    return {effects:{fans:3,confidence:4,queens:3,stress:-2,relationships:relationshipEffectsFor(targets,24,9)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
+    return {effects:{fans:5.2,confidence:4,queens:5.2,stress:-2,relationships:relationshipEffectsFor(targets,39,15)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
   }
   if(kind==='askHelp' && target){
-    return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:28,respect:10},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
+    return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:45,respect:16,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
   }
   if(kind==='comfort' && target){
-    return {effects:{fans:2,confidence:2,momentum:1,affinity:28,respect:10},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
+    return {effects:{fans:4,confidence:2,momentum:1,affinity:45,respect:16,queens:2},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
   }
   if(kind==='provoke' && target){
-    return {effects:{production:6,stress:7,momentum:-1,affinity:-26,respect:-10},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
+    return {effects:{production:10.5,fans:-1.25,stress:7,momentum:-1,affinity:-43,respect:-16,queens:-1.25},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
   }
   if(kind==='apologize' && target){
-    return {effects:{production:0,fans:1,stress:-4,affinity:26,respect:8},note:`You apologize to ${target.name}. The damage is repaired enough for the rivalry to cool, even if trust is not automatic.`};
+    return {effects:{production:0,fans:1.25,queens:2,stress:-4,affinity:43,respect:14},note:`You apologize to ${target.name}. The damage is repaired enough for the rivalry to cool, even if trust is not automatic.`};
   }
   if(kind==='makeDrama'){
-    return {effects:{production:8,fans:2,stress:8,queens:-2,momentum:-1,relationships:relationshipEffectsFor(targets,-20,-6)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
+    return {effects:{production:13,fans:0.5,stress:8,queens:-4,momentum:-1,relationships:relationshipEffectsFor(targets,-33,-10)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
   }
   if(kind==='buildAlliance' && target){
-    return {effects:{production:1,fans:1,confidence:3,momentum:1,stress:1,affinity:22,respect:14},note:`You and ${target.name} form an alliance. This can now affect social sparks, Untucked tension, narrative events, and future strategic beats.`};
+    return {effects:{production:1.25,fans:1.25,queens:2,confidence:3,momentum:1,stress:1,affinity:36,respect:23},note:`You and ${target.name} form an alliance. This can now affect social sparks, Untucked tension, narrative events, and future strategic beats.`};
   }
   return null;
 }
@@ -343,7 +343,7 @@ function applyTargetedPrepChoice(choice,target){
   if(choice.dynamicEffect==='askHelp' && target){
     const built=buildDynamicPlayerEffects('askHelp',target);
     applyPlayerEffects(built.effects,built.note,target.id);
-    applyQueenEffects(target,{challengeBonus:0.8,confidence:3,stress:-3,production:1,fans:1},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
+    applyQueenEffects(target,{challengeBonus:0.8,confidence:3,stress:-3,production:1.25,fans:2.5,queens:1.25},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
     addStoryFlag(target.id,'warm_moment',`${target.name} helped the player prepare.`,1);
     episodeSocialNote('workroom',built.note);
     return;
@@ -387,21 +387,21 @@ function applyPassiveWorkroomPenalty(){
   ep.passivePenaltyApplied=true;
   ep.passiveWorkroom=true;
   ep.canPlayerWin=false;
-  applyPlayerEffects({performance:-0.5, production:-3, fans:-1, momentum:-2}, 'You skipped the Workroom. The work may still speak, but production saw less story.');
+  applyPlayerEffects({performance:-0.5, production:-4, fans:-1.25, momentum:-2}, 'You skipped the Workroom. The work may still speak, but production saw less story.');
   saveGame();
 }
 function applySkippedJudgeResponsePenalty(){
   const ep=gameState.currentEpisode;
   if(!ep || ep.judgeSkipPenaltyApplied) return;
   ep.judgeSkipPenaltyApplied=true;
-  applyPlayerEffects({production:-2, fans:-1}, 'You let the critiques stand without adding your point of view.');
+  applyPlayerEffects({production:-2.5, fans:-1.25}, 'You let the critiques stand without adding your point of view.');
   saveGame();
 }
 function applySkippedUntuckedPenalty(){
   const ep=gameState.currentEpisode;
   if(!ep || ep.untuckedSkipPenaltyApplied) return;
   ep.untuckedSkipPenaltyApplied=true;
-  applyPlayerEffects({production:-2, queens:-2, momentum:-1}, 'You stayed out of Untucked. Peaceful, but not exactly memorable television.');
+  applyPlayerEffects({production:-2.5, queens:-2.5, momentum:-1}, 'You stayed out of Untucked. Peaceful, but not exactly memorable television.');
   saveGame();
 }
 
@@ -422,13 +422,13 @@ function applySabotageAttempt(targetId){
   ep.sabotageAttempt={targetId:target.id,targetName:target.name,success,backfire:!success};
   if(success){
     const note=`Your sabotage lands. ${target.name} takes a challenge penalty, gets stressed, and the relationship gets much worse.`;
-    applyPlayerEffects({production:6,fans:1,stress:4,affinity:-30,respect:-12},note,target.id);
+    applyPlayerEffects({production:10.5,fans:-1.25,stress:4,affinity:-49,respect:-20,queens:-1.25},note,target.id);
     applyQueenEffects(target,{challengeBonus:-1.6,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
     maybeVillainEdit(player,0.22,`successfully sabotaged ${target.name}`);
     episodeSocialNote('workroom',note);
   }else{
     const note=`Your sabotage fails. Production notices the attempt, ${target.name} dislikes you even more, and your respect in the room drops.`;
-    applyPlayerEffects({production:5,fans:-1,queens:-3,stress:6,affinity:-34,respect:-16},note,target.id);
+    applyPlayerEffects({production:9,fans:-2.5,queens:-5,stress:6,affinity:-55,respect:-26},note,target.id);
     addStoryFlag(player.id,'villain_spark',`failed sabotage attempt against ${target.name}`,1);
     maybeVillainEdit(player,0.16,`failed sabotage attempt against ${target.name}`);
     episodeSocialNote('workroom',note);
@@ -617,38 +617,38 @@ function playerStatusCard(){ return ''; }
 
 // ---- v14: living cast systems -------------------------------------------------
 const NPC_PREP_CHOICES = {
-  rehearse:{label:'rehearses hard',effects:{performance:3,energy:-10,stress:6,production:1}},
-  runway:{label:'pours time into the runway',effects:{performance:-2,runway:6,energy:-8,stress:3,fans:2}},
-  ask_help:{label:'asks another queen for help',needsTarget:true,effects:{performance:2,energy:-3,stress:-2,affinity:6,respect:3}},
-  rest:{label:'protects her energy',effects:{performance:-2,energy:12,stress:-6,production:-1}},
-  chaos:{label:'tries something chaotic',effects:{performance:0,energy:-8,stress:8,production:3,fans:2}}
+  rehearse:{label:'rehearses hard',effects:{performance:3,energy:-10,stress:6,production:1.2}},
+  runway:{label:'pours time into the runway',effects:{performance:-2,runway:6,energy:-8,stress:3,fans:2.5,production:0.5}},
+  ask_help:{label:'asks another queen for help',needsTarget:true,effects:{performance:2,energy:-3,stress:-2,affinity:10,respect:5,fans:1.25,queens:1}},
+  rest:{label:'protects her energy',effects:{performance:-2,energy:12,stress:-6,production:-1.25}},
+  chaos:{label:'tries something chaotic',effects:{performance:0,energy:-8,stress:8,production:5.2,fans:2.5}}
 };
 
 const NPC_APPROACHES = {
-  safe:{label:'plays it safe',risk:'safe',effects:{performance:1,energy:-3,stress:-1,production:-1}},
-  risk:{label:'goes all in',risk:'risk',effects:{performance:2,energy:-8,stress:6,production:2,fans:2}},
-  unexpected:{label:'does something unexpected',risk:'unexpected',effects:{performance:0,energy:-6,stress:7,production:3,fans:2}}
+  safe:{label:'plays it safe',risk:'safe',effects:{performance:1,energy:-3,stress:-1,production:-1.5}},
+  risk:{label:'goes all in',risk:'risk',effects:{performance:2,energy:-8,stress:6,production:2.5,fans:2.5}},
+  unexpected:{label:'does something unexpected',risk:'unexpected',effects:{performance:0,energy:-6,stress:7,production:5.2,fans:2.5}}
 };
 
 const NPC_SOCIAL_EVENTS = [
-  {type:'friendship', text:'{a} and {b} bond over sewing chaos.', effects:{affinity:13,respect:4,stress:-2}},
-  {type:'mentor', text:'{a} gives {b} a useful note before filming.', effects:{affinity:9,respect:10,performance:1}},
-  {type:'conflict', text:'{a} snaps at {b} over rehearsal time.', effects:{affinity:-17,respect:-5,stress:4,production:1}},
-  {type:'shade', text:'{a} reads {b} just a little too accurately.', effects:{affinity:-12,respect:-1,production:2,fans:1}},
-  {type:'alliance', text:'{a} and {b} quietly start comparing notes for future weeks.', effects:{affinity:12,respect:7}},
-  {type:'sabotage', text:'{a} “accidentally” leaves {b} with the weaker material pile.', effects:{affinity:-22,respect:-8,performance:-1,stress:5,production:2}},
-  {type:'comfort', text:'{a} checks on {b} after the critiques hit hard.', effects:{affinity:15,respect:5,stress:-4,fans:1}},
-  {type:'jealousy', text:'{a} admits she is tired of watching {b} get praise.', effects:{affinity:-11,respect:3,stress:3,production:1}}
+  {type:'friendship', text:'{a} and {b} bond over sewing chaos.', effects:{affinity:21,respect:6,stress:-2,fans:1.25,queens:1}},
+  {type:'mentor', text:'{a} gives {b} a useful note before filming.', effects:{affinity:15,respect:16,performance:1,fans:1.25,queens:1}},
+  {type:'conflict', text:'{a} snaps at {b} over rehearsal time.', effects:{affinity:-28,respect:-9,stress:4,production:2.6,fans:-1.25,queens:-1}},
+  {type:'shade', text:'{a} reads {b} just a little too accurately.', effects:{affinity:-20,respect:-3,production:3.8,fans:1,queens:-0.5}},
+  {type:'alliance', text:'{a} and {b} quietly start comparing notes for future weeks.', effects:{affinity:20,respect:11,queens:2}},
+  {type:'sabotage', text:'{a} “accidentally” leaves {b} with the weaker material pile.', effects:{affinity:-36,respect:-13,performance:-1,stress:5,production:3.8,fans:-1.25,queens:-1.5}},
+  {type:'comfort', text:'{a} checks on {b} after the critiques hit hard.', effects:{affinity:25,respect:9,stress:-4,fans:2.6,queens:2}},
+  {type:'jealousy', text:'{a} admits she is tired of watching {b} get praise.', effects:{affinity:-18,respect:4,stress:3,production:2.6,queens:-0.5}}
 ];
 
 const UNTUCKED_NPC_EVENTS = [
-  {text:'{a} comforts {b} in the corner of the lounge.', effects:{affinity:14,respect:5,stress:-3,fans:1}},
-  {text:'{a} confronts {b} about fake compliments.', effects:{affinity:-16,respect:-6,stress:5,production:2}},
-  {text:'{a} apologizes to {b}, and the room actually believes it.', effects:{affinity:12,respect:6,stress:-2}},
-  {text:'{a} and {b} make a tiny pact to watch each other’s backs.', effects:{affinity:13,respect:8}},
-  {text:'{a} throws a little shade at {b}, and everyone pretends not to hear.', effects:{affinity:-9,respect:-2,stress:2,production:1}},
-  {text:'{a} admits she underestimated {b}.', effects:{respect:12,affinity:5}},
-  {text:'{a} says {b} is getting a winner edit, and the lounge goes quiet.', effects:{affinity:-7,respect:7,stress:3,production:2}}
+  {text:'{a} comforts {b} in the corner of the lounge.', effects:{affinity:23,respect:9,stress:-3,fans:2.6,queens:2}},
+  {text:'{a} confronts {b} about fake compliments.', effects:{affinity:-26,respect:-10,stress:5,production:3.8,fans:-1.25,queens:-1}},
+  {text:'{a} apologizes to {b}, and the room actually believes it.', effects:{affinity:20,respect:10,stress:-2,queens:2,fans:1}},
+  {text:'{a} and {b} make a tiny pact to watch each other’s backs.', effects:{affinity:21,respect:13,queens:2}},
+  {text:'{a} throws a little shade at {b}, and everyone pretends not to hear.', effects:{affinity:-15,respect:-4,stress:2,production:2.6,queens:-0.5}},
+  {text:'{a} admits she underestimated {b}.', effects:{respect:19,affinity:9,queens:1.5}},
+  {text:'{a} says {b} is getting a winner edit, and the lounge goes quiet.', effects:{affinity:-11,respect:11,stress:3,production:3.8,queens:-0.5}}
 ];
 
 function ensureQueenV14Stats(q){

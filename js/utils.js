@@ -26,8 +26,17 @@ function queenPersonalityName(q){
 function queenShortType(q){
   return String(q?.type||'Queen').replace(/^Jack of All Trades$/,'Jack of All Trades');
 }
+function queenLocationLabel(q){
+  if(q?.isPlayer)return 'wherever you are';
+  return q?.location || 'somewhere fabulous';
+}
 function queenPersonaType(q){
-  return `${queenPersonalityName(q)} ${queenShortType(q)}`.trim();
+  const archetype=`${queenPersonalityName(q)} ${queenShortType(q)}`.trim();
+  return `The ${archetype} from ${queenLocationLabel(q)}`;
+}
+function queenPersonaTypeHtml(q){
+  const archetype=`${queenPersonalityName(q)} ${queenShortType(q)}`.trim();
+  return `The <strong>${escapeHtml(archetype)}</strong> from ${escapeHtml(queenLocationLabel(q))}`;
 }
 
 const QUEEN_TYPE_COLORS={

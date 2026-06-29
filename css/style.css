@@ -3586,3 +3586,80 @@ button.creator-dice-btn:hover,
   line-height:1.05;
   letter-spacing:-.02em;
 }
+
+/* Fix: longer generated queen names should expand the Queens still in cards instead of overlapping. */
+.sidebar .queen-list{
+  max-height:none!important;
+}
+.sidebar .sidebar-queen-row{
+  height:auto!important;
+  max-height:none!important;
+  min-height:86px!important;
+  align-items:start!important;
+}
+.sidebar .queen-item-copy > strong{
+  display:block!important;
+  -webkit-line-clamp:unset!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:break-word!important;
+}
+
+
+/* Location persona polish: keep Entrance and Queens Still In archetypes subtle. */
+.entrance-copy .queen-archetype,
+.entrance-copy p{
+  margin:2px 0 0!important;
+  color:var(--muted)!important;
+  font-size:.86rem!important;
+  line-height:1.25!important;
+  font-weight:500!important;
+  letter-spacing:0!important;
+}
+
+.queen-archetype{
+  display:block!important;
+  color:var(--muted)!important;
+  font-weight:500!important;
+}
+
+.queen-archetype strong{
+  display:inline!important;
+  font-size:inherit!important;
+  line-height:inherit!important;
+  color:rgba(255,255,255,.84)!important;
+  font-weight:600!important;
+}
+
+.sidebar .queen-item-copy .sidebar-persona.queen-archetype,
+.sidebar .queen-item-copy .queen-archetype--subtle{
+  display:block!important;
+  margin-top:2px!important;
+  font-size:.68rem!important;
+  line-height:1.18!important;
+  color:var(--muted)!important;
+  opacity:.72!important;
+  font-weight:500!important;
+  letter-spacing:0!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+}
+
+/* Fix: persona bold inside Queens Still In must not inherit queen-name heading styles. */
+.sidebar .queen-item-copy .sidebar-persona strong,
+.sidebar .queen-item-copy .queen-archetype strong,
+.sidebar .queen-item-copy .queen-archetype--subtle strong{
+  display:inline!important;
+  font-size:inherit!important;
+  line-height:inherit!important;
+  font-weight:600!important;
+  color:rgba(255,255,255,.84)!important;
+  max-width:none!important;
+  white-space:normal!important;
+  overflow:visible!important;
+  text-overflow:clip!important;
+  word-break:inherit!important;
+  -webkit-line-clamp:unset!important;
+  -webkit-box-orient:initial!important;
+}

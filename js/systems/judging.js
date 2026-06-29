@@ -212,17 +212,35 @@ function teamGroupScore(team, scored, ep){
   const chemistry=typeof teamChemistryBonus==='function'?teamChemistryBonus(team,ep):0;
   return Math.round((avg+chemistry)*10)/10;
 }
+function normalizeCritiqueSpread(scored, activeCount=scored.length){
+  const maxTops=activeCount>=13?4:3;
+  const maxLows=activeCount>=13?2:1;
+
+  const tops=scored
+    .filter(s=>s.placement==='HIGH')
+    .sort((a,b)=>a.score-b.score);
+  while(scored.filter(s=>s.placement==='WIN'||s.placement==='HIGH').length>maxTops && tops.length){
+    tops.shift().placement='SAFE';
+  }
+
+  const lows=scored
+    .filter(s=>s.placement==='LOW')
+    .sort((a,b)=>b.score-a.score);
+  while(scored.filter(s=>s.placement==='LOW').length>maxLows && lows.length){
+    lows.shift().placement='SAFE';
+  }
+}
 function assignIndividualPlacements(scored){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
   if(scored[1])scored[1].placement='HIGH';
   if(scored[2])scored[2].placement='HIGH';
+  if(scored.length>=13 && scored[3])scored[3].placement='HIGH';
   if(scored.length>5 && scored[scored.length-3])scored[scored.length-3].placement='LOW';
-  // Larger casts should not have only one LOW every episode. Adding one more
-  // low critique in the lower middle creates more natural vulnerability arcs.
-  if(scored.length>=10 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
+  if(scored.length>=13 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
   if(scored[scored.length-2])scored[scored.length-2].placement='BTM';
   if(scored[scored.length-1])scored[scored.length-1].placement='BTM';
+  normalizeCritiqueSpread(scored, scored.length);
 }
 function assignTeamPlacements(scored, ep){
   scored.forEach(s=>s.placement='SAFE');
@@ -235,19 +253,22 @@ function assignTeamPlacements(scored, ep){
   const worstMembers=scored.filter(s=>worst.team.queenIds.includes(s.queenId)).sort((a,b)=>a.individualScore-b.individualScore);
   const isDuoEpisode=teams.every(t=>t.team.queenIds.length===2);
 
-  // Duo episodes with four or more pairs now behave more like a Drag Race result spread:
-  // one winning duo, one high duo, one low duo, and one bottom duo when available.
+  // Duo episodes with casts with 13+ queens can have a fuller spread. Casts with 12 or fewer queens keep
+  // the critique group tighter so Top 8 episodes do not call four queens as tops/bottoms.
   if(isDuoEpisode && teams.length>=4){
     bestMembers.forEach(s=>s.placement='WIN');
-    const secondBest=teams[1];
-    if(secondBest){
-      scored.filter(s=>secondBest.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='HIGH');
-    }
-    const secondWorst=teams[teams.length-2];
-    if(secondWorst && secondWorst.team.id!==best.team.id){
-      scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='LOW');
+    if(scored.length>=13){
+      const secondBest=teams[1];
+      if(secondBest){
+        scored.filter(s=>secondBest.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='HIGH');
+      }
+      const secondWorst=teams[teams.length-2];
+      if(secondWorst && secondWorst.team.id!==best.team.id){
+        scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='LOW');
+      }
     }
     worstMembers.forEach(s=>s.placement='BTM');
+    normalizeCritiqueSpread(scored, scored.length);
     return;
   }
 
@@ -277,7 +298,7 @@ function assignTeamPlacements(scored, ep){
 
   // Keep middle teams safe unless their group score is almost tied with the worst.
   // Do not add extra lows in four-duo episodes, because those already have a clean spread.
-  if(teams.length>2 && !isDuoEpisode){
+  if(scored.length>=13 && teams.length>2 && !isDuoEpisode){
     const secondWorst=teams[teams.length-2];
     if(secondWorst && secondWorst.score<=worst.score+1.6){
       const swMembers=scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).sort((a,b)=>a.individualScore-b.individualScore);
@@ -285,6 +306,7 @@ function assignTeamPlacements(scored, ep){
       if(swMembers[1] && swMembers.length>=4 && secondWorst.score<=worst.score+0.9 && swMembers[1].placement==='SAFE')swMembers[1].placement='LOW';
     }
   }
+  normalizeCritiqueSpread(scored, scored.length);
 }
 function applyPassiveWinCap(scored, ep){
   if(!(ep.passiveWorkroom || ep.canPlayerWin===false))return;
@@ -343,6 +365,43 @@ function vulnerabilityPressureModifier(q, ep){
   return Math.round(pressure*10)/10;
 }
 
+function ballRunwayCategoryWeights(count){
+  if(count<=1)return [1];
+  const earlyWeight=.5/Math.max(1,count-1);
+  return Array.from({length:count},(_,i)=>i===count-1?.5:earlyWeight);
+}
+function scaledAttr(q, attr){
+  return ((q.attributes&&q.attributes[attr])||0)*10;
+}
+function homeBallLookScore(q, roll){
+  // First Ball categories are brought from home: styling, presentation and polish matter most.
+  const score=scaledAttr(q,'runway')*.70 + scaledAttr(q,'makeup')*.20 + scaledAttr(q,'cunt')*.10 + roll;
+  return Math.round(clamp(score,0,100)*10)/10;
+}
+function constructedBallLookScore(q, roll){
+  // Final Ball category is constructed in the workroom, so sewing is the dominant factor.
+  const score=scaledAttr(q,'sewing')*.55 + scaledAttr(q,'runway')*.30 + scaledAttr(q,'makeup')*.10 + scaledAttr(q,'cunt')*.05 + roll;
+  return Math.round(clamp(score,0,100)*10)/10;
+}
+function designTootBootScore(q, runwayScore){
+  // Design toots/boots should judge the garment, not only how it was sold.
+  const construction=scaledAttr(q,'sewing')*.80 + scaledAttr(q,'makeup')*.15 + scaledAttr(q,'cunt')*.05;
+  const presentation=clamp((runwayScore/30)*100,0,100);
+  return Math.round((construction*.60 + presentation*.40)*10)/10;
+}
+function ensureBallRunwayScores(ep,q){
+  const categories=(ep?.runwayCategories&&ep.runwayCategories.length)?ep.runwayCategories:[];
+  if(ep?.challengeType!=='ball' || categories.length<=1)return null;
+  if(!ep.ballRunwayRolls)ep.ballRunwayRolls={};
+  if(!Array.isArray(ep.ballRunwayRolls[q.id]) || ep.ballRunwayRolls[q.id].length!==categories.length){
+    ep.ballRunwayRolls[q.id]=categories.map(()=>rand(-8,8));
+  }
+  const weights=ballRunwayCategoryWeights(categories.length);
+  const scores=ep.ballRunwayRolls[q.id].map((roll,idx)=>idx===categories.length-1 ? constructedBallLookScore(q,roll) : homeBallLookScore(q,roll));
+  const composite=scores.reduce((sum,score,idx)=>sum + score*(weights[idx]||0),0);
+  return {scores,composite:Math.round(composite*10)/10,weights};
+}
+
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -355,8 +414,12 @@ function calculateEpisodeResults(playerChoices={}){
     const qEffects=currentQueenEffects(q);
     const risk=q.id===gameState.playerQueenId?playerChoices.risk:(qEffects.risk||chooseAIRisk(q));
     const base=weightedAttributeScore(q.attributes,challenge.weights);
-    if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5.5,5.5);
-    const runway=q.attributes.runway*3+ep.runwayRolls[q.id];
+    const ballRunway=ensureBallRunwayScores(ep,q);
+    if(ballRunway){
+      ep.runwayRolls[q.id]=ballRunway.composite;
+    }else if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5.5,5.5);
+    const runway=ballRunway ? ballRunway.composite : q.attributes.runway*3+ep.runwayRolls[q.id];
+    const tootBootScore=ballRunway ? ballRunway.scores[ballRunway.scores.length-1] : (ep.challengeType==='design' ? designTootBootScore(q,runway) : runway);
     const production=clamp((q.publicScores.production/8) * ((q.statistics?.wins||0)>=4 ? 0.5 : 1),-2,2);
     const momentum=q.momentum||0;
     const episodeForm=episodeFormModifier(q,ep);
@@ -375,11 +438,12 @@ function calculateEpisodeResults(playerChoices={}){
     // runway presentation moments are no longer diluted by that multiplier.
     const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
-    const individualScore=base+runway*challenge.runwayWeight+production+momentum+episodeForm.score+fatigue+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
+    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round(base*10)/10,runway:Math.round(runway*10)/10,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
@@ -606,9 +670,9 @@ function applyEpisodeStats(){
   if(ep.statsApplied)return;
   ensureAllQueenV14Stats();
   const placementEffects={
-    WIN:{momentum:2,production:3,fans:4,confidence:10,stress:-8},
-    HIGH:{momentum:1,fans:2,confidence:5,stress:-3},
-    TOP2:{momentum:1,fans:2,confidence:5,stress:-3},
+    WIN:{momentum:2,production:2.1,fans:2.65,confidence:10,stress:-8},
+    HIGH:{momentum:1,fans:1.3,confidence:5,stress:-3},
+    TOP2:{momentum:1,fans:1.3,confidence:5,stress:-3},
     SAFE:{stress:2},
     LOW:{momentum:-1,confidence:-5,stress:8},
     BTM:{momentum:-2,confidence:-8,stress:12,energy:-8}
@@ -618,7 +682,10 @@ function applyEpisodeStats(){
     if(!q)continue;
     q.statistics.episodesCompeted++;
     q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM'});
-    if(p.placement==='WIN')q.statistics.wins++;
+    if(p.placement==='WIN'){
+      q.statistics.wins++;
+      if(typeof applyChallengeWinRelationshipPenalty==='function')applyChallengeWinRelationshipPenalty(q,ep);
+    }
     if(p.placement==='HIGH'||p.placement==='TOP2')q.statistics.highs++;
     if(p.placement==='SAFE')q.statistics.safes++;
     if(p.placement==='LOW')q.statistics.lows++;
@@ -628,10 +695,10 @@ function applyEpisodeStats(){
   if(ep.lipSyncResult){
     if(ep.lipSyncResult.outcome==='top2Win'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
-      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }
+      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }
       ep.eliminatedQueenId=null;
     } else if(ep.lipSyncResult.outcome==='doubleShantay'){
-      ep.lipSyncResult.results.forEach(r=>{const q=gameState.queens.find(x=>x.id===r.queenId); if(q){q.statistics.lipSyncWins++; applyChoiceEffects({momentum:1},{queen:q,note:'Double shantay lip sync survival.',source:'lip-sync-result',save:false});}});
+      ep.lipSyncResult.results.forEach(r=>{const q=gameState.queens.find(x=>x.id===r.queenId); if(q){q.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:q,note:'Double shantay lip sync survival.',source:'lip-sync-result',save:false});}});
     } else if(ep.lipSyncResult.outcome==='doubleSashay'){
       ep.lipSyncResult.eliminatedQueenIds.forEach(id=>{const out=gameState.queens.find(q=>q.id===id); if(!out)return; out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out);});
     } else {

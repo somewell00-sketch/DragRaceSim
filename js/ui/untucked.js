@@ -25,7 +25,10 @@ function renderUntucked(){
   const spontaneous=generateUntuckedSpontaneous();
   const npcUntuckedEvents=generateNpcSocialEvents('untucked');
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('untucked'):null;
-  const loungeBeats=[...(narrativeEvent?[narrativeEvent]:[]), ...npcUntuckedEvents].slice(0,3);
+  const loungeBeatPool=[...(narrativeEvent?[narrativeEvent]:[]), ...npcUntuckedEvents];
+  const loungeBeats=(typeof weightedPickDiverseStoryEvents==='function')
+    ? weightedPickDiverseStoryEvents(loungeBeatPool,3,eventNarrativeWeight)
+    : loungeBeatPool.slice(0,3);
   const playerObserver=(typeof isCurrentEpisodePremiereObserver==='function' && isCurrentEpisodePremiereObserver());
   const spectatorMode=!!gameState.season?.spectatorMode;
   const choiceDone=!!ep.untuckedChoice || playerJustEliminated || playerObserver || (playerAlreadyEliminated && spectatorMode);

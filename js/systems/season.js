@@ -1,5 +1,5 @@
 function randomAmbition(){return Math.max(1,Math.min(5,Math.ceil(Math.random()*5)));}
-function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
+function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,location:'wherever you are',isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
 function hydrateQueen(q){return {...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null};}
 function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7}));}
 function randomizeAttributes(base){
@@ -34,6 +34,10 @@ function generatedQueenName(index, usedNames=new Set()){
 function slugifyQueenName(name,index){
   return String(name||('queen_'+index)).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')+'_'+index+'_'+Date.now();
 }
+function randomQueenLocation(){
+  const locations=gameState.data?.locations || window.GAME_DATA?.locations || [];
+  return locations.length ? sample(locations) : 'New York City, NY (USA)';
+}
 function makeGeneratedQueen(index, usedNames=new Set()){
   const types=gameState.data.queenTypes.filter(t=>t.name!=='Jack of All Trades');
   const type=sample(types)||gameState.data.queenTypes[0];
@@ -45,6 +49,7 @@ function makeGeneratedQueen(index, usedNames=new Set()){
     name,
     type:type.name,
     personalityId:personality?.id||'confident',
+    location:randomQueenLocation(),
     ambition:randomAmbition(),
     attributes:attrs
   });
@@ -178,7 +183,7 @@ function pickChallengeByRules(activeCount){
 }
 
 function challengeStructures(challengeId, activeCount){
-  const solo=['talent','design','ball','comedy','roast','snatchgame','interview','rumix','political_debate'];
+  const solo=['talent','design','ball','comedy','roast','snatchgame','interview','rumix','political_debate','makeover'];
   if(solo.includes(challengeId)) return [{id:'solo',label:'Solo challenge'}];
   const list=[{id:'solo',label:'Solo challenge'}];
   if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
@@ -378,7 +383,7 @@ function episodeDisplayNotes(challenge, theme, content, isSnatchGame){
   return theme?.notes || '';
 }
 function episodeRunwayForChallenge(challengeId, theme, content){
-  if(challengeId==='ball')return (content?.runwayCategories?.[0] || 'Ball Eleganza');
+  if(challengeId==='ball')return (content?.runwayCategories?.[content.runwayCategories.length-1] || content?.mainTheme || 'Ball Eleganza');
   if(challengeId==='design')return `${content?.mainTheme || 'Design'} Eleganza`;
   const pool=(theme?.runway?.length?theme.runway:(gameState.data.runways||[]).map(r=>r.name));
   return sample(pool)||'Best Drag';
@@ -536,8 +541,8 @@ function generateEpisode(){
   const miniWinner=miniChallenge?sample(active):null;
   if(miniWinner)miniWinner.statistics.miniChallengeWins++;
   let structure=pickEpisodeStructure(challenge.id, activeCount);
-  // Talent Show is always individual, including normal and double premieres.
-  if(challenge.id==='talent') structure={id:'solo',label:'Solo challenge'};
+  // Talent Show and Makeover are always individual, including normal and double premieres.
+  if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
   const teams=buildTeamsForEpisode(structure, active);
   const guestJudge=pickGuestJudge();
   if(challenge.id==='interview'){

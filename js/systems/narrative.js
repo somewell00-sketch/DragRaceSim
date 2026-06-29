@@ -26,7 +26,7 @@ function placementCounts(q){
 }
 function trackRecordPower(q){
   const c=placementCounts(q);
-  return c.win*5 + c.high*3 + c.safe*1 + c.low*(-1) + c.btm*(-3) + c.elim*(-6) + (q.momentum||0)*1.2;
+  return c.win*4.2 + c.high*2.5 + c.safe*0.8 + c.low*(-1) + c.btm*(-2.5) + c.elim*(-5) + (q.momentum||0)*1.2;
 }
 function currentFrontRunnerIds(){
   const active=(gameState.queens||[]).filter(q=>!q.isEliminated);
@@ -55,12 +55,12 @@ function runwayAverage(q){
 function challengeStrength(q,types=[]){
   const h=queenHistory(q).filter(x=>types.includes(x.challengeType));
   if(!h.length)return 0;
-  return h.reduce((s,x)=>s+(String(x.placement).toUpperCase()==='WIN'?3:String(x.placement).toUpperCase()==='HIGH'?2:String(x.placement).toUpperCase()==='LOW'?-1:String(x.placement).toUpperCase()==='BTM'?-2:0),0);
+  return h.reduce((s,x)=>s+(String(x.placement).toUpperCase()==='WIN'?2.5:String(x.placement).toUpperCase()==='HIGH'?1.6:String(x.placement).toUpperCase()==='LOW'?-1:String(x.placement).toUpperCase()==='BTM'?-1.7:0),0);
 }
 function recentTrend(q){
   const h=queenHistory(q).slice(-3);
   if(h.length<2)return 0;
-  const value=p=>({WIN:5,HIGH:3,TOP2:3,SAFE:1,LOW:-1,BTM:-3,ELIM:-5}[String(p||'').toUpperCase()]||0);
+  const value=p=>({WIN:4.2,HIGH:2.5,TOP2:2.5,SAFE:0.8,LOW:-1,BTM:-2.5,ELIM:-4.5}[String(p||'').toUpperCase()]||0);
   return value(h[h.length-1].placement)-value(h[0].placement);
 }
 function addNarrativeTag(scores,tag,strength,reason){
@@ -98,9 +98,9 @@ function calculateNarrativeTags(q){
   if(frontIds.includes(q.id))addNarrativeTag(scores,NARRATIVE_TAGS.FRONT_RUNNER,5,'best track record right now');
   if(power>=8 || wins>=1&&highs>=2)addNarrativeTag(scores,NARRATIVE_TAGS.COMPETITIVE_THREAT,Math.min(5,2+wins+Math.floor(highs/2)),'track record makes her dangerous');
   if(lipWins>=2 || ((q.attributes?.lipSync||0)>=8 && bottoms>=1))addNarrativeTag(scores,NARRATIVE_TAGS.LIP_SYNC_ASSASSIN,Math.min(5,lipWins+2),'proven under the lights');
-  if(fans>=18 || (fans>=8&&rel>18))addNarrativeTag(scores,NARRATIVE_TAGS.FAN_FAVORITE,Math.min(5,2+Math.floor(fans/18)),'audience connection');
-  if(prod>=20 || (prod>=10&&['chaotic','dramatic','funny','calculating'].includes(personality)))addNarrativeTag(scores,NARRATIVE_TAGS.PRODUCERS_DREAM,Math.min(5,2+Math.floor(prod/18)),'gives the edit material');
-  if(prod>=12 && (fans<0 || rel<-18))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,Math.min(5,2+Math.floor((prod+Math.max(0,-rel))/25)),'polarizing television');
+  if(fans>=16 || (fans>=7&&rel>16))addNarrativeTag(scores,NARRATIVE_TAGS.FAN_FAVORITE,Math.min(5,2+Math.floor(fans/18)),'audience connection');
+  if(prod>=17 || (prod>=8&&['chaotic','dramatic','funny','calculating'].includes(personality)))addNarrativeTag(scores,NARRATIVE_TAGS.PRODUCERS_DREAM,Math.min(5,2+Math.floor(prod/18)),'gives the edit material');
+  if(prod>=10 && (fans<0 || rel<-16))addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,Math.min(5,2+Math.floor((prod+Math.max(0,-rel))/25)),'polarizing television');
   if(q.id===worstRelationshipQueenId() && rel<10)addNarrativeTag(scores,NARRATIVE_TAGS.VILLAIN,4,'worst cast relationships of the season');
   if(history.length>=4 && wins===0 && highs<=1 && prod<8 && Math.abs(fans)<12)addNarrativeTag(scores,NARRATIVE_TAGS.FILLER,3,'not shaping the season yet');
   if(trend>=3 || (history.length>=4 && wins+highs>=2 && queenHistory(q).slice(0,2).some(h=>['LOW','BTM'].includes(String(h.placement).toUpperCase()))))addNarrativeTag(scores,NARRATIVE_TAGS.RISING,3+Math.max(0,trend/2),'getting stronger');
@@ -605,36 +605,36 @@ function narrativeEventTemplates(stage, q){
   const name=q?.name||'A queen';
   const lines=[];
   if(has(NARRATIVE_TAGS.VILLAIN)) lines.push(
-    {text:`🔥 ${name} throws one comment and the room immediately splits.`,type:'conflict',effects:{production:2,fans:-1,stress:2}},
-    {text:`📺 Production clearly knows ${name} can turn tension into television.`,type:'production',effects:{production:2}},
-    {text:`⚔️ ${name}'s closest rivalry gets another little spark.`,type:'rivalry',effects:{production:1,stress:2}}
+    {text:`🔥 ${name} throws one comment and the room immediately splits.`,type:'conflict',effects:{production:3.8,fans:-1.25,stress:2}},
+    {text:`📺 Production clearly knows ${name} can turn tension into television.`,type:'production',effects:{production:3.8}},
+    {text:`⚔️ ${name}'s closest rivalry gets another little spark.`,type:'rivalry',effects:{production:2,stress:2}}
   );
   if(has(NARRATIVE_TAGS.FAN_FAVORITE)) lines.push(
-    {text:`💖 The room notices how naturally people root for ${name}.`,type:'support',effects:{fans:2,queens:1,stress:-1}},
-    {text:`✨ ${name} gets a warm little moment without forcing it.`,type:'emotion',effects:{fans:2,production:1}},
-    {text:`👑 Another queen says ${name} is becoming hard not to love.`,type:'support',effects:{fans:1,queens:1}}
+    {text:`💖 The room notices how naturally people root for ${name}.`,type:'support',effects:{fans:3.8,queens:2,stress:-1}},
+    {text:`✨ ${name} gets a warm little moment without forcing it.`,type:'emotion',effects:{fans:3.8,production:2}},
+    {text:`👑 Another queen says ${name} is becoming hard not to love.`,type:'support',effects:{fans:2,queens:2}}
   );
   if(has(NARRATIVE_TAGS.FRONT_RUNNER) || has(NARRATIVE_TAGS.COMPETITIVE_THREAT)) lines.push(
-    {text:`🎯 Everyone clocks ${name} as one of the queens to beat.`,type:'threat',effects:{stress:3,production:1}},
+    {text:`🎯 Everyone clocks ${name} as one of the queens to beat.`,type:'threat',effects:{stress:3,production:1.9}},
     {text:`👀 ${name}'s track record is starting to make the room nervous.`,type:'threat',effects:{stress:2}}
   );
   if(has(NARRATIVE_TAGS.LIP_SYNC_ASSASSIN)) lines.push(
-    {text:`🎤 Nobody looks excited about facing ${name} when the music starts.`,type:'threat',effects:{production:1,fans:1}}
+    {text:`🎤 Nobody looks excited about facing ${name} when the music starts.`,type:'threat',effects:{production:2,fans:2}}
   );
   if(has(NARRATIVE_TAGS.FILLER)) lines.push(
-    {text:`🕯️ ${name} quietly realizes she needs a moment before the edit moves on.`,type:'pressure',effects:{stress:4,production:-1}}
+    {text:`🕯️ ${name} quietly realizes she needs a moment before the edit moves on.`,type:'pressure',effects:{stress:4,production:-1.6}}
   );
   if(has(NARRATIVE_TAGS.RISING) || has(NARRATIVE_TAGS.REDEMPTION)) lines.push(
-    {text:`📈 ${name}'s arc is starting to feel like a real comeback.`,type:'growth',effects:{fans:1,production:1,stress:-1}}
+    {text:`📈 ${name}'s arc is starting to feel like a real comeback.`,type:'growth',effects:{fans:2,production:2,stress:-1}}
   );
   if(has(NARRATIVE_TAGS.FASHION)) lines.push(
-    {text:`👠 The cast keeps checking what ${name} is building for the runway.`,type:'fashion',effects:{fans:1,production:1}}
+    {text:`👠 The cast keeps checking what ${name} is building for the runway.`,type:'fashion',effects:{fans:2,production:2}}
   );
   if(has(NARRATIVE_TAGS.COMEDY)) lines.push(
-    {text:`😂 ${name} breaks the tension with one perfectly timed joke.`,type:'comedy',effects:{fans:1,queens:1,stress:-1}}
+    {text:`😂 ${name} breaks the tension with one perfectly timed joke.`,type:'comedy',effects:{fans:2,queens:2,stress:-1}}
   );
   if(has(NARRATIVE_TAGS.SURVIVOR)) lines.push(
-    {text:`🛟 ${name} knows another weak week could make her story dangerous.`,type:'pressure',effects:{stress:3,production:1}}
+    {text:`🛟 ${name} knows another weak week could make her story dangerous.`,type:'pressure',effects:{stress:3,production:1.9}}
   );
   return lines;
 }

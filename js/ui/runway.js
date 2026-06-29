@@ -1,5 +1,8 @@
+function runwayTootBootMetric(p){
+  return typeof p.tootBootScore==='number' ? p.tootBootScore : p.runway;
+}
 function runwayTone(p, placements){
-  const values=placements.map(x=>x.runway).sort((a,b)=>a-b);
+  const values=placements.map(x=>runwayTootBootMetric(x)).sort((a,b)=>a-b);
   const median=values[Math.floor(values.length/2)] || 0;
   const good=[
     'sold the fantasy and charged full price.',
@@ -33,15 +36,15 @@ function runwayTone(p, placements){
   ];
   const bank=gameState.data?.narrativeExpansion?.runwayDescriptions || gameState.data?.narrativeText?.runwayDescriptions || null;
   if(bank){
-    if(p.runway >= median + 7) return sample(bank.legendary||good);
-    if(p.runway >= median + 5) return sample(bank.great||good);
-    if(p.runway <= median - 7) return sample(bank.flop||bad);
-    if(p.runway <= median - 5) return sample(bank.weak||bad);
-    if(Math.abs(p.runway-median)<=2) return sample(bank.safe||mid);
+    if(runwayTootBootMetric(p) >= median + 7) return sample(bank.legendary||good);
+    if(runwayTootBootMetric(p) >= median + 5) return sample(bank.great||good);
+    if(runwayTootBootMetric(p) <= median - 7) return sample(bank.flop||bad);
+    if(runwayTootBootMetric(p) <= median - 5) return sample(bank.weak||bad);
+    if(Math.abs(runwayTootBootMetric(p)-median)<=2) return sample(bank.safe||mid);
     return sample(bank.mixed||mid);
   }
-  if(p.runway >= median + 5) return sample(good);
-  if(p.runway <= median - 5) return sample(bad);
+  if(runwayTootBootMetric(p) >= median + 5) return sample(good);
+  if(runwayTootBootMetric(p) <= median - 5) return sample(bad);
   return sample(mid);
 }
 function getRunwayOrder(ep, placements){if(!ep.runwayOrder || ep.runwayOrder.length!==placements.length){ep.runwayOrder=shuffle(placements.map(p=>p.queenId)); saveGame();} return ep.runwayOrder.map(id=>placements.find(p=>p.queenId===id)).filter(Boolean);}
@@ -256,24 +259,24 @@ function runwayCategoryHeader(cat){
 }
 
 function runwayMomentMap(placements){
-  const eligible=[...placements].filter(p=>typeof p.runway==='number');
+  const eligible=[...placements].filter(p=>typeof runwayTootBootMetric(p)==='number');
   if(!eligible.length)return {};
-  const sorted=[...eligible].sort((a,b)=>b.runway-a.runway);
+  const sorted=[...eligible].sort((a,b)=>runwayTootBootMetric(b)-runwayTootBootMetric(a));
   const map={};
   const top=sorted[0];
   const second=sorted[1];
-  const low=[...eligible].sort((a,b)=>a.runway-b.runway)[0];
-  const median=[...eligible].sort((a,b)=>a.runway-b.runway)[Math.floor(eligible.length/2)]?.runway ?? 0;
-  if(top && top.runway >= median+6) map[top.queenId]='showstopper';
-  if(second && second.queenId!==top?.queenId && second.runway >= median+4) map[second.queenId]='moment';
-  if(low && low.queenId!==top?.queenId && low.runway <= median-5) map[low.queenId]='flop';
+  const low=[...eligible].sort((a,b)=>runwayTootBootMetric(a)-runwayTootBootMetric(b))[0];
+  const median=runwayTootBootMetric([...eligible].sort((a,b)=>runwayTootBootMetric(a)-runwayTootBootMetric(b))[Math.floor(eligible.length/2)]||{}) ?? 0;
+  if(top && runwayTootBootMetric(top) >= median+6) map[top.queenId]='showstopper';
+  if(second && second.queenId!==top?.queenId && runwayTootBootMetric(second) >= median+4) map[second.queenId]='moment';
+  if(low && low.queenId!==top?.queenId && runwayTootBootMetric(low) <= median-5) map[low.queenId]='flop';
   return map;
 }
 function runwayStars(p, placements){
-  const values=placements.map(x=>x.runway).sort((a,b)=>a-b);
+  const values=placements.map(x=>runwayTootBootMetric(x)).sort((a,b)=>a-b);
   const min=values[0] ?? 0;
   const max=values[values.length-1] ?? min+1;
-  const normalized=(p.runway-min)/Math.max(1,max-min);
+  const normalized=(runwayTootBootMetric(p)-min)/Math.max(1,max-min);
   const stars=clamp(Math.round(normalized*4)+1,1,5);
   return '★'.repeat(stars)+'☆'.repeat(5-stars);
 }
@@ -295,10 +298,10 @@ function runwayTagForStars(starCount, moment, isTopToot){
   return tags;
 }
 function runwayStarCount(p, placements){
-  const values=placements.map(x=>x.runway).sort((a,b)=>a-b);
+  const values=placements.map(x=>runwayTootBootMetric(x)).sort((a,b)=>a-b);
   const min=values[0] ?? 0;
   const max=values[values.length-1] ?? min+1;
-  const normalized=(p.runway-min)/Math.max(1,max-min);
+  const normalized=(runwayTootBootMetric(p)-min)/Math.max(1,max-min);
   return clamp(Math.round(normalized*4)+1,1,5);
 }
 function runwayTagMarkup(tags){
@@ -340,18 +343,36 @@ function teamJudgingSummary(ep){
   return `<div class="card"><h3>${escapeHtml(teamJudgingLabel(ep))}</h3><p>${escapeHtml(intro)}</p>${teamLines}</div>`;
 }
 
+function ballCategoryPlacements(placements, categoryIndex){
+  return placements.map(p=>{
+    const categoryScore=Array.isArray(p.ballRunwayScores) && typeof p.ballRunwayScores[categoryIndex]==='number' ? p.ballRunwayScores[categoryIndex] : p.runway;
+    return {...p, runway:categoryScore, tootBootScore:categoryScore};
+  });
+}
+function categoryWeightNote(placements, idx, isLast){
+  const weights=placements.find(p=>Array.isArray(p.ballRunwayWeights))?.ballRunwayWeights;
+  if(!weights || typeof weights[idx]!=='number')return '';
+  const pct=Math.round(weights[idx]*100);
+  return `<p class="small">${isLast?'Final category':'Category'} weight: ${pct}% of the ball runway package.</p>`;
+}
 function runwayCategoryCards(ep, placements, runwayOrder){
   const categories=(ep.runwayCategories&&ep.runwayCategories.length)?ep.runwayCategories:[ep.runwayCategory];
-  const momentMap=runwayMomentMap(placements);
-  const topTootQueenId=[...placements].sort((a,b)=>b.runway-a.runway)[0]?.queenId;
   if(ep.challengeType==='ball' && categories.length>1){
     return categories.map((cat,idx)=>{
-      const note=idx===categories.length-1?'<p class="small">This final category was constructed in the workroom.</p>':'';
-      const allowTopToot=idx===categories.length-1;
-      const walks=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap,{allowTopToot,topTootQueenId})).join('');
-      return `<div class="card runway-card">${runwayCategoryHeader(cat)}${note}<div class="runway-walk-list">${walks}</div></div>`;
+      const categoryPlacements=ballCategoryPlacements(placements,idx);
+      const categoryById=Object.fromEntries(categoryPlacements.map(p=>[p.queenId,p]));
+      const categoryOrder=runwayOrder.map(p=>categoryById[p.queenId]).filter(Boolean);
+      const momentMap=runwayMomentMap(categoryPlacements);
+      const isLast=idx===categories.length-1;
+      const topTootQueenId=isLast ? [...categoryPlacements].sort((a,b)=>runwayTootBootMetric(b)-runwayTootBootMetric(a))[0]?.queenId : null;
+      const note=isLast?'<p class="small">This final category was constructed in the workroom, so sewing carries more weight.</p>':'<p class="small">This category was brought from home, so styling and presentation carry more weight.</p>';
+      const weightNote=categoryWeightNote(placements,idx,isLast);
+      const walks=categoryOrder.map(p=>runwayWalkCard(p,categoryPlacements,momentMap,{allowTopToot:isLast,topTootQueenId})).join('');
+      return `<div class="card runway-card">${runwayCategoryHeader(cat)}${note}${weightNote}<div class="runway-walk-list">${walks}</div></div>`;
     }).join('');
   }
+  const momentMap=runwayMomentMap(placements);
+  const topTootQueenId=[...placements].sort((a,b)=>runwayTootBootMetric(b)-runwayTootBootMetric(a))[0]?.queenId;
   const runwayWalk=runwayOrder.map(p=>runwayWalkCard(p,placements,momentMap,{allowTopToot:true,topTootQueenId})).join('');
   return `<div class="card runway-card">${runwayCategoryHeader(ep.runwayCategory)}<div class="runway-walk-list">${runwayWalk}</div></div>`;
 }

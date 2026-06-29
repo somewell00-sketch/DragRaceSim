@@ -22,15 +22,77 @@ function weightedPickUnique(items,count,weightFn){
   }
   return picked;
 }
+
+function normalizeStoryBeatText(text){
+  return String(text||'')
+    .toLowerCase()
+    .replace(/[\u{1F300}-\u{1FAFF}]/gu,'')
+    .replace(/<[^>]*>/g,'')
+    .replace(/[^a-z0-9]+/g,' ')
+    .trim();
+}
+function storyBeatPairKey(e){
+  const ids=[e?.a,e?.b,e?.queenId,e?.targetId].filter(Boolean).map(String);
+  if(ids.length<2)return '';
+  return ids.slice(0,2).sort().join('|');
+}
+function weightedPickDiverseStoryEvents(items,count,weightFn){
+  const pool=[...(items||[])];
+  const picked=[];
+  const usedTexts=new Set();
+  const usedTemplates=new Set();
+  const usedPairs=new Set();
+  const usedTypes=new Set();
+  let guard=0;
+  while(pool.length && picked.length<count && guard<80){
+    guard++;
+    const total=pool.reduce((sum,item)=>sum+Math.max(0.05,weightFn(item)),0);
+    let roll=Math.random()*total;
+    let index=0;
+    for(;index<pool.length;index++){
+      roll-=Math.max(0.05,weightFn(pool[index]));
+      if(roll<=0)break;
+    }
+    const item=pool.splice(Math.min(index,pool.length-1),1)[0];
+    const textKey=normalizeStoryBeatText(item?.text);
+    const templateKey=String(item?.id||'');
+    const pairKey=storyBeatPairKey(item);
+    const typeKey=String(item?.type||'').toLowerCase();
+    if(textKey && usedTexts.has(textKey))continue;
+    if(templateKey && usedTemplates.has(templateKey))continue;
+    if(pairKey && usedPairs.has(pairKey))continue;
+    if(typeKey && usedTypes.has(typeKey) && pool.some(e=>String(e?.type||'').toLowerCase()!==typeKey))continue;
+    picked.push(item);
+    if(textKey)usedTexts.add(textKey);
+    if(templateKey)usedTemplates.add(templateKey);
+    if(pairKey)usedPairs.add(pairKey);
+    if(typeKey)usedTypes.add(typeKey);
+  }
+  return picked;
+}
+function pickUniqueStoryNotes(notes,count){
+  const picked=[];
+  const used=new Set();
+  for(const note of weightedPickUnique(notes||[], Math.max(count*2,count), n => {
+    const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+    return player?.name && String(n).includes(player.name) ? 3 : 1;
+  })){
+    const key=normalizeStoryBeatText(note);
+    if(key && used.has(key))continue;
+    used.add(key);
+    picked.push(note);
+    if(picked.length>=count)break;
+  }
+  return picked;
+}
+
 // Helper para construir um bloco curto de Story Beats sem encher a UI.
 function buildWorkroomPulse(events, relationshipNotes) {
-    const social = weightedPickUnique(events||[], 2, eventNarrativeWeight)
+    const social = weightedPickDiverseStoryEvents(events||[], 2, eventNarrativeWeight)
         .map(e => formatPlayerNameInSocialText(e.text));
 
-    const relationships = weightedPickUnique(relationshipNotes||[], 1, note => {
-        const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
-        return player?.name && String(note).includes(player.name) ? 3 : 1;
-    }).map(n => formatPlayerNameInSocialText(n));
+    const relationships = pickUniqueStoryNotes(relationshipNotes||[], 1)
+        .map(n => formatPlayerNameInSocialText(n));
 
     const allItems = [...social, ...relationships].slice(0,3);
     if (allItems.length === 0) {
@@ -283,7 +345,6 @@ function renderWorkroom(){
       <h3>Workroom</h3>
       <p>${ep.miniChallenge?`A mini challenge took place. Winner: <strong>${escapeHtml(ep.miniWinnerName)}</strong>.`:'No mini challenge today. The dolls get straight to work.'}</p>
       <h4>Story Beats</h4>
-      <p><em>Only the moments the edit wants you to notice.</em></p>
       <ul>${workroomPulse}</ul>
       ${ep.teams?.length?`<h4>Teams</h4><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
     </div>

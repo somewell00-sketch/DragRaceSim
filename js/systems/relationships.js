@@ -15,3 +15,20 @@ function relationshipMood(queenId){
   const sign=avg>0?'+':'';
   return `${relationshipEmojiFromScore(rel.affinity,rel.respect)} (${sign}${avg})`;
 }
+
+function applyChallengeWinRelationshipPenalty(winner, ep){
+  if(!winner || !ep || !gameState.relationships)return [];
+  if(ep.winRelationshipPenalties?.some(x=>x.winnerId===winner.id))return [];
+  const pool=(gameState.queens||[]).filter(q=>q && q.id!==winner.id && !q.isEliminated);
+  const targets=shuffle(pool).slice(0,3);
+  if(!targets.length)return [];
+  ep.winRelationshipPenalties=ep.winRelationshipPenalties||[];
+  const changes=targets.map(target=>{
+    const affinityLoss=rand(-14,-8);
+    const respectShift=rand(-3,1);
+    changeRelationship(target.id,winner.id,affinityLoss,respectShift);
+    return {winnerId:winner.id,targetId:target.id,affinity:affinityLoss,respect:respectShift};
+  });
+  ep.winRelationshipPenalties.push(...changes);
+  return changes;
+}

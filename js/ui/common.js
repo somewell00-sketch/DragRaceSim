@@ -109,13 +109,7 @@ function queenSidebar(){
   const active=gameState.queens.filter(q=>!q.isEliminated).sort((a,b)=>a.name.localeCompare(b.name));
   const frontIds=currentFrontRunnerIds();
   const moodBadge=(q)=>q.id===gameState.playerQueenId?'':`<span class="sidebar-mood" title="How she sees you">${playerRelationshipLabel(q.id)}</span>`;
-  const personaLine=(q)=>{
-    const p=escapeHtml(queenPersonalityName(q));
-    const t=escapeHtml(queenShortType(q));
-    let color='#E879F9';
-    try{ color=personalityColor(q); }catch(e){}
-    return `<span class="small sidebar-persona"><span style="color:${escapeHtml(color)}">${p}</span><span class="persona-dot">•</span><span>${t}</span></span>`;
-  };
+  const personaLine=(q)=>`<span class="small sidebar-persona queen-archetype queen-archetype--subtle">${queenPersonaTypeHtml(q)}</span>`;
   return `<aside class="sidebar"><div class="card queens-sidebar-card"><div class="sidebar-title"><h3>Queens still in</h3><span class="sidebar-count">${active.length}/${gameState.queens.length}</span></div><div class="queen-list">${active.map(q=>{
     const isFrontRunner=frontIds.includes(q.id);
     const frontTag=isFrontRunner?`<span class="badge arc front-runner">front-runner</span>`:'';
@@ -181,6 +175,6 @@ function sortEpisodeKeys(keys){
 function historyTable(){
   const eps=sortEpisodeKeys([...new Set(gameState.queens.flatMap(q=>q.episodeHistory.map(h=>h.episode))) ]);
   const ordered=getQueenStandingOrder();
-  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${escapeHtml(queenPersonaType(q))}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
+  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
 function showHistory(backFn){setHTML(`<main class="screen"><section class="hero"><h2>Season Track Record</h2></section>${historyTable()}<button id="back">Back</button></main>`); document.querySelector('#back').addEventListener('click',()=>{backFn(); scrollToTop();});}
