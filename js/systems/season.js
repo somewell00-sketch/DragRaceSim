@@ -14,7 +14,17 @@ function generatedQueenName(index, usedNames=new Set()){
   const firsts=parts.firstNames||['Cherry','Divina','Maxi','Pearl','Sasha','Tina','Vera','Zaza'];
   const lasts=parts.lastNames||['Voltage','Storm','Minx','Panic','Static','Tension','Vixen','Royale'];
   for(let attempt=0; attempt<80; attempt++){
-    const name=`${sample(firsts)} ${sample(lasts)}`;
+    const roll=Math.random();
+    let name;
+    if(roll<0.65){
+      name=`${sample(firsts)} ${sample(lasts)}`;
+    }else if(roll<0.80){
+      name=sample(firsts);
+    }else if(roll<0.90){
+      name=`${sample(firsts)} ${sample(firsts)} ${sample(lasts)}`;
+    }else{
+      name=`${sample(firsts)} ${sample(lasts)} ${sample(lasts)}`;
+    }
     if(!usedNames.has(name)){usedNames.add(name); return name;}
   }
   const fallback=`${sample(firsts)} ${sample(lasts)} ${index}`;

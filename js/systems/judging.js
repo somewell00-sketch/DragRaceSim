@@ -220,7 +220,7 @@ function assignIndividualPlacements(scored){
   if(scored.length>5 && scored[scored.length-3])scored[scored.length-3].placement='LOW';
   // Larger casts should not have only one LOW every episode. Adding one more
   // low critique in the lower middle creates more natural vulnerability arcs.
-  if(scored.length>=8 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
+  if(scored.length>=10 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
   if(scored[scored.length-2])scored[scored.length-2].placement='BTM';
   if(scored[scored.length-1])scored[scored.length-1].placement='BTM';
 }
