@@ -3675,3 +3675,128 @@ button.creator-dice-btn:hover,
 .legacy-power-line{margin:1rem 0;font-size:1.05rem;}
 
 .legacy-power-line{margin:1rem 0 .65rem;font-weight:750;color:rgba(255,255,255,.88);}
+
+/* UI compact pass: runway + judges critiques (visual only) */
+.runway-card{
+  padding:var(--space-2)!important;
+}
+.runway-card .runway-category-title{
+  margin:0 0 12px!important;
+  padding:14px 16px!important;
+  gap:4px!important;
+}
+.runway-card .runway-category-title::before{
+  top:8px!important;
+}
+.runway-card .runway-category-title::after{
+  width:48px!important;
+  margin-top:8px!important;
+}
+.runway-card .runway-category-title span{
+  font-size:.64rem!important;
+  letter-spacing:.16em!important;
+}
+.runway-card .runway-category-title strong{
+  font-size:clamp(1.35rem,3.5vw,2.45rem)!important;
+  line-height:1!important;
+}
+.runway-walk-list{
+  gap:8px!important;
+}
+.runway-look{
+  padding:8px 10px!important;
+  border-radius:14px!important;
+}
+.runway-look-head{
+  gap:10px!important;
+  padding:8px!important;
+  border-radius:12px!important;
+}
+.runway-look-head .queen-portrait,
+.runway-look-head .portrait-md,
+.runway-look-head .portrait-lg{
+  width:46px!important;
+  height:46px!important;
+}
+.runway-look h4{
+  margin:0 0 3px!important;
+  font-size:.98rem!important;
+  line-height:1.08!important;
+}
+.runway-look p{
+  font-size:.9rem!important;
+  line-height:1.26!important;
+}
+.runway-tags{
+  margin-bottom:5px!important;
+}
+.runway-label{
+  padding:3px 7px!important;
+  font-size:.66rem!important;
+  line-height:1!important;
+}
+
+.critique-list{
+  gap:9px!important;
+}
+.critique-list .critique,
+.critique{
+  padding:10px 12px!important;
+  border-radius:14px!important;
+}
+.critique-head{
+  gap:10px!important;
+  margin-bottom:8px!important;
+  padding:8px!important;
+  border-radius:12px!important;
+}
+.critique-head .queen-portrait,
+.critique-head .portrait-md{
+  width:46px!important;
+  height:46px!important;
+}
+.critique-head h4{
+  margin:0 0 2px!important;
+  font-size:1rem!important;
+  line-height:1.08!important;
+}
+.critique-head .small{
+  margin:0!important;
+  font-size:.78rem!important;
+  line-height:1.15!important;
+}
+.judge-critique-grid{
+  gap:8px!important;
+  margin-top:8px!important;
+}
+.judge-line{
+  padding:8px 10px!important;
+  border-radius:12px!important;
+}
+.judge-line span{
+  margin-bottom:2px!important;
+  font-size:.62rem!important;
+  letter-spacing:.1em!important;
+}
+.judge-line p{
+  font-size:.91rem!important;
+  line-height:1.28!important;
+}
+
+@media(min-width:760px){
+  .judge-critique-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+@media(max-width:560px){
+  .runway-card .runway-category-title strong{
+    font-size:1.35rem!important;
+  }
+  .runway-look-head,
+  .critique-head{
+    align-items:center!important;
+  }
+  .judge-critique-grid{
+    grid-template-columns:1fr!important;
+  }
+}

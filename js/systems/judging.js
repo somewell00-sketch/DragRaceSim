@@ -106,6 +106,19 @@ function getJudgesExpectationPenalty(q){
 function getWinThrottlePenalty(q){
   return getJudgesExpectationPenalty(q);
 }
+function isLegacyCompetitiveEpisode(ep){
+  return getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
+}
+function legacyAllStarsPressure(q, ep){
+  // Legacy gives out two WINs per episode, so repeated frontrunner weeks need
+  // a slightly harsher All Stars pressure without changing the episode flow.
+  if(!isLegacyCompetitiveEpisode(ep))return 0;
+  const wins=q?.statistics?.wins||0;
+  if(wins>=5)return -4;
+  if(wins>=4)return -2.5;
+  if(wins>=3)return -1.2;
+  return 0;
+}
 function winRedirectChance(q){
   const wins=q?.statistics?.wins||0;
   if(wins>=5)return 0.75;      // trying for 6th or beyond: 3/4 chance the win goes to the next queen
@@ -437,6 +450,7 @@ function calculateEpisodeResults(playerChoices={}){
     const momentum=q.momentum||0;
     const episodeForm=episodeFormModifier(q,ep);
     const fatigue=winStreakFatigue(q);
+    const legacyPressure=legacyAllStarsPressure(q,ep);
     const vulnerabilityPressure=vulnerabilityPressureModifier(q,ep);
     const riskBonus=riskRoll(risk);
     const miniBonus=q.id===ep.miniWinnerId?3:0;
@@ -452,11 +466,11 @@ function calculateEpisodeResults(playerChoices={}){
     const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
-    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
@@ -497,7 +511,8 @@ function calculateEpisodeResults(playerChoices={}){
     const winThrottleText=s.winThrottlePenalty?` • Judges' expectations ${s.winThrottlePenalty}`:'';
     const formText=s.episodeForm?` • ${s.episodeFormLabel||'Episode form'} ${s.episodeForm>=0?'+':''}${s.episodeForm}`:'';
     const fatigueText=s.fatigue?` • Fatigue ${s.fatigue}`:'';
-    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${extra}${teamText}${winThrottleText}`;
+    const legacyPressureText=s.legacyPressure?` • All Stars pressure ${s.legacyPressure}`:'';
+    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${extra}${teamText}${winThrottleText}`;
     s.critique=getCritiqueText(s.placement,ep.challengeType,s.risk,success);
     if(ep.judgingMode==='team' && s.teamName){
       const teamScore=ep.teamScores?.find(t=>t.teamId===s.teamId);
@@ -558,6 +573,45 @@ function recordIconicLipSync(ep, lipSyncResult){
 
   if(existingIndex>=0) gameState.season.iconicLipSyncs[existingIndex]=record;
   else gameState.season.iconicLipSyncs.push(record);
+}
+
+
+function applyLegacyLipstickRelationshipPenalty(winnerId, eliminatedQueenId, ep){
+  if(!ep || ep.legacyLipstickRelationshipPenaltyApplied || !gameState.relationships)return [];
+  const top2Ids=ep.top2Queens||[];
+  const votes=ep.legacyVotes||{};
+  const changes=[];
+
+  top2Ids.forEach(voterId=>{
+    const chosenId=votes[voterId];
+    if(!voterId || !chosenId || voterId===chosenId)return;
+
+    // If the chosen lipstick is the actual eliminated queen, the relationship change
+    // no longer matters in the active season. Only saved lipstick targets carry the
+    // social consequence forward.
+    if(chosenId===eliminatedQueenId)return;
+
+    const voter=gameState.queens.find(q=>q.id===voterId && !q.isEliminated);
+    const chosen=gameState.queens.find(q=>q.id===chosenId && !q.isEliminated);
+    if(!voter || !chosen)return;
+
+    const isLipSyncWinner=voterId===winnerId;
+    const affinityLoss=isLipSyncWinner ? -20 : -14;
+    const respectLoss=isLipSyncWinner ? -4 : -2;
+
+    if(typeof changeRelationship==='function'){
+      changeRelationship(voterId,chosenId,affinityLoss,respectLoss);
+      // The saved queen also remembers that her name was written down, but this is
+      // lighter than the Top 2's own loss of trust toward her.
+      changeRelationship(chosenId,voterId,Math.round(affinityLoss*0.65),Math.round(respectLoss*0.5));
+    }
+
+    changes.push({voterId,chosenId,affinity:affinityLoss,respect:respectLoss});
+  });
+
+  ep.legacyLipstickRelationshipPenaltyApplied=true;
+  ep.legacyLipstickRelationshipPenalties=changes;
+  return changes;
 }
 
 function resolveLipSync(playerMoves=null){
@@ -712,6 +766,9 @@ function applyEpisodeStats(){
     LOW:{momentum:-1,confidence:-5,stress:8},
     BTM:{momentum:-2,confidence:-8,stress:12,energy:-8}
   };
+  const legacyWinEffect=p=>p.lipSyncWinner
+    ? {momentum:-0.25,production:1.1,fans:1.2,confidence:4,stress:3}
+    : {momentum:-0.25,production:1.1,fans:1.2,confidence:4,stress:3};
   for(const p of ep.placements){
     const q=gameState.queens.find(x=>x.id===p.queenId);
     if(!q)continue;
@@ -725,13 +782,18 @@ function applyEpisodeStats(){
     if(p.placement==='SAFE')q.statistics.safes++;
     if(p.placement==='LOW')q.statistics.lows++;
     if(p.placement==='BTM')q.statistics.bottoms++;
-    applyChoiceEffects(placementEffects[p.placement]||{},{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
+    const effects=(isLegacyCompetitiveEpisode(ep) && p.placement==='WIN') ? legacyWinEffect(p) : (placementEffects[p.placement]||{});
+    applyChoiceEffects(effects,{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
   }
   if(ep.lipSyncResult){
     if(ep.lipSyncResult.outcome==='legacyElimination'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
       const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
-      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Legacy lip sync win.',source:'lip-sync-result',save:false}); }
+      if(win){
+        win.statistics.lipSyncWins++;
+        applyChoiceEffects({momentum:0.5,fans:0.8,production:0.4,stress:2},{queen:win,note:'Legacy lip sync win.',source:'lip-sync-result',save:false});
+        if(out && typeof applyLegacyLipstickRelationshipPenalty==='function')applyLegacyLipstickRelationshipPenalty(win.id,out.id,ep);
+      }
       if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
     } else if(ep.lipSyncResult.outcome==='top2Win'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
