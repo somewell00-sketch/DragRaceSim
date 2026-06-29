@@ -3544,3 +3544,45 @@ button.creator-dice-btn:hover,
   .guest-judge-callout{max-width:100%;}
   .hero::before,.moment-header::before,.runway-category-title::before{left:12px;right:12px;}
 }
+
+
+/* Finale fan favorite UI polish */
+.sidebar .sidebar-queen-row.player-queen-card{
+  border:2px solid rgba(215,47,134,.72)!important;
+  background:inherit!important;
+  box-shadow:0 0 0 1px rgba(215,47,134,.18)!important;
+}
+.sidebar .sidebar-queen-row.player-queen-card .sidebar-portrait-wrap .queen-portrait,
+.sidebar .sidebar-queen-row.player-queen-card .sidebar-portrait-wrap .portrait-sm{
+  border:3px solid rgba(215,47,134,.86)!important;
+  box-shadow:0 0 0 3px rgba(255,255,255,.95)!important;
+}
+.sidebar .sidebar-player-label{
+  display:inline-flex!important;
+  width:max-content;
+  margin:1px 0 2px;
+  padding:2px 7px;
+  border-radius:999px;
+  background:rgba(215,47,134,.10);
+  color:#8f1f62!important;
+  border:1px solid rgba(215,47,134,.18);
+  font-size:.68rem!important;
+  line-height:1.1!important;
+  font-weight:850!important;
+  letter-spacing:.04em;
+  text-transform:uppercase;
+}
+.card.decision-card .fan-favorite-options .option{
+  align-items:center;
+}
+.card.decision-card .fan-favorite-options .choice-emoji{
+  background:linear-gradient(135deg,rgba(255,248,214,.95),rgba(255,209,232,.88));
+  border:1px solid rgba(255,255,255,.86);
+  box-shadow:0 4px 10px rgba(54,20,48,.12);
+}
+.fan-favorite-reveal .fan-favorite-winner-name{
+  margin:.35rem 0 .2rem;
+  font-size:clamp(1.55rem,3vw,2.15rem);
+  line-height:1.05;
+  letter-spacing:-.02em;
+}

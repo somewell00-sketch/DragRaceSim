@@ -81,7 +81,7 @@ function skipToFinaleStart(){
   }
   if(typeof shouldOfferReunionSmackdown==='function' && shouldOfferReunionSmackdown() && typeof resolveReunionSmackdown==='function')resolveReunionSmackdown();
   if(typeof prepareFinale==='function')prepareFinale();
-  gameState.season.finaleStage='FINALE_INTRO';
+  gameState.season.finaleStage='FINALE_GRAND';
   if(typeof saveGame==='function')saveGame();
   if(typeof renderFinale==='function')renderFinale();
 }
@@ -119,7 +119,8 @@ function queenSidebar(){
   return `<aside class="sidebar"><div class="card queens-sidebar-card"><div class="sidebar-title"><h3>Queens still in</h3><span class="sidebar-count">${active.length}/${gameState.queens.length}</span></div><div class="queen-list">${active.map(q=>{
     const isFrontRunner=frontIds.includes(q.id);
     const frontTag=isFrontRunner?`<span class="badge arc front-runner">front-runner</span>`:'';
-    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${personaLine(q)}${frontTag}</div></div>`;
+    const isPlayer=q.id===gameState.playerQueenId;
+    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''} ${isPlayer?'player-queen-card':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${isPlayer?'<span class="small sidebar-player-label">Your queen</span>':''}${personaLine(q)}${frontTag}</div></div>`;
   }).join('')}</div></div>${playerCanSkipToFinale()?`<button class="secondary" id="skipToFinaleBtn">⏭ Skip to Finale</button> `:''}<button class="secondary" id="openHistory">📋 Track Record</button> <button class="ghost" id="saveBtn">💾 Save</button> <button class="ghost" id="restartBtn">↺ Restart</button></aside>`;
 }
 function bindCommon(onHistory){document.querySelector('#openHistory')?.addEventListener('click',onHistory); document.querySelector('#skipToFinaleBtn')?.addEventListener('click',()=>{if(confirm('Skip the remaining episodes and jump to the finale?'))skipToFinaleStart();}); document.querySelector('#saveBtn')?.addEventListener('click',()=>{saveGame(); alert('Season saved in this browser.');}); document.querySelector('#restartBtn')?.addEventListener('click',()=>{if(confirm('Restart the season? Your current save will be cleared.')){clearSave(); resetState(); renderQueenCreator();}});}

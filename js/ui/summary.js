@@ -1,6 +1,7 @@
 
 function qName(id){return gameState.queens.find(q=>q.id===id)?.name||'A queen';}
 function finaleFormatName(format){return format==='top4_lsfyc'?'Lip Sync for the Crown':format==='top3_cut'?'Top 3 Final Lip Sync':'Top 4 Final Two';}
+const FINALE_GRAND='FINALE_GRAND';
 const FINALE_INTRO='FINALE_INTRO';
 const FINALE_LIPSYNC='FINALE_LIPSYNC';
 const FINALE_RESULTS='FINALE_RESULTS';
@@ -379,11 +380,134 @@ function finalDuelScoreRows(finalDuel){
   }).join('');
 }
 function renderFinale(){
-  const stage=gameState.season?.finaleStage || FINALE_INTRO;
+  const stage=gameState.season?.finaleStage || FINALE_GRAND;
+  if(stage===FINALE_GRAND || stage==='grand') return renderFinaleGrandFinale();
+  if(stage===FINALE_INTRO || stage==='intro') return renderFinalePart1();
   if(stage===FINALE_LIPSYNC || stage==='lip_sync') return renderFinalePart2();
   if(stage===FINALE_RESULTS || stage==='results') return renderSummary();
-  return renderFinalePart1();
+  return renderFinaleGrandFinale();
 }
+
+function eliminatedQueensForFinaleReturn(){
+  const finalistIds=new Set((gameState.season?.finale?.finalistIds)||gameState.queens.filter(q=>!q.isEliminated).map(q=>q.id));
+  const seen=new Set();
+  const ordered=[];
+  (gameState.eliminatedQueens||[]).forEach(q=>{
+    if(q && !finalistIds.has(q.id) && !seen.has(q.id)){
+      seen.add(q.id);
+      ordered.push(q);
+    }
+  });
+  (gameState.queens||[]).forEach(q=>{
+    if(q?.isEliminated && !finalistIds.has(q.id) && !seen.has(q.id)){
+      seen.add(q.id);
+      ordered.push(q);
+    }
+  });
+  return ordered;
+}
+function finaleReturnLine(q){
+  const last=(q.episodeHistory||[]).slice().reverse().find(h=>['ELIM','BTM','LOW'].includes(h.placement)) || {};
+  const ep=last.episode && last.episode!=='Finale' ? `Ep. ${escapeHtml(last.episode)}` : 'Finale stage';
+  return `<li><strong>${escapeHtml(q.name)}</strong> returns to the stage <span class="small">(${ep})</span></li>`;
+}
+function fanFavoriteScoreFor(voter, candidate){
+  const rel=gameState.relationships?.[voter?.id]?.[candidate?.id] || {};
+  const affinity=Number(rel.affinity)||0;
+  const respect=Number(rel.respect)||0;
+  const pub=candidate?.publicScores||{};
+  const st=candidate?.statistics||{};
+  let score=0;
+  score += affinity*0.55;
+  score += respect*0.35;
+  score += (Number(pub.queens)||0)*0.25;
+  score += (Number(pub.fans)||0)*0.20;
+  score += (Number(pub.production)||0)*0.10;
+  score += (st.wins||0)*2 + (st.highs||0);
+  score -= (st.bottoms||0)*0.8;
+  score += rand(-10,10);
+  return score;
+}
+function calculateFanFavorite(playerVoteId=null){
+  const queens=gameState.queens||[];
+  if(playerVoteId && playerVoteId===gameState.playerQueenId) playerVoteId=null;
+  const totals={};
+  queens.forEach(q=>{totals[q.id]=0;});
+  queens.forEach(voter=>{
+    const candidates=queens.filter(q=>q.id!==voter.id);
+    if(!candidates.length)return;
+    const pick=candidates
+      .map(q=>({q,score:fanFavoriteScoreFor(voter,q)}))
+      .sort((a,b)=>b.score-a.score)[0]?.q;
+    if(pick)totals[pick.id]=(totals[pick.id]||0)+1;
+  });
+  if(playerVoteId && totals[playerVoteId]!==undefined) totals[playerVoteId]+=1;
+  const topVotes=Math.max(...Object.values(totals));
+  const tied=queens.filter(q=>(totals[q.id]||0)===topVotes);
+  const winner=tied.sort((a,b)=>{
+    const prodDiff=(Number(b.publicScores?.production)||0)-(Number(a.publicScores?.production)||0);
+    if(prodDiff!==0)return prodDiff;
+    const fanDiff=(Number(b.publicScores?.fans)||0)-(Number(a.publicScores?.fans)||0);
+    if(fanDiff!==0)return fanDiff;
+    return a.name.localeCompare(b.name);
+  })[0] || queens[0] || null;
+  gameState.season.fanFavorite={
+    winnerId:winner?.id||null,
+    playerVoteId:playerVoteId||null,
+    votes:totals,
+    tiedIds:tied.map(q=>q.id)
+  };
+  saveGame();
+  return gameState.season.fanFavorite;
+}
+function fanFavoriteAnnouncementHtml(){
+  const fan=gameState.season?.fanFavorite;
+  if(!fan?.winnerId)return '';
+  const winner=gameState.queens.find(q=>q.id===fan.winnerId);
+  const playerPick=gameState.queens.find(q=>q.id===fan.playerVoteId);
+  const tieLine=(fan.tiedIds||[]).length>1 ? '<p class="small">The vote was tied, so production favorite broke the tie.</p>' : '';
+  return `<section class="card important fan-favorite-reveal">
+    <h2>⭐ Fan Favorite</h2>
+    <p>The queens have voted${playerPick?`, and your vote went to <strong>${escapeHtml(playerPick.name)}</strong>`:''}.</p>
+    <p>The Fan Favorite of the season is...</p>
+    <p class="fan-favorite-winner-name"><strong>${escapeHtml(winner?.name||'A queen')}!</strong></p>
+    ${tieLine}
+  </section>`;
+}
+function renderFinaleGrandFinale(){
+  const finalists=gameState.queens.filter(q=>!q.isEliminated);
+  const returning=eliminatedQueensForFinaleReturn();
+  const existingVote=gameState.season?.fanFavorite;
+  const voteOptions=(gameState.queens||[]).filter(q=>q.id!==gameState.playerQueenId).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  const voteHtml=existingVote
+    ? `<p>The votes have been locked.</p><p class="small">Your vote: ${escapeHtml(qName(existingVote.playerVoteId))}</p>`
+    : `<p>Who has your vote for Fan Favorite?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`;
+  setHTML(`<main class="screen">
+    <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>Grand Finale</h1><p>Welcome to the Grand Finale. Tonight, the full cast returns before the crown is decided.</p></section>
+    <section class="card">
+      <h2>Welcome Back, Queens</h2>
+      <p>From the first queen to leave to the last queen before the finale, the cast returns to the stage and receives their applause.</p>
+      ${returning.length?`<ol class="finale-return-list">${returning.map(finaleReturnLine).join('')}</ol>`:'<p>Every queen still standing has reached the finale.</p>'}
+    </section>
+    <section class="card important decision-card">
+      <h2>Fan Favorite Vote</h2>
+      ${voteHtml}
+    </section>
+    <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
+    ${existingVote?'<button id="continueFinaleIntro">Continue</button>':''}
+  </main>`);
+  document.querySelectorAll('[data-fan-favorite-vote]').forEach(btn=>btn.addEventListener('click',()=>{
+    calculateFanFavorite(btn.dataset.fanFavoriteVote);
+    renderFinaleGrandFinale();
+  }));
+  const cont=document.querySelector('#continueFinaleIntro');
+  if(cont)cont.addEventListener('click',()=>{
+    gameState.season.finaleStage=FINALE_INTRO;
+    saveGame();
+    renderFinalePart1();
+  });
+}
+
 function renderFinalePart1(){
   const activeFinalists=gameState.queens.filter(q=>!q.isEliminated);
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
@@ -392,7 +516,7 @@ function renderFinalePart1(){
 
   if(needsPlayerStrategy){
     setHTML(`<main class="screen">
-      <section class="hero">${finalePageBadge(1,'Finalists')}<h1>The Grand Finale Begins</h1><p>The finalists return to the stage. One final story is about to be written.</p></section>
+      <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>The Grand Finale Begins</h1><p>The finalists return to the stage. One final story is about to be written.</p></section>
       <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${activeFinalists.map(finaleCard).join('')}</div></section>
       <section class="card important decision-card"><h2>Your Finale Strategy</h2><p>You are still in the race. Choose how you will perform if Ru calls your name for a crown lip sync.</p>${finaleStrategyOptionsHtml()}</section>
     </main>`);
@@ -417,11 +541,12 @@ const sashays = (finale.thirdFourthIds || []).length
       <p>Now, sashay away.</p>
     </section>`
   : '';
+  if(!gameState.season?.fanFavorite) calculateFanFavorite(null);
   setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(1,'Finalists')}<h1>The Grand Finale Begins</h1><p>${escapeHtml(format)}. The finalists return to the stage before Ru makes the final cut.</p></section>
-    <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
+    <section class="hero">${finalePageBadge(2,'Final Cut')}<h1>The Grand Finale Continues</h1><p>${escapeHtml(format)}. Ru makes the final cut before the last lip sync.</p></section>
     ${semiRows}
     ${sashays}
+    ${fanFavoriteAnnouncementHtml()}
     <section class="card finale-top2-card">
       <h2>${escapeHtml(crownFinalistNames)}</h2>
       <p>The time has come...</p>
@@ -439,7 +564,7 @@ const sashays = (finale.thirdFourthIds || []).length
 }
 
 function finalePageBadge(n,label){
-  return `<div class="finale-page-kicker"><span class="badge subtle">Finale ${n}/3</span><span class="badge">${escapeHtml(label)}</span></div>`;
+  return `<div class="finale-page-kicker"><span class="badge subtle">Finale ${n}/4</span><span class="badge">${escapeHtml(label)}</span></div>`;
 }
 function finalDuelToLipSyncResult(finalDuel){
   const ids=finalDuel.queenIds||[];
@@ -482,7 +607,7 @@ function renderFinalePart2(){
   const songLine=finalDuel.song?`<p>Final song: <strong>${escapeHtml(finalDuel.song.title)}</strong> by ${escapeHtml(finalDuel.song.artist)}</p>`:'';
   const strategyRows=finalDuelScoreRows(finalDuel);
   setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(2,'Final Lip Sync')}${bigMomentHeader('One final performance...','THE FINAL LIP SYNC','crown')}<h1>${escapeHtml(qName(finalDuel.queenIds[0]))} vs ${escapeHtml(qName(finalDuel.queenIds[1]))}</h1><p>The crown comes down to one last performance.</p></section>
+    <section class="hero">${finalePageBadge(3,'Final Lip Sync')}${bigMomentHeader('One final performance...','THE FINAL LIP SYNC','crown')}<h1>${escapeHtml(qName(finalDuel.queenIds[0]))} vs ${escapeHtml(qName(finalDuel.queenIds[1]))}</h1><p>The crown comes down to one last performance.</p></section>
     <section class="card"><h2>The Final Performance</h2>${songLine}<p class="music-cue">💡💡🎶🎵🎶💡💡</p><div class="commentary-block">${finalLipSyncNarrative(finalDuel)}</div></section>
     <section class="card important winner-tease"><h2>The Winner Is...</h2><p>The crown is ready. The name comes next.</p></section>
     <button id="finishSeason">Reveal the Winner</button>
@@ -535,7 +660,7 @@ function renderSummary(){
   const runnerBlock=runnerUps.length?`${finaleSectionHeading('Runner-up')}<div class="grid finale-results-grid">${runnerUps.map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p><span>${finaleRoleBadge('RUNNERUP')}</span></div></article>`).join('')}</div>`:'';
   const finalistBlock=finalistsOnly.length?`${finaleSectionHeading('Finalists')}<div class="grid finale-results-grid">${finalistsOnly.map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p><span>${finaleRoleBadge('FINALIST')}</span></div></article>`).join('')}</div>`:'';
   setHTML(`<main class="screen">
-    <section class="hero finale-results-hero">${finalePageBadge(3,'Season Results')}<div class="finale-winner-kicker">${finaleRoleBadge('WINNER')}</div>${bigMomentHeader('The winner is...',(winner?.name||'Winner'),'crown')}${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="winner-copy"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}.</strong> You are the winner, baby.</p>${winner?`${finaleDivider()}<p class="finale-winner-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}</section>
+    <section class="hero finale-results-hero">${finalePageBadge(4,'Season Results')}<div class="finale-winner-kicker">${finaleRoleBadge('WINNER')}</div>${bigMomentHeader('The winner is...',(winner?.name||'Winner'),'crown')}${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="winner-copy"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}.</strong> You are the winner, baby.</p>${winner?`${finaleDivider()}<p class="finale-winner-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}</section>
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
     ${postSeasonReception(player)}
     <section class="card"><h2>Track Record</h2>${historyTable()}</section>

@@ -95,288 +95,288 @@ window.GAME_DATA.balls = [
     "title": "Met Gala Ball",
     "mainTheme": "Fashion Prestige",
     "categories": [
-      "Met Gala Fantasy",
-      "Met Gala Eleganza",
-      "Constructed Met Gala Couture"
+      "First Monday in May Realness",
+      "Red Carpet Rebellion",
+      "Constructed Avant-Garde Extravaganza"
     ]
   },
   {
     "title": "Denim Ball",
     "mainTheme": "Denim Dreams",
     "categories": [
-      "Denim Fantasy",
-      "Denim Eleganza",
-      "Constructed Denim Couture"
+      "Canadian Tuxedo Realness",
+      "Y2K Pop Princess",
+      "Constructed Jean-ius Couture"
     ]
   },
   {
     "title": "Leather Ball",
     "mainTheme": "Leather & Latex",
     "categories": [
-      "Leather Fantasy",
-      "Leather Eleganza",
-      "Constructed Leather Couture"
+      "S&M Mistress Realness",
+      "Matrix Reloaded Glamour",
+      "Constructed Dominatrix Eleganza"
     ]
   },
   {
     "title": "Camp Ball",
     "mainTheme": "Camp Extravaganza",
     "categories": [
-      "Camp Fantasy",
-      "Camp Eleganza",
-      "Constructed Camp Couture"
+      "Tragic but Magic",
+      "Susan Sontag Shook",
+      "Constructed Ridiculous Runway"
     ]
   },
   {
     "title": "Cyberpunk Ball",
     "mainTheme": "Future Shock",
     "categories": [
-      "Cyberpunk Fantasy",
-      "Cyberpunk Eleganza",
-      "Constructed Cyberpunk Couture"
+      "Neo-Tokyo Streetwear",
+      "A.I. Generated Glamour",
+      "Constructed Dystopian Overlord"
     ]
   },
   {
     "title": "Fairy Tale Ball",
     "mainTheme": "Storybook",
     "categories": [
-      "Fairy Tale Fantasy",
-      "Fairy Tale Eleganza",
-      "Constructed Fairy Tale Couture"
+      "Once Upon a Drag",
+      "Wicked Stepmother Realness",
+      "Constructed Happily Ever After Eleganza"
     ]
   },
   {
     "title": "Dragon Ball",
     "mainTheme": "Dragons",
     "categories": [
-      "Dragon Fantasy",
-      "Dragon Eleganza",
-      "Constructed Dragon Couture"
+      "Mother of Dragons Realness",
+      "Hoard of Gold Glamour",
+      "Constructed Fire-Breathing Ferocity"
     ]
   },
   {
     "title": "Mermaid Ball",
     "mainTheme": "Ocean Fantasy",
     "categories": [
-      "Mermaid Fantasy",
-      "Mermaid Eleganza",
-      "Constructed Mermaid Couture"
+      "Siren of the Sea",
+      "Deep Sea Enchantress",
+      "Constructed Hooked on Couture"
     ]
   },
   {
     "title": "Vampire Ball",
     "mainTheme": "Night Creatures",
     "categories": [
-      "Vampire Fantasy",
-      "Vampire Eleganza",
-      "Constructed Vampire Couture"
+      "Victorian Bloodsucker",
+      "Countess after Dark",
+      "Constructed Fanged Fashion"
     ]
   },
   {
     "title": "Witch Ball",
     "mainTheme": "Spellbound",
     "categories": [
-      "Witch Fantasy",
-      "Witch Eleganza",
-      "Constructed Witch Couture"
+      "Coven Chic",
+      "Sabrina the Teenage Bitch",
+      "Constructed Salem High Fashion"
     ]
   },
   {
     "title": "Angel & Devil Ball",
     "mainTheme": "Heaven vs Hell",
     "categories": [
-      "Angel & Devil Fantasy",
-      "Angel & Devil Eleganza",
-      "Constructed Angel & Devil Couture"
+      "Sunday Best Seraphim",
+      "Satanic Panic",
+      "Constructed Purgatory Realness"
     ]
   },
   {
     "title": "Ancient Egypt Ball",
     "mainTheme": "Ancient Civilizations",
     "categories": [
-      "Ancient Egypt Fantasy",
-      "Ancient Egypt Eleganza",
-      "Constructed Ancient Egypt Couture"
+      "Nefertiti Realness",
+      "Curse of the Mummy Glamour",
+      "Constructed Walk Like an Egyptian"
     ]
   },
   {
     "title": "Renaissance Ball",
     "mainTheme": "High Art",
     "categories": [
-      "Renaissance Fantasy",
-      "Renaissance Eleganza",
-      "Constructed Renaissance Couture"
+      "Mona Lisa Smile",
+      "Chambermaid Realness",
+      "Constructed Baroque Period Piece"
     ]
   },
   {
     "title": "Disco Ball",
     "mainTheme": "70s Fever",
     "categories": [
-      "Disco Fantasy",
-      "Disco Eleganza",
-      "Constructed Disco Couture"
+      "Studio 54 VIP",
+      "Roller Derby Queen",
+      "Constructed Sizzling Sequin Symphony"
     ]
   },
   {
     "title": "Wild West Ball",
     "mainTheme": "Frontier",
     "categories": [
-      "Wild West Fantasy",
-      "Wild West Eleganza",
-      "Constructed Wild West Couture"
+      "Saloon Girl Realness",
+      "High Noon Outlaw",
+      "Constructed Rhinestone Cowgirl"
     ]
   },
   {
     "title": "Olympics Ball",
     "mainTheme": "Sports",
     "categories": [
-      "Olympics Fantasy",
-      "Olympics Eleganza",
-      "Constructed Olympics Couture"
+      "Athleisure Realness",
+      "Gold Medalist Glamour",
+      "Constructed Sportswear Supernova"
     ]
   },
   {
     "title": "Hospital Ball",
     "mainTheme": "Medical Drama",
     "categories": [
-      "Hospital Fantasy",
-      "Hospital Eleganza",
-      "Constructed Hospital Couture"
+      "Night Shift Nurse",
+      "Plastic Surgery Disaster",
+      "Constructed Couture Casualty"
     ]
   },
   {
     "title": "Teacher Ball",
     "mainTheme": "School Days",
     "categories": [
-      "Teacher Fantasy",
-      "Teacher Eleganza",
-      "Constructed Teacher Couture"
+      "Substitute Teacher Realness",
+      "Prom Queen Sabotage",
+      "Constructed Detention Drama"
     ]
   },
   {
     "title": "Artist Ball",
     "mainTheme": "Creative Chaos",
     "categories": [
-      "Artist Fantasy",
-      "Artist Eleganza",
-      "Constructed Artist Couture"
+      "Gallery Opening Guest",
+      "Living Masterpiece",
+      "Constructed Avant-Garde Canvas"
     ]
   },
   {
     "title": "Dessert Ball",
     "mainTheme": "Sweet Tooth",
     "categories": [
-      "Dessert Fantasy",
-      "Dessert Eleganza",
-      "Constructed Dessert Couture"
+      "Sugar Rush Realness",
+      "Let Them Eat Cake",
+      "Constructed Confectionery Couture"
     ]
   },
   {
     "title": "Fruit Salad Ball",
     "mainTheme": "Fresh Produce",
     "categories": [
-      "Fruit Salad Fantasy",
-      "Fruit Salad Eleganza",
-      "Constructed Fruit Salad Couture"
+      "Carmen Miranda Realness",
+      "Forbidden Fruit",
+      "Constructed Tutti Frutti Explosion"
     ]
   },
   {
     "title": "Coffee Ball",
     "mainTheme": "Caffeine",
     "categories": [
-      "Coffee Fantasy",
-      "Coffee Eleganza",
-      "Constructed Coffee Couture"
+      "Barista Babe",
+      "Over-Caffeinated Meltdown",
+      "Constructed Espresso Excess"
     ]
   },
   {
     "title": "Ocean Ball",
     "mainTheme": "Sea Life",
     "categories": [
-      "Ocean Fantasy",
-      "Ocean Eleganza",
-      "Constructed Ocean Couture"
+      "Beach Blanket Bimbo",
+      "Great Barrier Grief",
+      "Constructed Deep Blue Decadence"
     ]
   },
   {
     "title": "Volcano Ball",
     "mainTheme": "Natural Forces",
     "categories": [
-      "Volcano Fantasy",
-      "Volcano Eleganza",
-      "Constructed Volcano Couture"
+      "Tectonic Realness",
+      "Lava Lamp Glamour",
+      "Constructed Volcanic Eruption"
     ]
   },
   {
     "title": "Crystal Ball",
     "mainTheme": "Gemstones",
     "categories": [
-      "Crystal Fantasy",
-      "Crystal Eleganza",
-      "Constructed Crystal Couture"
+      "New Age Healer",
+      "Diamond in the Rough",
+      "Constructed Bedazzled Behemoth"
     ]
   },
   {
     "title": "Weather Ball",
     "mainTheme": "Forecast",
     "categories": [
-      "Weather Fantasy",
-      "Weather Eleganza",
-      "Constructed Weather Couture"
+      "Meteorologist Realness",
+      "Singin' in the Rain",
+      "Constructed Category 5 Hurricane"
     ]
   },
   {
     "title": "Paper Ball",
     "mainTheme": "Stationery",
     "categories": [
-      "Paper Fantasy",
-      "Paper Eleganza",
-      "Constructed Paper Couture"
+      "Office Assistant Realness",
+      "Origami Goddess",
+      "Constructed Paper-Cut Couture"
     ]
   },
   {
     "title": "Recycled Ball",
     "mainTheme": "Trash to Treasure",
     "categories": [
-      "Recycled Fantasy",
-      "Recycled Eleganza",
-      "Constructed Recycled Couture"
+      "Garbage Day Realness",
+      "Eco-Warrior Princess",
+      "Constructed Dumpster Dive Diva"
     ]
   },
   {
     "title": "Cartoon Ball",
     "mainTheme": "Animation",
     "categories": [
-      "Cartoon Fantasy",
-      "Cartoon Eleganza",
-      "Constructed Cartoon Couture"
+      "Saturday Morning Realness",
+      "Anime Waifu Fantasy",
+      "Constructed Cel-Shaded Couture"
     ]
   },
   {
     "title": "Anime Ball",
     "mainTheme": "Otaku",
     "categories": [
-      "Anime Fantasy",
-      "Anime Eleganza",
-      "Constructed Anime Couture"
+      "Harajuku Street Style",
+      "Magical Girl Transformation",
+      "Constructed Mecha Masterpiece"
     ]
   },
   {
     "title": "Video Game Ball",
     "mainTheme": "Gaming",
     "categories": [
-      "Video Game Fantasy",
-      "Video Game Eleganza",
-      "Constructed Video Game Couture"
+      "NPC Realness",
+      "Final Boss Ferocity",
+      "Constructed Cyber Glitch Glamour"
     ]
   },
   {
     "title": "Villain Ball",
     "mainTheme": "Evil Icons",
     "categories": [
-      "Villain Fantasy",
-      "Villain Eleganza",
-      "Constructed Villain Couture"
+      "Soap Opera Schemer",
+      "Disney Villainess",
+      "Constructed Pure Evil Eleganza"
     ]
   },
   {
@@ -419,513 +419,648 @@ window.GAME_DATA.balls = [
     "title": "Reading Ball",
     "mainTheme": "Library",
     "categories": [
-      "Reading Fantasy",
-      "Reading Eleganza",
-      "Constructed Reading Couture"
+      "Librarian Realness",
+      "Bookworm Glamour",
+      "Constructed Literary Masterpiece"
     ]
   },
   {
     "title": "Shade Ball",
     "mainTheme": "Reading & Shade",
     "categories": [
-      "Shade Fantasy",
-      "Shade Eleganza",
-      "Constructed Shade Couture"
+      "Sunny Disposition",
+      "Throwing Shade",
+      "Constructed Eclipse Eleganza"
     ]
   },
   {
     "title": "Face Card Ball",
     "mainTheme": "Beauty",
     "categories": [
-      "Face Card Fantasy",
-      "Face Card Eleganza",
-      "Constructed Face Card Couture"
+      "Fresh Faced Realness",
+      "Mugler Mug",
+      "Constructed Face Card Never Declines"
     ]
   },
   {
     "title": "No Wig Ball",
     "mainTheme": "Hair",
     "categories": [
-      "No Wig Fantasy",
-      "No Wig Eleganza",
-      "Constructed No Wig Couture"
+      "Bald is Beautiful",
+      "Hair-Hography",
+      "Constructed Wig-Snatching Couture"
     ]
   },
   {
     "title": "Lip Sync Ball",
     "mainTheme": "Performance",
     "categories": [
-      "Lip Sync Fantasy",
-      "Lip Sync Eleganza",
-      "Constructed Lip Sync Couture"
+      "Back-up Dancer Realness",
+      "Pop Diva Concert",
+      "Constructed Lip Sync Assassin"
     ]
   },
   {
     "title": "Airport Ball",
     "mainTheme": "Travel",
     "categories": [
-      "Airport Fantasy",
-      "Airport Eleganza",
-      "Constructed Airport Couture"
+      "First Class Jetsetter",
+      "Lost Luggage Realness",
+      "Constructed Mile High Club Couture"
     ]
   },
   {
     "title": "Supermarket Ball",
     "mainTheme": "Groceries",
     "categories": [
-      "Supermarket Fantasy",
-      "Supermarket Eleganza",
-      "Constructed Supermarket Couture"
+      "Coupon Clipper Realness",
+      "Clean Up on Aisle 9",
+      "Constructed Express Lane Eleganza"
     ]
   },
   {
     "title": "IKEA Ball",
     "mainTheme": "Home Decor",
     "categories": [
-      "IKEA Fantasy",
-      "IKEA Eleganza",
-      "Constructed IKEA Couture"
+      "Catalog Realness",
+      "Missing Allen Wrench",
+      "Constructed Flat-Pack Fashion"
     ]
   },
   {
     "title": "Therapy Ball",
     "mainTheme": "Self Help",
     "categories": [
-      "Therapy Fantasy",
-      "Therapy Eleganza",
-      "Constructed Therapy Couture"
+      "Rorschach Test Realness",
+      "Breakthrough Meltdown",
+      "Constructed Coping Mechanism"
     ]
   },
   {
     "title": "Bad Decisions Ball",
     "mainTheme": "Chaos",
     "categories": [
-      "Bad Decisions Fantasy",
-      "Bad Decisions Eleganza",
-      "Constructed Bad Decisions Couture"
+      "Walk of Shame Realness",
+      "Texting the Ex",
+      "Constructed Trainwreck Couture"
     ]
   },
   {
     "title": "Hangover Ball",
     "mainTheme": "Morning After",
     "categories": [
-      "Hangover Fantasy",
-      "Hangover Eleganza",
-      "Constructed Hangover Couture"
+      "Smudged Mascara Realness",
+      "Brunch & Bloody Marys",
+      "Constructed Sunglasses & Advil"
     ]
   },
   {
     "title": "Zodiac Ball",
     "mainTheme": "Astrology",
     "categories": [
-      "Zodiac Fantasy",
-      "Zodiac Eleganza",
-      "Constructed Zodiac Couture"
+      "Star Sign Realness",
+      "Mercury in Retrograde",
+      "Constructed Celestial Goddess"
     ]
   },
   {
     "title": "Fire Ball",
     "mainTheme": "Elements",
     "categories": [
-      "Fire Fantasy",
-      "Fire Eleganza",
-      "Constructed Fire Couture"
+      "Arsonist Realness",
+      "Spicy Siren",
+      "Constructed En Fuego Extravaganza"
     ]
   },
   {
     "title": "Ice Ball",
     "mainTheme": "Frozen",
     "categories": [
-      "Ice Fantasy",
-      "Ice Eleganza",
-      "Constructed Ice Couture"
+      "Ice Queen Realness",
+      "Frostbite Fantasy",
+      "Constructed Avalanche Avant-Garde"
     ]
   },
   {
     "title": "Lightning Ball",
     "mainTheme": "Storm",
     "categories": [
-      "Lightning Fantasy",
-      "Lightning Eleganza",
-      "Constructed Lightning Couture"
+      "Static Electricity Realness",
+      "Shock Value Glamour",
+      "Constructed High Voltage Eleganza"
     ]
   },
   {
     "title": "Butterfly Ball",
     "mainTheme": "Insects",
     "categories": [
-      "Butterfly Fantasy",
-      "Butterfly Eleganza",
-      "Constructed Butterfly Couture"
+      "Caterpillar Realness",
+      "Social Butterfly Glamour",
+      "Constructed Metamorphosis Couture"
     ]
   },
   {
     "title": "Safari Ball",
     "mainTheme": "Wildlife",
     "categories": [
-      "Safari Fantasy",
-      "Safari Eleganza",
-      "Constructed Safari Couture"
+      "Tour Guide Realness",
+      "Big Game Glamour",
+      "Constructed Apex Predator Couture"
     ]
   },
   {
     "title": "Farm Ball",
     "mainTheme": "Countryside",
     "categories": [
-      "Farm Fantasy",
-      "Farm Eleganza",
-      "Constructed Farm Couture"
+      "Farmer's Daughter Realness",
+      "Scarecrow Couture",
+      "Constructed Barnyard Boujee"
     ]
   },
   {
     "title": "Jewelry Ball",
     "mainTheme": "Luxury",
     "categories": [
-      "Jewelry Fantasy",
-      "Jewelry Eleganza",
-      "Constructed Jewelry Couture"
+      "Heist Victim Realness",
+      "Crown Jewels Glamour",
+      "Constructed Dripping in Diamonds"
     ]
   },
   {
     "title": "Perfume Ball",
     "mainTheme": "Fragrance",
     "categories": [
-      "Perfume Fantasy",
-      "Perfume Eleganza",
-      "Constructed Perfume Couture"
+      "Department Store Sample Girl",
+      "Eau de Toilette Realness",
+      "Constructed Olfactory Overload"
     ]
   },
   {
     "title": "Opera Ball",
     "mainTheme": "Performing Arts",
     "categories": [
-      "Opera Fantasy",
-      "Opera Eleganza",
-      "Constructed Opera Couture"
+      "Phantom of the Opera Guest",
+      "Fat Lady Sings Realness",
+      "Constructed Dramatic Crescendo"
     ]
   },
   {
     "title": "Museum Ball",
     "mainTheme": "Masterpieces",
     "categories": [
-      "Museum Fantasy",
-      "Museum Eleganza",
-      "Constructed Museum Couture"
+      "Tour Group Tourist",
+      "Stolen Artifact Realness",
+      "Constructed Night at the Museum"
     ]
   },
   {
     "title": "Billionaire Ball",
     "mainTheme": "Old Money",
     "categories": [
-      "Billionaire Fantasy",
-      "Billionaire Eleganza",
-      "Constructed Billionaire Couture"
+      "Inherited Wealth Realness",
+      "Yacht Club After Dark",
+      "Constructed Tax Bracket Eleganza"
     ]
   },
   {
     "title": "Pirate Ball",
     "mainTheme": "High Seas",
     "categories": [
-      "Pirate Fantasy",
-      "Pirate Eleganza",
-      "Constructed Pirate Couture"
+      "Swashbuckler Realness",
+      "Scurvy Scallywag Glamour",
+      "Constructed Walk the Plank Couture"
     ]
   },
   {
     "title": "Circus Ball",
     "mainTheme": "Big Top",
     "categories": [
-      "Circus Fantasy",
-      "Circus Eleganza",
-      "Constructed Circus Couture"
+      "Bearded Lady Realness",
+      "Ringmaster Realness",
+      "Constructed Sideshow Freak Chic"
     ]
   },
   {
     "title": "Carnival Ball",
     "mainTheme": "Festival",
     "categories": [
-      "Carnival Fantasy",
-      "Carnival Eleganza",
-      "Constructed Carnival Couture"
+      "Samba Queen Realness",
+      "Cotton Candy Fantasy",
+      "Constructed Carros Alegóricos Couture"
     ]
   },
   {
     "title": "Hollywood Ball",
     "mainTheme": "Movies",
     "categories": [
-      "Hollywood Fantasy",
-      "Hollywood Eleganza",
-      "Constructed Hollywood Couture"
+      "Golden Age Starlet",
+      "Paparazzi Target Realness",
+      "Constructed Oscar Worthy Eleganza"
     ]
   },
   {
     "title": "Broadway Ball",
     "mainTheme": "Musicals",
     "categories": [
-      "Broadway Fantasy",
-      "Broadway Eleganza",
-      "Constructed Broadway Couture"
+      "Chorus Line Rejection",
+      "Standing Ovation Glamour",
+      "Constructed Tony Award Tyrant"
     ]
   },
   {
     "title": "Wedding Ball",
     "mainTheme": "Love",
     "categories": [
-      "Wedding Fantasy",
-      "Wedding Eleganza",
-      "Constructed Wedding Couture"
+      "Runaway Bride Realness",
+      "Groom-Zilla Fantasy",
+      "Constructed Till Death Do Us Part"
     ]
   },
   {
     "title": "Funeral Ball",
     "mainTheme": "Mourning",
     "categories": [
-      "Funeral Fantasy",
-      "Funeral Eleganza",
-      "Constructed Funeral Couture"
+      "Grieving Widow Realness",
+      "Reading of the Will",
+      "Constructed Dead Gorgeous Eleganza"
     ]
   },
   {
     "title": "Prom Ball",
     "mainTheme": "Teen Dreams",
     "categories": [
-      "Prom Fantasy",
-      "Prom Eleganza",
-      "Constructed Prom Couture"
+      "Awkward Corsage Realness",
+      "Carrie at the Prom Disaster",
+      "Constructed Prom Queen Coronation"
     ]
   },
   {
     "title": "Sleepover Ball",
     "mainTheme": "Pajama Party",
     "categories": [
-      "Sleepover Fantasy",
-      "Sleepover Eleganza",
-      "Constructed Sleepover Couture"
+      "Pillow Fight Realness",
+      "Sleep Paralysis Demon",
+      "Constructed Lingerie Luxury"
     ]
   },
   {
     "title": "Alien Abduction Ball",
     "mainTheme": "Conspiracy",
     "categories": [
-      "Alien Abduction Fantasy",
-      "Alien Abduction Eleganza",
-      "Constructed Alien Abduction Couture"
+      "Trailer Park Witness",
+      "Area 51 Scientist",
+      "Constructed Probe Me Couture"
     ]
   },
   {
     "title": "Time Traveler Ball",
     "mainTheme": "Time",
     "categories": [
-      "Time Traveler Fantasy",
-      "Time Traveler Eleganza",
-      "Constructed Time Traveler Couture"
+      "Victorian Steampunk Realness",
+      "Y2K Apocalypse Survival",
+      "Constructed Paradox Extravaganza"
     ]
   },
   {
     "title": "Robot Ball",
     "mainTheme": "Machines",
     "categories": [
-      "Robot Fantasy",
-      "Robot Eleganza",
-      "Constructed Robot Couture"
+      "Stepford Wife Realness",
+      "Cybernetic Assassin",
+      "Constructed Does Not Compute Couture"
     ]
   },
   {
     "title": "Apocalypse Ball",
     "mainTheme": "End Times",
     "categories": [
-      "Apocalypse Fantasy",
-      "Apocalypse Eleganza",
-      "Constructed Apocalypse Couture"
+      "Mad Max Road Warrior",
+      "Nuclear Fallout Fashion",
+      "Constructed Zombie Apocalypse Queen"
     ]
   },
   {
     "title": "Garden Ball",
     "mainTheme": "Flowers",
     "categories": [
-      "Garden Fantasy",
-      "Garden Eleganza",
-      "Constructed Garden Couture"
+      "Botanical Garden Guide",
+      "Poison Ivy Realness",
+      "Constructed Overgrown Greenhouse"
     ]
   },
   {
     "title": "Bird Ball",
     "mainTheme": "Birds",
     "categories": [
-      "Bird Fantasy",
-      "Bird Eleganza",
-      "Constructed Bird Couture"
+      "Bird Watcher Realness",
+      "Caged Bird Sings",
+      "Constructed Flock of Couture"
     ]
   },
   {
     "title": "Snake Ball",
     "mainTheme": "Reptiles",
     "categories": [
-      "Snake Fantasy",
-      "Snake Eleganza",
-      "Constructed Snake Couture"
+      "Medusa Realness",
+      "Shedding Skin Glamour",
+      "Constructed Cold-Blooded Couture"
     ]
   },
   {
     "title": "Cat Ball",
     "mainTheme": "Felines",
     "categories": [
-      "Cat Fantasy",
-      "Cat Eleganza",
-      "Constructed Cat Couture"
+      "Crazy Cat Lady",
+      "Catwoman Realness",
+      "Constructed Pussycat Purr-fection"
     ]
   },
   {
     "title": "Dog Ball",
     "mainTheme": "Canines",
     "categories": [
-      "Dog Fantasy",
-      "Dog Eleganza",
-      "Constructed Dog Couture"
+      "Cruella de Vil Realness",
+      "Best in Show Pedigree",
+      "Constructed Unleashed Extravaganza"
     ]
   },
   {
     "title": "Peacock Ball",
     "mainTheme": "Plumage",
     "categories": [
-      "Peacock Fantasy",
-      "Peacock Eleganza",
-      "Constructed Peacock Couture"
+      "Showgirl Realness",
+      "Proud as a Peacock",
+      "Constructed Strutting Splendor"
     ]
   },
   {
     "title": "Lace Ball",
     "mainTheme": "Textiles",
     "categories": [
-      "Lace Fantasy",
-      "Lace Eleganza",
-      "Constructed Lace Couture"
+      "Doily Realness",
+      "Boudoir Secrets",
+      "Constructed Laced to the Gods"
     ]
   },
   {
     "title": "Feather Ball",
     "mainTheme": "Feathers",
     "categories": [
-      "Feather Fantasy",
-      "Feather Eleganza",
-      "Constructed Feather Couture"
+      "Plucked Chicken Realness",
+      "Las Vegas Headliner",
+      "Constructed Feathered Frenzy"
     ]
   },
   {
     "title": "Mirror Ball",
     "mainTheme": "Reflections",
     "categories": [
-      "Mirror Fantasy",
-      "Mirror Eleganza",
-      "Constructed Mirror Couture"
+      "Funhouse Mirror Realness",
+      "Evil Queen's Vanity",
+      "Constructed Shattered Glass Glamour"
     ]
   },
   {
     "title": "Clock Ball",
     "mainTheme": "Timepieces",
     "categories": [
-      "Clock Fantasy",
-      "Clock Eleganza",
-      "Constructed Clock Couture"
+      "Ticking Time Bomb",
+      "Grandfather Clock Realness",
+      "Constructed Out of Time Couture"
     ]
   },
   {
     "title": "Book Ball",
     "mainTheme": "Literature",
     "categories": [
-      "Book Fantasy",
-      "Book Eleganza",
-      "Constructed Book Couture"
+      "Comic Book Heroine",
+      "Banned Book Realness",
+      "Constructed Spine-Chilling Story"
     ]
   },
   {
     "title": "Music Ball",
     "mainTheme": "Music",
     "categories": [
-      "Music Fantasy",
-      "Music Eleganza",
-      "Constructed Music Couture"
+      "One-Hit Wonder Realness",
+      "Vinyl Record Revival",
+      "Constructed Symphony of Style"
     ]
   },
   {
     "title": "Neon Ball",
     "mainTheme": "Colors",
     "categories": [
-      "Neon Fantasy",
-      "Neon Eleganza",
-      "Constructed Neon Couture"
+      "80s Workout Video",
+      "Rave Kid Realness",
+      "Constructed High-Lighter High Fashion"
     ]
   },
   {
     "title": "Rainbow Ball",
     "mainTheme": "Pride",
     "categories": [
-      "Rainbow Fantasy",
-      "Rainbow Eleganza",
-      "Constructed Rainbow Couture"
+      "Roy G. Biv Realness",
+      "Pride Parade Protestor",
+      "Constructed Stonewall Riot Couture"
     ]
   },
   {
     "title": "Gold Ball",
     "mainTheme": "Gold Rush",
     "categories": [
-      "Gold Fantasy",
-      "Gold Eleganza",
-      "Constructed Gold Couture"
+      "49er Prospector",
+      "Midas Touch Realness",
+      "Constructed Solid Gold Eleganza"
     ]
   },
   {
     "title": "Black & White Ball",
     "mainTheme": "Monochrome",
     "categories": [
-      "Black & White Fantasy",
-      "Black & White Eleganza",
-      "Constructed Black & White Couture"
+      "Silent Movie Star",
+      "Chess Piece Realness",
+      "Constructed Cruella Complex"
     ]
   },
   {
     "title": "Paris Ball",
     "mainTheme": "Parisian Chic",
     "categories": [
-      "Paris Fantasy",
-      "Paris Eleganza",
-      "Constructed Paris Couture"
+      "Let Them Eat Baguettes",
+      "Moulin Rouge Courtesan",
+      "Constructed Haute Couture Catastrophe"
     ]
   },
   {
     "title": "Brazil Ball",
     "mainTheme": "Brazilian Icons",
     "categories": [
-      "Brazil Fantasy",
-      "Brazil Eleganza",
-      "Constructed Brazil Couture"
+      "Garota de Ipanema",
+      "Telenovela Villainess",
+      "Constructed Carnaval Queen"
     ]
   },
   {
     "title": "Bollywood Ball",
     "mainTheme": "India",
     "categories": [
-      "Bollywood Fantasy",
-      "Bollywood Eleganza",
-      "Constructed Bollywood Couture"
+      "Sari Not Sari",
+      "Monsoon Wedding Guest",
+      "Constructed Technicolor Drama"
     ]
   },
   {
     "title": "Nordic Ball",
     "mainTheme": "Scandinavia",
     "categories": [
-      "Nordic Fantasy",
-      "Nordic Eleganza",
-      "Constructed Nordic Couture"
+      "Viking Shield-Maiden",
+      "Northern Lights Enchantress",
+      "Constructed Ice-Cold Avant-Garde"
     ]
   },
   {
     "title": "Mythology Ball",
     "mainTheme": "Legends",
     "categories": [
-      "Mythology Fantasy",
-      "Mythology Eleganza",
-      "Constructed Mythology Couture"
+      "Mount Olympus Royalty",
+      "Medusa's Gaze",
+      "Constructed Mythical Beast Eleganza"
+    ]
+  },
+{
+    "title": "Karen Ball",
+    "mainTheme": "Customer Service Nightmares",
+    "categories": [
+      "I Want to Speak to the Manager",
+      "Homeowners Association Meltdown",
+      "Constructed Live-Laugh-Love Casualty"
+    ]
+  },
+  {
+    "title": "Fast Fashion Ball",
+    "mainTheme": "Shein & Temu",
+    "categories": [
+      "Expectation vs. Reality Shopping",
+      "Sweatshop Chic",
+      "Constructed Microplastic Masterpiece"
+    ]
+  },
+  {
+    "title": "Nepo Baby Ball",
+    "mainTheme": "Privilege",
+    "categories": [
+      "My Dad Funded This Film",
+      "Flunking Out of Boarding School",
+      "Constructed Unearned Audacity Couture"
+    ]
+  },
+  {
+    "title": "In My Defense Ball",
+    "mainTheme": "True Crime",
+    "categories": [
+      "Gaslight, Gatekeep, Girlboss",
+      "YouTube Apology Video",
+      "Constructed Insanity Plea Eleganza"
+    ]
+  },
+  {
+    "title": "Florida Man Ball",
+    "mainTheme": "Chaos State",
+    "categories": [
+      "Waffle House at 3 AM",
+      "Alligator Wrestling Realness",
+      "Constructed Meth-Gala Glamour"
+    ]
+  },
+  {
+    "title": "Gossip Ball",
+    "mainTheme": "Tabloids",
+    "categories": [
+      "Blind Item Realness",
+      "Caught by the Paparazzi in Sweatpants",
+      "Constructed Cease & Desist Couture"
+    ]
+  },
+  {
+    "title": "Corporate Slavery Ball",
+    "mainTheme": "9 to 5 Hell",
+    "categories": [
+      "This Email Could Have Been a Meeting",
+      "Quiet Quitting Realness",
+      "Constructed Burnout Extravaganza"
+    ]
+  },
+  {
+    "title": "Conspiracy Theory Ball",
+    "mainTheme": "Paranoia",
+    "categories": [
+      "Flat Earth Society",
+      "Illuminati Confirmed",
+      "Constructed Tinfoil Hat High Fashion"
+    ]
+  },
+  {
+    "title": "Dating App Ball",
+    "mainTheme": "Modern Love",
+    "categories": [
+      "Catfish Realness",
+      "Left on Read",
+      "Constructed Red Flag Realness"
+    ]
+  },
+  {
+    "title": "Public Transportation Ball",
+    "mainTheme": "Commuter Hell",
+    "categories": [
+      "Rush Hour Trample",
+      "Subway Manspreading Witness",
+      "Constructed Delay of Game Eleganza"
+    ]
+  },
+  {
+    "title": "Gym Rat Ball",
+    "mainTheme": "Fitness Culture",
+    "categories": [
+      "BBL Recovery Realness",
+      "Ozempic Face Glamour",
+      "Constructed Creatine Overdose"
+    ]
+  },
+  {
+    "title": "Midlife Crisis Ball",
+    "mainTheme": "Regret",
+    "categories": [
+      "Buying a Red Convertible",
+      "Getting a Tramp Stamp at 45",
+      "Constructed Regretful Divorcee Couture"
+    ]
+  },
+  {
+    "title": "Boy Band Ball",
+    "mainTheme": "90s Pop",
+    "categories": [
+      "Frosted Tips & Oversized Suits",
+      "Y2K Lip-Sync Technical Difficulties",
+      "Constructed One-Directional Disaster"
+    ]
+  },
+  {
+    "title": "Pyramid Scheme Ball",
+    "mainTheme": "MLM",
+    "categories": [
+      "Hey Girlie! DM Me For Info",
+      "Essential Oil Overdose",
+      "Constructed Multi-Level Marketing Monopolist"
+    ]
+  },
+  {
+    "title": "Funeral For My Haters Ball",
+    "mainTheme": "Petty Revenge",
+    "categories": [
+      "Crocodile Tears Realness",
+      "Stealing the Inheritance",
+      "Constructed Outliving You All Couture"
     ]
   }
 ];
