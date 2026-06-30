@@ -109,11 +109,11 @@ function getJudgesExpectationPenalty(q){
   const wins=st.wins||0;
   const highs=st.highs||0;
   let winPenalty=0;
-  if(wins>=6) winPenalty=-1.75;
-  else if(wins>=5) winPenalty=-1.30;
-  else if(wins>=4) winPenalty=-0.90;
-  else if(wins>=3) winPenalty=-0.50;
-  else if(wins>=2) winPenalty=-0.25;
+  if(wins>=6) winPenalty=-4;
+  else if(wins>=5) winPenalty=-3;
+  else if(wins>=4) winPenalty=-2;
+  else if(wins>=3) winPenalty=-1;
+  else if(wins>=2) winPenalty=-0.50;
   const highPenalty=-(Math.floor(highs/2)*0.15);
   return Math.round((winPenalty+highPenalty)*100)/100;
 }
@@ -129,15 +129,17 @@ function legacyAllStarsPressure(q, ep){
   if(!isLegacyCompetitiveEpisode(ep))return 0;
   const wins=q?.statistics?.wins||0;
   if(wins>=5)return -4;
-  if(wins>=4)return -2.5;
-  if(wins>=3)return -1.2;
+  if(wins>=4)return -3;
+  if(wins>=3)return -2;
+  if(wins>=2)return -1;
   return 0;
 }
 function winRedirectChance(q){
   const wins=q?.statistics?.wins||0;
-  if(wins>=5)return 0.75;      // trying for 6th or beyond: 3/4 chance the win goes to the next queen
-  if(wins>=4)return 2/3;       // trying for 5th: 2/3 chance the win goes to the next queen
-  if(wins>=2)return 0.5;       // trying for 3rd or 4th: 50% chance the win goes to the next queen
+  if(wins>=5)return 0.95;
+if(wins>=4)return 0.80;
+if(wins>=3)return 0.60;
+if(wins>=2)return 0.40;     // trying for 3rd or 4th: 50% chance the win goes to the next queen
   return 0;
 }
 function getWinRedirectDecision(q, ep){
