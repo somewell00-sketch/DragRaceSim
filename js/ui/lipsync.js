@@ -30,7 +30,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <p class="eyebrow">The music starts...</p>
     <h2>${escapeHtml(song.title||'The song')}</h2>
     <p>by ${escapeHtml(song.artist||'The artist')}</p>
-  <h3 class="music-cue spotlight-cue" style="text-align:center; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
   </div>`;
 }
 
@@ -64,7 +64,7 @@ function renderLipSync(){
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
-  const normalLipSyncCards=`<div class="hero" style="text-align:center;">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2 style="text-align:center;">${escapeHtml(ep.song.title)}</h2><p style="text-align:center;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" style="text-align:center; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  const normalLipSyncCards=`<div class="hero" style="text-align:center;">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2 style="text-align:center;">${escapeHtml(ep.song.title)}</h2><p style="text-align:center;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
 <div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${intro}</p><p>${escapeHtml(prompt)}</p></div>`;
 const assassinCards=assassinIntroCardsHtml(ep,bottom);
   const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
