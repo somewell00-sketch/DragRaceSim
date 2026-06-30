@@ -29,7 +29,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <p class="eyebrow">The music starts...</p>
     <h2>${escapeHtml(song.title||'The song')}</h2>
     <p>by ${escapeHtml(song.artist||'The artist')}</p>
-    <div class="lipsync-portraits">${duel}</div>
+  
   </div>`;
 }
 
