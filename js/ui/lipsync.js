@@ -1,9 +1,35 @@
+function lipSyncEnergyLabel(song){
+  const energy=String(song?.energy||'').toLowerCase();
+  if(energy==='high')return '🔥🔥🔥';
+  if(energy==='medium')return '💡💡💡';
+  if(energy==='low')return '💧💧💧';
+  return '';
+}
 
 function assassinIntroCardsHtml(ep, duelQueens){
   const assassin=ep?.lipSyncAssassin || {name:'Lip Sync Assassin'};
   const song=ep?.song || {};
   const duel=(duelQueens||[]).map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>');
-  return `<div class="card assassin-intro-card"><p><strong>One All Star stands before me.</strong></p><p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p><p>This is your chance to impress me, win a cash tip, and earn the power to eliminate one of the bottom queens.</p><p>But first...</p><p><strong>May this week's Lip Sync Assassin...</strong></p><p><strong>RuVeal herself!</strong></p></div><div class="card assassin-reveal-card important"><h3>Lip Sync Assassin</h3><p class="lipstick-reveal-name">${escapeHtml(assassin.name||'Lip Sync Assassin')}</p></div><div class="card music-card lipsync-battle-card"><h3>The duel</h3><div class="lipsync-portraits">${duel}</div></div>`;
+
+  return `<div class="card assassin-intro-card">
+    <p><strong>One All Star stands before me.</strong></p>
+    <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>
+    <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
+    <p>But first...</p>
+    <p><strong>May this week's Lip Sync Assassin...</strong></p>
+    <p><strong>RuVeal herself!</strong></p>
+  </div>
+  <div class="card assassin-reveal-card important">
+    <p class="eyebrow">THE ASSASSIN ARRIVES</p>
+    <h2>${escapeHtml(assassin.name||'Lip Sync Assassin')}</h2>
+    <p>A legendary lip sync assassin enters the stage.</p>
+  </div>
+  <div class="hero">
+    ${bigMomentHeader('The music starts...', 'LIP SYNC FOR YOUR LEGACY', 'win')}
+    <h2>${escapeHtml(song.title||'The song')}</h2>
+    <p>${escapeHtml(song.artist||'The artist')}</p>
+    <div class="lipsync-portraits">${duel}</div>
+  </div>`;
 }
 
 
@@ -37,9 +63,8 @@ function renderLipSync(){
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
-  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  const assassinCards=`<div class="hero">${bigMomentHeader('The music starts...', 'LIP SYNC ASSASSIN', 'win')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>${assassinIntroCardsHtml(ep,bottom)}`;
-  window.__preserveScrollY=window.scrollY;
+  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
+const assassinCards=assassinIntroCardsHtml(ep,bottom);  window.__preserveScrollY=window.scrollY;
 setHTML(`<main class="layout"><section class="screen">${isAssassin?assassinCards:normalLipSyncCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLipSync));
   if(isLegacy && playerInBottom && !ep.playerLegacyLipstickChosen){
