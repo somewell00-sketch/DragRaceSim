@@ -376,8 +376,8 @@ function lipSyncExecutionTier(score){
   const v=Number(score)||0;
   if(v<=5) return 'failed';
   if(v<7) return 'partial';
-  if(v<9) return 'strong';
-  if(v<10) return 'outstanding';
+  if(v<8) return 'strong';
+  if(v<9) return 'outstanding';
   return 'legendary';
 }
 
