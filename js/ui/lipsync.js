@@ -52,8 +52,8 @@ function renderLipSync(){
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
   const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
   const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament)
-    ? 'Two top queens stand before me.'
-    : 'Two queens stand before me.');
+    ? '<p class="legacy-lipsync-win"><strong>Two top queens stand before me.</strong></p>'
+    : '<p class="legacy-lipsync-win"><strong>Two queens stand before me.</strong></p>');
   const prompt=isAssassin
     ? "This is your chance to beat the assassin and make your lipstick count. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isTournament
@@ -63,7 +63,7 @@ function renderLipSync(){
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
-  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
+  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${intro}</p><p>${escapeHtml(prompt)}</p></div>`;
 const assassinCards=assassinIntroCardsHtml(ep,bottom);
   const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
   const pendingAssassinGroupVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId!==ep.topQueenId && !ep.playerAssassinGroupVoteChosen;
