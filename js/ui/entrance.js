@@ -60,8 +60,7 @@ function entranceLine(q){
   
   let pool = [...lines];
 
-  // CUNT alto (>=10)
-  if ((attrs.cunt || 0) >= 10) {
+  if ((attrs.cunt || 0) >= 9) {
     pool.push(
       `Crown me now, or watch me take it later.`,
       `I don't compete. I dominate.`,
@@ -86,8 +85,8 @@ function entranceLine(q){
     );
   }
 
-  // Runway ou Makeup altos (>=10)
-  if ((attrs.runway || 0) >= 10 || (attrs.makeup || 0) >= 10) {
+
+  if ((attrs.runway || 0) >= 8 || (attrs.makeup || 0) >= 8) {
     pool.push(
       `Face: beat. Body: correct. Crown: future.`,
       `I don't do fashion. I do art.`,
@@ -123,8 +122,7 @@ function entranceLine(q){
     );
   }
 
-  // Acting alto (>=10)
-  if ((attrs.acting || 0) >= 10) {
+  if ((attrs.acting || 0) >= 9) {
     pool.push(
       `Every queen has a story. Mine is legendary.`,
       `Some queens perform. I transform.`,
@@ -151,8 +149,7 @@ function entranceLine(q){
     );
   }
 
-  // LipSync alto (>=10)
-  if ((attrs.lipSync || 0) >= 10) {
+  if ((attrs.lipSync || 0) >= 9) {
     pool.push(
       `Tips in the garter, girls! Let's go!`,
       `Music up, egos down!`,
@@ -176,8 +173,7 @@ function entranceLine(q){
     );
   }
 
-  // Dance alto (>=10)
-  if ((attrs.dance || 0) >= 10) {
+  if ((attrs.dance || 0) >= 9) {
     pool.push(
       `Five, six, seven, eight—let’s go!`,
       `And... stretch.`,
@@ -197,8 +193,7 @@ function entranceLine(q){
     );
   }
 
-  // Comedy alto (>=10)
-  if ((attrs.comedy || 0) >= 10) {
+  if ((attrs.comedy || 0) >= 9) {
     pool.push(
       `Don’t laugh at the outfit, it took three rolls of tape.`,
       `Aaaand... I already want to go home.`,
@@ -231,7 +226,6 @@ function entranceLine(q){
     );
   }
 
-  // Personalidades específicas
   if (/shady|competitive|villain|calculating|fearless|savage/.test(personality)) {
     pool.push(
       `Don't try me.`,
