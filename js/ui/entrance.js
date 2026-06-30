@@ -193,7 +193,39 @@ function entranceLine(q){
     `Let's go.`,
     `And the winner is... me.`,
     `The other queens are so lucky to lose to me.`,
-    `I don't have a word for what I am. But you'll find one.`
+    `I don't have a word for what I am. But you'll find one.`,
+    `Trigger warning: I'm here.`,
+    `Oof... the vibe in here just shifted.`,
+    `Hi, losers!`,
+    `Did you feel that? That was my impact.`,
+    `Wait, did they move the main stage in here?`,
+    `Brought some major tea: I’m winning.`,
+    `You can applaud, I won't charge you.`,
+    `Felt like the room needed an upgrade.`,
+    `Hope the studio has good insurance.`,
+    `Don't stare too directly. It costs.`,
+    `Oh, look at you all... Cute.`,
+    `The bar just cleared the roof.`,
+    `I didn't come to play nice.`,
+    `Is this where the judges sit? No?`,
+    `Missed me?`,
+    `You girls look sweet... anyway.`,
+    `Sorry I'm late. Traffic was chaos.`,
+    `Hi, loves. Ready for second place?`,
+    `They said this was a competition? Where?`,
+    `Don't blink.`,
+    `The mother has officially arrived.`,
+    `Make room.`,
+    `Are you guys on vacation?`,
+    `Attention, class: session is in.`,
+    `Get the camera close. Now.`,
+    `I'm here. You can stop pretending now.`,
+    `Love the decor. Shame I’m ruining it.`,
+    `Are you girls sweating?`,
+    `A moment of silence for your egos.`,
+    `Next!`,
+    `Did someone call for a savior?`,
+    `Oh. It's... you guys.`
   ];
 
   const attrs = q?.attributes || {};
@@ -202,22 +234,34 @@ function entranceLine(q){
   
   let pool = [...lines];
 
-  // CUNT alto (>=9)
-  if ((attrs.cunt || 0) >= 9) {
+  // CUNT alto (>=10)
+  if ((attrs.cunt || 0) >= 10) {
     pool.push(
       `Crown me now, or watch me take it later.`,
       `I don't compete. I dominate.`,
       `Some queens are born stars. I was born a supernova.`,
       `I'm not just the main character. I'm the whole franchise.`,
-      `My CUNT is so high, it's illegal in several states.`,
-      `I'm not competition. I'm destiny.`,
-      `I don't need luck. I have talent. And talent always wins.`,
-      `I'm the blueprint. Everyone else is just a copy.`
+      `You can take your heels off, girls. The top spot is officially taken.`,
+      `I don't compete, babe. I dictate the pace of the game.`,
+      `How do you girls handle rejection? Because this is going to hurt.`,
+      `I am the main event. You're just the smoke from the stage effect.`,
+      `Don't look at me like that, I know I'm completely irresistible.`,
+      `The world revolves around me, and this studio is no exception.`,
+      `If I were you, I’d start filling out the application for next season.`,
+      `I don't follow rules, I'm the reason they have to write them.`,
+      `First place is officially taken.`,
+      `I don't compete, babe. I dictate.`,
+      `This is going to hurt.`,
+      `I am the main event. Period.`,
+      `Irresistible, right? I know.`,
+      `Start filling out the next season app.`,
+      `I don't follow rules. I make them.`,
+      `Bow down. Or don't, I'll still win.`
     );
   }
 
-  // Runway ou Makeup altos (>=9)
-  if ((attrs.runway || 0) >= 9 || (attrs.makeup || 0) >= 9) {
+  // Runway ou Makeup altos (>=10)
+  if ((attrs.runway || 0) >= 10 || (attrs.makeup || 0) >= 10) {
     pool.push(
       `Face: beat. Body: correct. Crown: future.`,
       `I don't do fashion. I do art.`,
@@ -228,12 +272,29 @@ function entranceLine(q){
       `I walked in and the runway got nervous.`,
       `My heels are higher than your expectations.`,
       `Designers don't dress me. I dress them.`,
-      `I look like money. And I sound like a winner.`
+      `I look like money. And I sound like a winner.`,
+      `This look? You’d need an expensive filter just to copy it.`,
+      `The tailoring is so flawless it probably hurts your feelings.`,
+      `Straight from high fashion down to this factory floor.`,
+      `If my outfit could talk, it would tell you to go change.`,
+      `Serving exactly what you try—and cry about—in the dressing room.`,
+      `The visual impact is heavy, I know. Just take a deep breath.`,
+      `Every inch of this skin cost more than your entire backstory.`,
+      `Don't touch. The fabric is exclusive and the mug is sacred.`,
+      `This look? Custom.`,
+      `Flawless. Next question?`,
+      `Look, but don't touch.`,
+      `High fashion just entered the room.`,
+      `Take a picture, it lasts longer.`,
+      `Serving exactly what you can't.`,
+      `The visual impact is heavy, I know.`,
+      `Don't touch, it's art!`,
+      `The fabric is exclusive. The mug is sacred.`
     );
   }
 
-  // Acting alto (>=9)
-  if ((attrs.acting || 0) >= 9) {
+  // Acting alto (>=10)
+  if ((attrs.acting || 0) >= 10) {
     pool.push(
       `Every queen has a story. Mine is legendary.`,
       `Some queens perform. I transform.`,
@@ -243,142 +304,208 @@ function entranceLine(q){
       `I didn't come to fill a role. I came to rewrite the whole damn script.`,
       `I'm the plot twist this season needed.`,
       `Queens come and go. I arrive and stay.`,
-      `I'm not here to fill a spot. I'm here to fill a room.`
+      `I'm not here to fill a spot. I'm here to fill a room.`,
+      `Cut to me!`,
+      `The protagonist has arrived.`,
+      `Hold your reactions for camera one.`,
+      `Cue the applause.`,
+      `I don't do side-character energy.`,
+      `The star is here. Clear the set.`,
+      `Drama? I invented it.`,
+      `And... action!`,
+      `Places, everyone.`,
+      `I don't do side-character energy. Clear the set.`,
+      `Hold your reactions for camera one, girls.`,
+      `The script was getting a bit dry. I'm here to rewrite it.`,
+      `I love the background extras they cast this year. Very realistic.`
     );
   }
 
-  // LipSync alto (>=9)
-  if ((attrs.lipSync || 0) >= 9) {
+  // LipSync alto (>=10)
+  if ((attrs.lipSync || 0) >= 10) {
     pool.push(
-      `I came to lipsync. For. The. Crown.`,
-      `I didn't come to play. I came to slay.`,
-      `The stage is waiting for me.`,
-      `My lips are lethal. And I'm not afraid to use them.`,
-      `I don't lipsync. I interpret. And I interpret winning.`,
-      `I'm not a drag queen. I'm a drag experience.`,
-      `Some queens perform. I transform.`,
-      `I don't practice. I perform. There's a difference.`
+      `Tips in the garter, girls! Let's go!`,
+      `Music up, egos down!`,
+      `Clear the floor, the headliner is here.`,
+      `Who's ready for the night shift?`,
+      `Don't let me catch any of you in the bottom.`,
+      `You girls look like you're waiting for a slow ballad.`,
+      `I’ve survived rowdy crowds at 4 AM, you girls are a walk in the park.`,
+      `I came to leave permanent scuff marks on this floor.`,
+      `If you can't drop into a split right now, don't even look at me.`,
+      `Save your energy for the lipsync, sweeties. You’re gonna need it.`,
+      `I devour stages for breakfast. What are you girls gonna do? A little twirl?`,
+      `The bass is dropping, and your track records are in danger.`,
+      `Is the sound system ready? Because I don't do background music.`,
+      `Get out of the way, girls. I have zero mercy.`,
+      `Hope you brought flat shoes, because these heels are about to out-dance you.`
     );
   }
 
-  // Dance alto (>=9)
-  if ((attrs.dance || 0) >= 9) {
+  // Dance alto (>=10)
+  if ((attrs.dance || 0) >= 10) {
     pool.push(
-      `I move like I own the place. Because I do.`,
-      `My body is a weapon. And I'm armed and dangerous.`,
-      `I don't walk. I glide.`,
-      `The floor is lava. And I'm dancing on it.`,
-      `My entrance is better than your entire run.`,
-      `I walk in, and suddenly the bar is higher.`,
-      `My only competition is the mirror. And I won.`,
-      `Category is: fresh meat with expensive taste.`
+      `Five, six, seven, eight—let’s go!`,
+      `And... stretch.`,
+      `Watch the feet, girls.`,
+      `Don't trip on my extension.`,
+      `Pose. Hold it. Next.`,
+      `Warm up is over.`,
+      `Two left feet in the back? Not on my watch.`,
+      `Clear the floor, I need room for my lines.`,
+      `You girls look a bit stiff. Need me to choreograph your exit?`,
+      `Hope you brought knee pads, the floor work is gonna be brutal.`,
+      `I don’t walk runways, I leap through them.`,
+      `Fix your posture, girls. The masterclass just started.`,
+      `I’m hitting every single beat. Try to keep up.`,
+      `The center stage is taken. Find your places in the background.`,
+      `My body does things your silhouette could never dream of.`
     );
   }
 
-  // Comedy alto (>=9)
-  if ((attrs.comedy || 0) >= 9) {
+  // Comedy alto (>=10)
+  if ((attrs.comedy || 0) >= 10) {
     pool.push(
-      `I'm hilarious. The other queens are just... there.`,
-      `I don't need jokes. I am the joke. And it's working.`,
-      `My humor is dry. Like your chances against me.`,
-      `I came to make you laugh. Then make you cry. In that order.`,
-      `I'm not sure what I'm doing. But I look good doing it.`,
-      `My talent is that I have no talent. And I'm making it work.`,
-      `I'm like a clown. But make it fashion.`,
-      `I'm the queen of doing the most and the least at the same time.`
+      `Don’t laugh at the outfit, it took three rolls of tape.`,
+      `Aaaand... I already want to go home.`,
+      `Oh. It’s... you guys. Fun.`,
+      `Did I miss the casting for the pretty girls?`,
+      `Ta-da! God saved the clown.`,
+      `My wig is sweating. Please don't look.`,
+      `I was told there would be competition. Did they change the lineup?`,
+      `Don't worry, girls, I'm here to give you someone to look better than.`,
+      `I looked at the couch... therapy is cheaper than this cast.`,
+      `My credit score is lower than your heels, but at least I'm funny!`,
+      `Is it warm in here or is that just the secondhand embarrassment?`,
+      `I came, I saw, I forgot my lyrics. Let's do this!`,
+      `One disaster at a time, ladies. Today I’m yours.`,
+      `I'm not saying the standard is low, but I actually feel confident.`,
+      `Help?`,
+      `My bad.`,
+      `I'm sweating.`,
+      `Wrong room.`,
+      `I tried.`,
+      `Oops.`,
+      `Cancel my contract.`,
+      `Send help.`,
+      `I need a refund.`
     );
   }
 
   // Personalidades específicas
   if (/shady|competitive|villain|calculating|fearless|savage/.test(personality)) {
     pool.push(
-      `I'm not shady, I'm just better than you.`,
-      `The werkroom just got 50% more cunt.`,
-      `I'm the queen your favorite queen is scared of.`,
-      `I'm not here to make friends. I'm here to make enemies.`,
-      `Every season has a villain. This season has a winner.`,
-      `I'm not the queen everyone expected. I'm the one they deserve.`,
-      `I didn't come to make friends. I came to make an impression. And I made it.`,
-      `The other queens are cute. Cute is not winning.`,
-      `I'm not shady. I'm just observant. And I observed that you're not ready.`
+      `Don't try me.`,
+      `Lock your bags, girls.`,
+      `Your worst nightmare just arrived.`,
+      `Competition? Where?`,
+      `I came to collect souls.`,
+      `Bitterness causes wrinkles, babes.`,
+      `Let's make this tension unbearable.`,
+      `Cute look. Shame about the face.`,
+      `You guys ready to lose?`,
+      `I already keep track of your weaknesses.`,
+      `Next!`,
+      `Oh. It's... you guys.`,
+      `Don't even bother looking at me.`,
+      `I'm not shady. Just right.`,
+      `Who allowed this lineup?`
     );
   }
 
   if (/fashion|glamour|diva|runway|model/.test(personality) || /fashion/.test(type)) {
     pool.push(
-      `My outfit cost more than your entire wardrobe. And I'm not even done.`,
-      `Fashion is my passion. And passion looks expensive.`,
-      `I don't follow trends. Trends follow me.`,
-      `This look? Custom. This face? Also custom.`,
-      `I walked in and the runway got nervous.`,
-      `My heels are higher than your expectations.`,
-      `Designers don't dress me. I dress them.`,
-      `I look like money. And I sound like a winner.`,
-      `Face: beat. Body: correct. Crown: future.`,
-      `I don't do fashion. I do art.`,
-      `They asked for looks. I brought an exhibition.`
+      `Couture only.`,
+      `This look? Custom.`,
+      `Look, but don't touch.`,
+      `I smell fast-fashion. Terrifying.`,
+      `Where is my red carpet?`,
+      `You tried. Adorable.`,
+      `I am the runway. You're traffic.`,
+      `Take a picture, it lasts longer.`,
+      `High fashion just entered.`,
+      `The category is: rich.`,
+      `Flawless. Next question?`,
+      `Pure sophistication. Look it up.`,
+      `Don't get too close to the fabric.`,
+      `Excuse me, expensive coming through.`,
+      `This is art. You wouldn't get it.`
     );
   }
 
   if (/funny|comedy|camp|silly|clown|goofy/.test(personality)) {
     pool.push(
-      `I look good. I feel good. And my wig is clinging for dear life.`,
-      `My makeup is beat. My credit score? Not so much.`,
-      `I'm like a clown. But make it fashion.`,
-      `My talent is that I have no talent. And I'm making it work.`,
-      `I came, I saw, I ordered takeout.`,
-      `I'm the queen of doing the absolute most and loving every second.`,
-      `My entrance was so good even I gagged. And I planned it.`,
-      `I'm not sure what I'm doing. But it feels right. And it looks expensive.`,
-      `I think my left eyelash just committed a crime.`,
+      `Ta-da! God saved the clown.`,
       `My wig is sweating.`,
-      `I spent more on this outfit than my rent. Worth it.`
+      `Held together by tape and a prayer.`,
+      `Is there catering in the back?`,
+      `Lashes committing crimes. As usual.`,
+      `Who ordered the clown?`,
+      `The beauty spell went too far today!`,
+      `I thought this was a brunch.`,
+      `My left eyelash just quit.`,
+      `Booo! Did I scare ya?`,
+      `Can I start over?`,
+      `I'm lost. Where's the exit?`,
+      `Oops. My bad.`,
+      `Cancel my contract.`,
+      `Is that your actual hair? Cute.`
     );
   }
 
   if (/confident|boss|alpha|dominat|winner/.test(personality)) {
     pool.push(
-      `I'm not the one to beat. I'm the one to watch.`,
-      `I don't need luck. I have talent. And talent always wins.`,
-      `My biggest weakness? I make everyone else look average.`,
-      `I'm like a diamond. Pressure only makes me shine brighter.`,
-      `I was born to win. The universe just needed to catch up.`,
-      `Confidence isn't an act. It's a lifestyle. And I'm living it.`,
-      `I'm the blueprint. Everyone else is just a copy.`,
-      `I don't practice. I perform. There's a difference.`,
-      `Crown me now, or watch me take it later.`,
-      `I don't compete. I dominate.`,
-      `Some queens are born stars. I was born a supernova.`
+      `Mine.`,
+      `The game starts now.`,
+      `Intimidated? Good.`,
+      `I don't ask for room. I occupy.`,
+      `You're just subletting my space.`,
+      `I am the standard. Stretch for it.`,
+      `Bow down. Or don't, I'll still win.`,
+      `First place is officially taken.`,
+      `I don't compete, babe. I dictate.`,
+      `The blueprint has arrived.`,
+      `Don't blink.`,
+      `Crown me. Thanks.`,
+      `I am the main event. Period.`,
+      `Irresistible, right? I know.`,
+      `Next question?`
     );
   }
 
   if (/sweet|nice|kind|warm|soft/.test(personality)) {
     pool.push(
-      `I'm here to spread love. And maybe a little glitter.`,
-      `Some queens bring drama. I bring good vibes.`,
-      `I'm not competition. I'm community.`,
-      `I hope we all win. But mostly me.`,
-      `I'm like a fine wine. You'll hate me now, love me later.`,
-      `I didn't come this far to be background glitter.`,
-      `The other queens are cute. I'm the finale.`,
-      `I'm the full package. Wrapped in couture.`,
-      `My entrance is cute. My win will be cuter.`,
-      `I'm not defined by my past. I'm defined by my crown.`
+      `Hi, beauties!`,
+      `Did anyone bring cookies?`,
+      `Sending love to everyone in the room!`,
+      `Oh, you all look so lovely.`,
+      `Let's keep it nice and clean, girls.`,
+      `Group hug, anyone?`,
+      `Protect your peace.`,
+      `Hi, girls! So happy to be here.`,
+      `Yay, we made it!`,
+      `Hello, gorgeous faces!`,
+      `Ready to shine together?`,
+      `Can't wait to make friends!`,
+      `Sweetness overloaded.`,
+      `Hi, family!`
     );
   }
 
   if (/mysterious|quiet|dark|edgy|alternative/.test(personality)) {
     pool.push(
-      `You don't know me yet. But you will.`,
-      `I speak in looks. And my looks are loud.`,
-      `I'm not here to impress. I'm here to haunt.`,
-      `The other queens are noise. I'm the silence that matters.`,
-      `I saw this in a dream.`,
-      `I don't have a word for what I am. But you'll find one.`,
-      `I'm not a queen. I'm a whole mood.`,
-      `I don't know who I am. But I look good doing it.`,
-      `I'm the queen of... wait, what was the question?`,
-      `I'm not sure what I'm doing. But I look good doing it.`
+      `Welcome to my chaos.`,
+      `My silence has already swallowed your ego.`,
+      `Predictable. How tedious.`,
+      `I don't match vibes. I break them.`,
+      `Boo.`,
+      `You'll figure me out eventually.`,
+      `Not your usual cup of tea.`,
+      `I'm the glitch in your system.`,
+      `Did I hear a scream?`,
+      `I don't do commercial, babes.`,
+      `The shadow has arrived.`,
+      `You look nervous.`
     );
   }
 
