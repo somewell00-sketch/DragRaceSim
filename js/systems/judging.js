@@ -109,10 +109,10 @@ function getJudgesExpectationPenalty(q){
   const wins=st.wins||0;
   const highs=st.highs||0;
   let winPenalty=0;
-  if(wins>=6) winPenalty=-4;
-  else if(wins>=5) winPenalty=-3;
-  else if(wins>=4) winPenalty=-2;
-  else if(wins>=3) winPenalty=-1;
+  if(wins>=6) winPenalty=-4.0;
+  else if(wins>=5) winPenalty=-3.0;
+  else if(wins>=4) winPenalty=-2.0;
+  else if(wins>=3) winPenalty=-1.0;
   else if(wins>=2) winPenalty=-0.50;
   const highPenalty=-(Math.floor(highs/2)*0.15);
   return Math.round((winPenalty+highPenalty)*100)/100;
