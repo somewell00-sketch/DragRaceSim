@@ -25,7 +25,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <h2>${escapeHtml(assassin.name||'Lip Sync Assassin')}</h2>
     <p>A legendary lip sync assassin enters the stage.</p>
   </div>
-  <div class="hero">
+  <div class="hero" style="text-align:center;">
     ${bigMomentHeader('The time has come, for you to', 'LIP SYNC FOR YOUR LEGACY', 'win')}
     <p class="eyebrow">The music starts...</p>
     <h2>${escapeHtml(song.title||'The song')}</h2>
@@ -1258,7 +1258,7 @@ function renderLipSyncResult(result){
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  const resultHero=isAssassin ? '' : `<div class="hero">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
 </div>`;
   document.querySelector('.screen').innerHTML=`${resultHero}
   ${introBlock}
