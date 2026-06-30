@@ -137,8 +137,7 @@ window.GAME_DATA.challenges = [
     "weights": {
       "acting": 0.45,
       "cunt": 0.4,
-      "runway": 0.1,
-      "makeup": 0.05
+      "makeup": 0.15
     },
     "uniqueSeason": true
   },
