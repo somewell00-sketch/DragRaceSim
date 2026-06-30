@@ -668,6 +668,7 @@ function renderSummary(){
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
     ${postSeasonReception(player)}
     <section class="card"><h2>Track Record</h2>${historyTable()}</section>
+    ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}
     ${iconicLipSyncsTable()}
     <button id="newGame">New season</button>
   </main>`);

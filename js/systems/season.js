@@ -6,10 +6,72 @@ function usesLegacyLipSync(format=getSeasonFormat()){return ['legacy','no_elimin
 function usesGroupVote(format=getSeasonFormat()){return format==='assassin' || format==='brackets';}
 function hasEliminationsDuringSeason(format=getSeasonFormat()){return format==='regular' || format==='legacy' || format==='assassin';}
 function hasMissCongeniality(format=getSeasonFormat()){return format==='regular';}
+
+function isLegacyCompetitiveEpisode(ep){
+  return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
+}
+
+function bottomPerformanceRankScore(bottomId, bottomIds){
+  const ep=gameState.currentEpisode;
+  const placements=ep?.placements||[];
+  const bottomScores=(bottomIds||[]).map(id=>placements.find(p=>p.queenId===id)).filter(Boolean).sort((a,b)=>a.score-b.score);
+  const idx=bottomScores.findIndex(p=>p.queenId===bottomId);
+  if(idx<0)return 0;
+  return (bottomScores.length-1-idx)*4;
+}
+
+function chooseAssassinVote(voterId, bottomIds){
+  const voter=gameState.queens.find(q=>q.id===voterId);
+  let candidates=(bottomIds||[]).filter(id=>id!==voterId).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  if(!candidates.length)candidates=(bottomIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  if(!voter || !candidates.length)return bottomIds?.[0]||null;
+  const scored=candidates.map(q=>{
+    const rel=gameState.relationships?.[voter.id]?.[q.id]||{};
+    const affinity=Number(rel.affinity)||0;
+    const wins=Number(q.statistics?.wins)||0;
+    const highs=Number(q.statistics?.highs)||0;
+    const lows=Number(q.statistics?.lows)||0;
+    const bottoms=Number(q.statistics?.bottoms)||0;
+    const performanceCase=bottomPerformanceRankScore(q.id,bottomIds);
+    const trackRecordCase=(bottoms*8)+(lows*3)-(wins*7)-(highs*2);
+    const threat=(wins*10)+(highs*4);
+    const social=affinity<0?Math.abs(affinity)*0.45:-(affinity*0.62);
+    const score=performanceCase*0.75 + trackRecordCase*0.55 + threat*0.35 + social + rand(-6,6);
+    return {id:q.id,score};
+  }).sort((a,b)=>b.score-a.score);
+  return scored[0]?.id||candidates[0].id;
+}
+
+function tallyVotes(votesObj){
+  const tally={};
+  Object.values(votesObj||{}).forEach(id=>{if(id)tally[id]=(tally[id]||0)+1;});
+  return tally;
+}
+
+function resolveVoteResult(votesObj, tieBreakerChoice, bottomIds){
+  const tally=tallyVotes(votesObj);
+  const entries=Object.entries(tally).filter(([id])=>(bottomIds||[]).includes(id));
+  if(!entries.length)return (bottomIds||[])[0]||null;
+  const max=Math.max(...entries.map(([,v])=>v));
+  const tied=entries.filter(([,v])=>v===max).map(([id])=>id);
+  if(tied.length===1)return tied[0];
+  if(tieBreakerChoice && tied.includes(tieBreakerChoice))return tieBreakerChoice;
+  const ranked=(bottomIds||[]).filter(id=>tied.includes(id)).sort((a,b)=>bottomPerformanceRankScore(b,bottomIds)-bottomPerformanceRankScore(a,bottomIds));
+  return ranked[0]||tied[0];
+}
+
+function createLipSyncAssassin(){
+  let name='Lip Sync Assassin';
+  try{ if(typeof generatedQueenName==='function') name=generatedQueenName(Math.floor(Math.random()*99999)+50000,new Set(gameState.queens.map(q=>q.name))); }catch(e){}
+  const lipSync=typeof rand==='function'?rand(8,9):(Math.round((Math.random()+8)*10)/10);
+  const cunt=typeof rand==='function'?rand(5,9):(Math.round((Math.random()*4+5)*10)/10);
+  return {id:'lip_sync_assassin',name,type:'Lip Sync Assassin',isAssassin:true,attributes:{cunt,lipSync,makeup:7,sewing:7,runway:8,acting:7},statistics:{lipSyncWins:0,lipSyncLosses:0,wins:0,highs:0,lows:0,bottoms:0},publicScores:{production:25},momentum:0,inventory:{reveals:1}};
+}
 function getDefaultRegularCastSizes(){return [8,9,10,11,12,13,14,15,16];}
 function getAllowedCastSizes(format='regular'){
   if(format==='brackets')return [18];
-  if(['legacy','assassin','no_elimination'].includes(format))return [8,9,10];
+  if(format==='assassin')return [8,9,10,11,12];
+  if(['legacy','no_elimination'].includes(format))return [8,9,10];
   return getDefaultRegularCastSizes();
 }
 function normalizeSeasonFormat(format){
@@ -62,8 +124,10 @@ function chooseLipstick(topQueenId, bottomIds){
     const respectProtection=respect>0?respect*0.18:0;
     const respectThreat=respect<0?Math.abs(respect)*0.12:0;
     const productionAttention=Math.max(0, Number(q.publicScores?.production)||0)*0.06;
+    const performanceCase=typeof bottomPerformanceRankScore==='function'?bottomPerformanceRankScore(q.id,bottomIds):0;
 
     let score=0;
+    score+=performanceCase*0.65;
     score+=trackRecordCase*0.70;
     score+=threat*(isStrategic?0.95:0.45);
     score+=rivalry*(isDrama?1.25:0.85);
@@ -184,7 +248,225 @@ function ensurePerformanceArc(q){
   }
   return q.performanceArc;
 }
-function startSeason(playerQueen, castSize='random', seasonFormat='regular'){const data=gameState.data; resetState(); gameState.data=data; const format=normalizeSeasonFormat(seasonFormat); const resolvedCastSize=resolveCastSizeForFormat(castSize,format); gameState.settings.castSize=resolvedCastSize; gameState.settings.seasonFormat=format; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',format,finaleSize,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
+
+function initializeReturnTwist(format){
+  const base={type:null,used:false,pendingQueenIds:[],announcedQueenIds:[]};
+  if(format==='regular'){
+    if(Math.random()<0.10)base.type=sample(['first_out','redemption_vote','production_return']);
+    return base;
+  }
+  if(format==='legacy' || format==='assassin'){
+    base.type=sample(['legacy_smackdown','redemption_smackdown']);
+    return base;
+  }
+  return base;
+}
+function ensureReturnTwistState(){
+  if(!gameState.season)return null;
+  if(!gameState.season.returnTwist){
+    gameState.season.returnTwist={type:null,used:false,pendingQueenIds:[],announcedQueenIds:[]};
+  }
+  if(!Array.isArray(gameState.season.returnTwist.pendingQueenIds))gameState.season.returnTwist.pendingQueenIds=[];
+  if(!Array.isArray(gameState.season.returnTwist.announcedQueenIds))gameState.season.returnTwist.announcedQueenIds=[];
+  return gameState.season.returnTwist;
+}
+function hasReturnTwistAvailable(){
+  const twist=ensureReturnTwistState();
+  return !!(twist && twist.type && !twist.used);
+}
+function getActiveQueens(){return (gameState.queens||[]).filter(q=>!q.isEliminated);}
+function getEliminatedQueens(){return gameState.eliminatedQueens||[];}
+function returnQueenToCompetition(queenId,reason){
+  const queen=(gameState.queens||[]).find(q=>q.id===queenId);
+  if(!queen)return false;
+  ensureReturnTwistState();
+  queen.isEliminated=false;
+  gameState.eliminatedQueens=(gameState.eliminatedQueens||[]).filter(q=>q.id!==queenId);
+  gameState.season.returnTwist.used=true;
+  gameState.season.returnAnnouncement={queenIds:[queenId],reason};
+  return true;
+}
+function returnQueensToCompetition(queenIds,reason){
+  const ids=[...(queenIds||[])].filter(Boolean);
+  const returned=[];
+  ids.forEach(id=>{
+    const queen=(gameState.queens||[]).find(q=>q.id===id && q.isEliminated);
+    if(queen && returnQueenToCompetition(id,reason))returned.push(id);
+  });
+  if(returned.length){
+    gameState.season.returnTwist.used=true;
+    gameState.season.returnAnnouncement={queenIds:returned,reason};
+    saveGame();
+  }
+  return returned;
+}
+function scoreReturnCandidateForVote(voter,candidate){
+  ensureQueenV14Stats(candidate);
+  const rel=gameState.relationships?.[voter.id]?.[candidate.id];
+  const affinity=Number(rel?.affinity)||0;
+  const publicScores=candidate.publicScores||{};
+  const fan=Number(publicScores.fans)||0;
+  const production=Number(publicScores.production)||0;
+  return affinity*0.65 + fan*0.35 + production*0.25 + rand(-12,12);
+}
+function chooseReturnVote(voter,candidates){
+  if(!candidates.length)return null;
+  return [...candidates].sort((a,b)=>scoreReturnCandidateForVote(voter,b)-scoreReturnCandidateForVote(voter,a))[0];
+}
+function resolveRedemptionVote(){
+  if(!hasReturnTwistAvailable())return null;
+  const candidates=getEliminatedQueens();
+  const voters=getActiveQueens();
+  if(!candidates.length || !voters.length)return null;
+  const votes={};
+  voters.forEach(voter=>{
+    const pick=chooseReturnVote(voter,candidates);
+    if(pick)votes[pick.id]=(votes[pick.id]||0)+1;
+  });
+  const max=Math.max(...Object.values(votes));
+  const tied=Object.keys(votes).filter(id=>votes[id]===max);
+  const winnerId=sample(tied);
+  if(!winnerId)return null;
+  returnQueenToCompetition(winnerId,'redemption_vote');
+  gameState.season.returnAnnouncement.votes=votes;
+  saveGame();
+  return winnerId;
+}
+function getBestEliminatedProductionDarling(){
+  const candidates=getEliminatedQueens();
+  if(!candidates.length)return null;
+  candidates.forEach(ensureQueenV14Stats);
+  const scored=candidates.map(q=>({q,score:Number(q.publicScores?.production)||0}));
+  const max=Math.max(...scored.map(x=>x.score));
+  const tied=scored.filter(x=>x.score===max).map(x=>x.q);
+  return sample(tied)?.id||null;
+}
+function resolveReturnSmackdown(){
+  if(!hasReturnTwistAvailable())return null;
+  const eliminated=[...getEliminatedQueens()];
+  const type=gameState.season.returnTwist.type;
+  if(eliminated.length===1){
+    const winnerId=eliminated[0].id;
+    returnQueenToCompetition(winnerId,type);
+    const result={type,rounds:[],winnerId};
+    gameState.season.returnAnnouncement.smackdown=result;
+    saveGame();
+    return result;
+  }
+  if(eliminated.length<2)return null;
+  let rounds=[];
+  let winnerId=null;
+  if(type==='redemption_smackdown'){
+    let current=eliminated[0];
+    for(let i=1;i<eliminated.length;i++){
+      const duel=runLipSyncDuelNoStats(current,eliminated[i],`Redemption Round ${i}`);
+      rounds.push({round:i,duels:[duel],winnerIds:[duel.winnerId]});
+      current=gameState.queens.find(q=>q.id===duel.winnerId);
+    }
+    winnerId=current?.id||null;
+  } else {
+    let pool=shuffle(eliminated);
+    let round=1;
+    while(pool.length>1){
+      const {pairs,bye}=makePairs(pool);
+      const winners=bye?[bye]:[];
+      const duels=[];
+      pairs.forEach(pair=>{
+        const d=runLipSyncDuelNoStats(pair[0],pair[1],`Return Round ${round}`);
+        duels.push(d);
+        winners.push(gameState.queens.find(q=>q.id===d.winnerId));
+      });
+      rounds.push({round,duels,byeId:bye?.id||null,winnerIds:winners.map(q=>q.id)});
+      pool=winners; round++;
+    }
+    winnerId=pool[0]?.id||null;
+  }
+  if(winnerId){
+    returnQueenToCompetition(winnerId,type);
+    const result={type,rounds,winnerId};
+    gameState.season.returnAnnouncement.smackdown=result;
+    saveGame();
+    return result;
+  }
+  return null;
+}
+function buildReturnSmackdownEpisode(type){
+  const eliminated=[...getEliminatedQueens()];
+  if(!eliminated.length)return null;
+  const number=gameState.episodeHistory.length+1;
+  gameState.currentEpisode={
+    number,
+    activeCount:eliminated.length,
+    challengeType:'return_smackdown',
+    challengeName:type==='redemption_smackdown'?'Redemption Lip Sync Smackdown':'Lip Sync Smackdown Return',
+    themeId:'return_smackdown',
+    themeName:type==='redemption_smackdown'?'Redemption Lip Sync Smackdown':'Lip Sync Smackdown Return',
+    themeNotes:'The eliminated queens lip sync for one open spot back in the competition.',
+    runwayCategory:'Lip Sync Return',
+    runwayCategories:['Lip Sync Return'],
+    song:sample(gameState.data.songs),
+    event:sample(gameState.data.events),
+    guestJudge:pickGuestJudge(),
+    structure:{id:'return_smackdown',label:'Return Smackdown'},
+    teams:[],
+    judgingMode:'individual',
+    placements:[],
+    bottomQueens:[],
+    eliminatedQueenId:null,
+    lipSyncResult:null,
+    special:'return_smackdown',
+    returnSmackdownType:type,
+    participantIds:eliminated.map(q=>q.id),
+    socialEvents:[]
+  };
+  saveGame();
+  return gameState.currentEpisode;
+}
+function processReturnTwistsBeforeEpisode(){
+  const twist=ensureReturnTwistState();
+  if(!twist || !twist.type || twist.used)return null;
+  if(twist.type==='first_out' && twist.pendingQueenIds.length){
+    const prem=gameState.season?.premiere;
+    if(prem && !prem.complete)return null;
+    returnQueensToCompetition(twist.pendingQueenIds,'first_out');
+    twist.pendingQueenIds=[];
+    saveGame();
+    return null;
+  }
+  const activeCount=getActiveQueens().length;
+  if(twist.type==='production_return' && getSeasonFormat()==='regular' && activeCount===5){
+    const id=getBestEliminatedProductionDarling();
+    if(id)returnQueenToCompetition(id,'production_return');
+    return null;
+  }
+  if((twist.type==='legacy_smackdown' || twist.type==='redemption_smackdown') && (getSeasonFormat()==='legacy' || getSeasonFormat()==='assassin') && activeCount===5){
+    return buildReturnSmackdownEpisode(twist.type);
+  }
+  return null;
+}
+function registerReturnTwistAfterElimination(ep){
+  const twist=ensureReturnTwistState();
+  if(!twist || !twist.type || twist.used)return;
+  const eliminatedIds=[...(ep?.lipSyncResult?.eliminatedQueenIds||[]), ep?.eliminatedQueenId].filter(Boolean);
+  const unique=[...new Set(eliminatedIds)];
+  if(!unique.length)return;
+  if(getSeasonFormat()==='regular' && twist.type==='first_out'){
+    const prem=gameState.season?.premiere;
+    const firstSeasonElim=(gameState.eliminatedQueens||[]).length===unique.length;
+    const collectingDoublePremiere=!!(prem?.format?.startsWith('double') && !prem.complete && twist.pendingQueenIds.length);
+    if(firstSeasonElim || collectingDoublePremiere){
+      twist.pendingQueenIds=[...new Set([...(twist.pendingQueenIds||[]), ...unique])];
+      saveGame();
+    }
+    return;
+  }
+  if(getSeasonFormat()==='regular' && twist.type==='redemption_vote'){
+    const original=gameState.season.originalCastSize || (gameState.queens||[]).length;
+    const needed=Math.ceil(original/2);
+    if((gameState.eliminatedQueens||[]).length>=needed)resolveRedemptionVote();
+  }
+}
+function startSeason(playerQueen, castSize='random', seasonFormat='regular'){const data=gameState.data; resetState(); gameState.data=data; const format=normalizeSeasonFormat(seasonFormat); const resolvedCastSize=resolveCastSizeForFormat(castSize,format); gameState.settings.castSize=resolvedCastSize; gameState.settings.seasonFormat=format; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:'entrance',format,finaleSize,originalCastSize:gameState.queens.length,returnTwist:initializeReturnTwist(format),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
   if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';
@@ -198,7 +480,15 @@ function challengeFamily(id){
 function createSeasonChallengePlan(startCount=14, finaleSize=4){
   const counts=[];
   for(let n=startCount;n>finaleSize;n--)counts.push(n);
-  const inRange=(min,max)=>counts.filter(n=>n<=max&&n>=min);
+
+  // Finale runway: the simulator already decides finaleSize at season start.
+  // Use that fixed value to reserve the last two competitive challenges.
+  // Top 4/5 before finale = Rumix. Top 5/6 before finale = Ball if it has not happened earlier.
+  const rumixCount=finaleSize+1;
+  const ballFallbackCount=finaleSize+2;
+  const reservedCounts=[rumixCount, ballFallbackCount].filter(n=>counts.includes(n));
+
+  const inRange=(min,max)=>counts.filter(n=>n<=max&&n>=min&&!reservedCounts.includes(n));
   const snatchOptions=inRange(7,10);
   const makeoverOptions=inRange(5,6);
   const roastOptions=inRange(5,7);
@@ -207,6 +497,9 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
   let best={};
   for(let attempt=0; attempt<300; attempt++){
     const plan={};
+    if(counts.includes(rumixCount))plan[rumixCount]='rumix';
+    if(counts.includes(ballFallbackCount))plan[ballFallbackCount]='ball';
+
     const snatch=sample(snatchOptions); if(!snatch)continue; plan[snatch]='snatchgame';
     const makeover=sample(makeoverOptions.filter(n=>!plan[n])); if(!makeover)continue; plan[makeover]='makeover';
     const roast=sample(roastOptions.filter(n=>!plan[n])); if(!roast)continue; plan[roast]='roast';
@@ -218,6 +511,9 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
     if(!hasFamilyClash)return plan;
     best=plan;
   }
+
+  if(counts.includes(rumixCount))best[rumixCount]='rumix';
+  if(counts.includes(ballFallbackCount) && !best[ballFallbackCount])best[ballFallbackCount]='ball';
   return best;
 }
 function alreadyUsedChallenge(id){return gameState.episodeHistory.some(ep=>ep.challengeType===id);}
@@ -227,18 +523,27 @@ function isUniqueSeasonChallenge(challengeOrId){
   const name=String(challenge?.name||'').toLowerCase();
   if(challenge?.uniqueSeason)return true;
   // These are special-format challenges: maximum once per season, except when a double premiere repeats
-  // the same selected challenge for both premiere groups. Ball is intentionally not included.
+  // the same selected challenge for both premiere groups.
   return [
-    'talent','snatchgame','makeover','roast','rusical','branding','rumix','political','debate'
+    'talent','snatchgame','makeover','roast','rusical','branding','rumix','ball','political','debate'
   ].some(key=>id.includes(key)||name.includes(key));
 }
 function requiredChallengeForActiveCount(activeCount){
+  const finaleSize=gameState.season?.finaleSize || 4;
+
+  // Rumix is always the last competitive challenge before the finale.
+  if(activeCount===finaleSize+1 && !alreadyUsedChallenge('rumix'))return 'rumix';
+
+  // Ball may happen naturally earlier. If it has not, force it as the penultimate challenge before Rumix.
+  if(activeCount===finaleSize+2 && !alreadyUsedChallenge('ball'))return 'ball';
+
   const planned=gameState.season?.challengePlan?.[activeCount];
   if(planned && !alreadyUsedChallenge(planned))return planned;
   return null;
 }
 function pickChallengeByRules(activeCount){
   const challenges=gameState.data.challenges;
+  const finaleSize=gameState.season?.finaleSize || 4;
   const requiredId=requiredChallengeForActiveCount(activeCount);
   if(requiredId){
     const required=challenges.find(c=>c.id===requiredId);
@@ -248,6 +553,7 @@ function pickChallengeByRules(activeCount){
   const lastFamily=challengeFamily(last?.challengeType||last?.challengeName);
   let available=challenges.filter(c=>{
     if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
+    if(c.id==='rumix' && activeCount!==finaleSize+1)return false;
     if(c.minQueens && activeCount<c.minQueens)return false;
     if(c.maxQueens && activeCount>c.maxQueens)return false;
     if(c.id==='rusical'&&activeCount>10)return false;
@@ -479,6 +785,7 @@ function episodeDisplayNotes(challenge, theme, content, isSnatchGame){
 function episodeRunwayForChallenge(challengeId, theme, content){
   if(challengeId==='ball')return (content?.runwayCategories?.[content.runwayCategories.length-1] || content?.mainTheme || 'Ball Eleganza');
   if(challengeId==='design')return `${content?.mainTheme || 'Design'} Eleganza`;
+  if(challengeId==='makeover')return 'Family Resemblance';
   const pool=(theme?.runway?.length?theme.runway:(gameState.data.runways||[]).map(r=>r.name));
   return sample(pool)||'Best Drag';
 }
@@ -596,6 +903,8 @@ function shouldOfferReunionSmackdown(){
 }
 
 function generateEpisode(){
+  const returnTwistEpisode=processReturnTwistsBeforeEpisode();
+  if(returnTwistEpisode)return returnTwistEpisode;
   const premiereIds=nextPremiereParticipantIds();
   const episodeIds=getEpisodeQueenIds();
   const fullActive=gameState.queens.filter(q=>!q.isEliminated && episodeIds.includes(q.id));

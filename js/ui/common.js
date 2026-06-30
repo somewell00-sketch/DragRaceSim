@@ -110,11 +110,12 @@ function queenSidebar(){
   const frontIds=currentFrontRunnerIds();
   const moodBadge=(q)=>q.id===gameState.playerQueenId?'':`<span class="sidebar-mood" title="How she sees you">${playerRelationshipLabel(q.id)}</span>`;
   const personaLine=(q)=>`<span class="small sidebar-persona queen-archetype queen-archetype--subtle">${queenPersonaTypeHtml(q)}</span>`;
+  const trackLine=(q)=>`<span class="small sidebar-track-count">${Number(q.statistics?.wins)||0} WIN / ${Number(q.statistics?.bottoms)||0} BTM</span>`;
   return `<aside class="sidebar"><div class="card queens-sidebar-card"><div class="sidebar-title"><h3>Queens still in</h3><span class="sidebar-count">${active.length}/${gameState.queens.length}</span></div><div class="queen-list">${active.map(q=>{
     const isFrontRunner=frontIds.includes(q.id);
     const frontTag=isFrontRunner?`<span class="badge arc front-runner">front-runner</span>`:'';
     const isPlayer=q.id===gameState.playerQueenId;
-    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''} ${isPlayer?'player-queen-card':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${isPlayer?'<span class="small sidebar-player-label">Your queen</span>':''}${personaLine(q)}${frontTag}</div></div>`;
+    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''} ${isPlayer?'player-queen-card':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${isPlayer?'<span class="small sidebar-player-label">Your queen</span>':''}${personaLine(q)}${trackLine(q)}${frontTag}</div></div>`;
   }).join('')}</div></div>${playerCanSkipToFinale()?`<button class="secondary" id="skipToFinaleBtn">⏭ Skip to Finale</button> `:''}<button class="secondary" id="openHistory">📋 Track Record</button> <button class="ghost" id="saveBtn">💾 Save</button> <button class="ghost" id="restartBtn">↺ Restart</button></aside>`;
 }
 function bindCommon(onHistory){document.querySelector('#openHistory')?.addEventListener('click',onHistory); document.querySelector('#skipToFinaleBtn')?.addEventListener('click',()=>{if(confirm('Skip the remaining episodes and jump to the finale?'))skipToFinaleStart();}); document.querySelector('#saveBtn')?.addEventListener('click',()=>{saveGame(); alert('Season saved in this browser.');}); document.querySelector('#restartBtn')?.addEventListener('click',()=>{if(confirm('Restart the season? Your current save will be cleared.')){clearSave(); resetState(); renderQueenCreator();}});}
@@ -177,4 +178,71 @@ function historyTable(){
   const ordered=getQueenStandingOrder();
   return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement,h):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
+
+function queenNameById(id){
+  if(!id)return '—';
+  if(id==='lip_sync_assassin')return 'Lip Sync Assassin';
+  return gameState.queens.find(q=>q.id===id)?.name || '—';
+}
+function seasonLipstickChoicesTable(){
+  const episodes=(gameState.episodeHistory||[]).filter(ep=>{
+    const outcome=ep?.lipSyncResult?.outcome;
+    return outcome==='legacyElimination' || outcome==='assassinElimination';
+  });
+  if(!episodes.length)return '';
+  const hasLegacy=episodes.some(ep=>ep.lipSyncResult?.outcome==='legacyElimination');
+  const hasAssassin=episodes.some(ep=>ep.lipSyncResult?.outcome==='assassinElimination');
+  const legacyRows=episodes.filter(ep=>ep.lipSyncResult?.outcome==='legacyElimination').map(ep=>{
+    const r=ep.lipSyncResult||{};
+    const votes=r.legacyVotes || ep.legacyVotes || {};
+    const winnerId=r.survivorId;
+    const loserId=r.top2LoserId;
+    return `<tr><td>${escapeHtml(ep.number||'')}</td><td><strong>${escapeHtml(queenNameById(winnerId))}</strong></td><td>${escapeHtml(queenNameById(votes[winnerId]))}</td><td>${escapeHtml(queenNameById(loserId))}</td><td>${escapeHtml(queenNameById(votes[loserId]))}</td></tr>`;
+  }).join('');
+  const assassinEpisodes=episodes.filter(ep=>ep.lipSyncResult?.outcome==='assassinElimination');
+  const assassinVoteMap={};
+  const assassinTopVoteMap={};
+  const assassinVoterIds=new Set();
+  const assassinEpisodeNumbers=[];
+  assassinEpisodes.forEach(ep=>{
+    const r=ep.lipSyncResult||{};
+    const epNo=String(ep.number||'');
+    if(!epNo)return;
+    assassinEpisodeNumbers.push(epNo);
+    if(r.topQueenId && r.topVote){
+      assassinVoterIds.add(r.topQueenId);
+      assassinVoteMap[r.topQueenId]=assassinVoteMap[r.topQueenId]||{};
+      assassinVoteMap[r.topQueenId][epNo]=r.topVote;
+      assassinTopVoteMap[`${r.topQueenId}::${epNo}`]=true;
+    }
+    const raw=r.rawGroupVotes || ep.assassinGroupVotes || {};
+    Object.entries(raw).forEach(([voterId,voteId])=>{
+      if(voterId==='lip_sync_assassin' || voterId===r.topQueenId || !voteId)return;
+      assassinVoterIds.add(voterId);
+      assassinVoteMap[voterId]=assassinVoteMap[voterId]||{};
+      assassinVoteMap[voterId][epNo]=voteId;
+    });
+  });
+  const assassinEpisodeKeys=sortEpisodeKeys([...new Set(assassinEpisodeNumbers)]);
+  const standingOrder=(typeof getQueenStandingOrder==='function'?getQueenStandingOrder():[]).map(q=>q.id);
+  const standingIndex=new Map(standingOrder.map((id,index)=>[id,index]));
+  const assassinRows=[...assassinVoterIds].sort((a,b)=>{
+    const ai=standingIndex.has(a)?standingIndex.get(a):9999;
+    const bi=standingIndex.has(b)?standingIndex.get(b):9999;
+    return ai-bi || queenNameById(a).localeCompare(queenNameById(b));
+  }).map(voterId=>{
+    const cells=assassinEpisodeKeys.map(epNo=>{
+      const voteId=assassinVoteMap[voterId]?.[epNo];
+      const voteName=voteId?queenNameById(voteId):'—';
+      const isTop=!!assassinTopVoteMap[`${voterId}::${epNo}`];
+      return `<td>${isTop?`<strong class="lipstick-vote-top">${escapeHtml(voteName)}</strong>`:escapeHtml(voteName)}</td>`;
+    }).join('');
+    return `<tr><td><strong>${escapeHtml(queenNameById(voterId))}</strong></td>${cells}</tr>`;
+  }).join('');
+  const legacyTable=hasLegacy?`<section class="card"><h2>Lipstick Choices</h2><div class="table-wrap"><table><thead><tr><th>Episode #</th><th>Winner</th><th>Lipstick</th><th>Loser</th><th>Lipstick</th></tr></thead><tbody>${legacyRows}</tbody></table></div></section>`:'';
+  const assassinHeader=assassinEpisodeKeys.map(e=>`<th>Ep. ${escapeHtml(e)}</th>`).join('');
+  const assassinTable=hasAssassin?`<section class="card"><h2>Lipstick Votes</h2><div class="table-wrap"><table><thead><tr><th>Queen</th>${assassinHeader}</tr></thead><tbody>${assassinRows}</tbody></table></div></section>`:'';
+  return `${legacyTable}${assassinTable}`;
+}
+
 function showHistory(backFn){setHTML(`<main class="screen"><section class="hero"><h2>Season Track Record</h2></section>${historyTable()}<button id="back">Back</button></main>`); document.querySelector('#back').addEventListener('click',()=>{backFn(); scrollToTop();});}

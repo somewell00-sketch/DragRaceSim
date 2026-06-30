@@ -496,8 +496,20 @@ function guestJudgeCritiqueLine(p,bucket){
   if(bucket==='low') return sample(roll<.35?(lines.positive||GUEST_WILDCARD_LINES.positive):(lines.mixed||GUEST_WILDCARD_LINES.mixed));
   return sample(roll<.22?(lines.positive||GUEST_WILDCARD_LINES.positive):(lines.negative||GUEST_WILDCARD_LINES.negative));
 }
+function isFinalStretchPraiseEpisodeForCritiques(ep){
+  if(!ep || ep.special)return false;
+  const finaleSize=gameState.season?.finaleSize || 4;
+  const activeCount=ep.activeCount || gameState.queens.filter(q=>!q.isEliminated).length;
+  return activeCount===finaleSize+1;
+}
+function finalStretchCritiqueBucket(p){
+  if(p.placement==='WIN')return 'win';
+  if(p.placement==='HIGH' || p.placement==='LOW' || p.placement==='BTM')return 'high';
+  return 'safe';
+}
 function composedJudgeCritique(p, placements, ep){
-  const bucket=critiqueBucket(p);
+  const finalStretchPraise=isFinalStretchPraiseEpisodeForCritiques(ep);
+  const bucket=finalStretchPraise?finalStretchCritiqueBucket(p):critiqueBucket(p);
   const challengeId=challengeCritiqueId(ep);
   const q=gameState.queens.find(x=>x.id===p.queenId);
   if(typeof recalcNarrativeTags==='function') recalcNarrativeTags();
@@ -506,7 +518,8 @@ function composedJudgeCritique(p, placements, ep){
   const runwayLine=sample(JUDGE_CRITIQUE_BANK.runway[runwayBucketForCritique(p,placements)]||JUDGE_CRITIQUE_BANK.runway.solid);
   const guestName=ep.guestJudge?.name||'Guest Judge';
   const guestLine=guestJudgeCritiqueLine(p,bucket);
-  const ruLine=typeof ruNarrativeComment==='function' ? ruNarrativeComment(q,p.placement) : sample(JUDGE_CRITIQUE_BANK.close[bucket]||JUDGE_CRITIQUE_BANK.close.safe);
+  const ruPlacement=finalStretchPraise && (p.placement==='LOW' || p.placement==='BTM') ? 'HIGH' : p.placement;
+  const ruLine=typeof ruNarrativeComment==='function' ? ruNarrativeComment(q,ruPlacement) : sample(JUDGE_CRITIQUE_BANK.close[bucket]||JUDGE_CRITIQUE_BANK.close.safe);
   const rotatingJudge=(ep.number||0)%2===0?'Ross':'Carson';
   const middleLine=rotatingJudge==='Ross' ? sample(JUDGE_CRITIQUE_BANK.close[bucket]||JUDGE_CRITIQUE_BANK.close.safe) : runwayLine;
   return [

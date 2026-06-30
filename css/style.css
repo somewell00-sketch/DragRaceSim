@@ -3800,3 +3800,112 @@ button.creator-dice-btn:hover,
     grid-template-columns:1fr!important;
   }
 }
+
+.lipstick-vote-top{color:#c99700;font-weight:900;}
+
+
+/* Sidebar track count: subtle WIN / BTM summary under persona. */
+.sidebar .queen-item-copy .sidebar-track-count{
+  display:block!important;
+  margin-top:3px!important;
+  font-size:.62rem!important;
+  line-height:1.1!important;
+  color:rgba(255,255,255,.58)!important;
+  font-weight:700!important;
+  letter-spacing:.04em!important;
+  text-transform:uppercase!important;
+}
+.lipstick-vote-top{
+  color:#f6c94c!important;
+  font-weight:800!important;
+}
+
+/* v-return-ui-compact: denser decision/choice areas without changing gameplay */
+.card.decision-card,
+.runway-pre-choice{
+  padding:16px 18px!important;
+  margin-bottom:14px!important;
+  border-radius:20px!important;
+}
+.card.decision-card h2,
+.card.decision-card h3,
+.runway-pre-choice h2,
+.runway-pre-choice h3{
+  margin-bottom:6px!important;
+  font-size:1.18rem!important;
+  line-height:1.14!important;
+}
+.card.decision-card > p,
+.runway-pre-choice > p{
+  margin:0 0 10px!important;
+  font-size:.9rem!important;
+  line-height:1.32!important;
+}
+.card.decision-card .options,
+.runway-pre-choice .options{
+  gap:6px!important;
+  margin-top:8px!important;
+}
+button.option,
+.card.decision-card .option,
+.runway-choice-option{
+  min-height:0!important;
+  padding:8px 10px!important;
+  margin:5px 0!important;
+  gap:8px!important;
+  border-radius:13px!important;
+  font-size:.9rem!important;
+  line-height:1.18!important;
+}
+.card.decision-card .option{margin:0!important;}
+.choice-emoji{
+  width:22px!important;
+  height:22px!important;
+  min-width:22px!important;
+  font-size:.86rem!important;
+}
+.choice-copy{
+  gap:2px!important;
+}
+.choice-copy strong,
+.card.decision-card .option strong{
+  font-size:.92rem!important;
+  line-height:1.14!important;
+}
+.choice-copy .small,
+.card.decision-card .option .small,
+.runway-choice-option .small{
+  font-size:.74rem!important;
+  line-height:1.22!important;
+}
+.card.decision-card label{
+  gap:4px!important;
+  font-size:.84rem!important;
+}
+.card.decision-card select{
+  min-height:36px!important;
+  padding:7px 9px!important;
+  margin:4px 0 8px!important;
+  font-size:.86rem!important;
+  border-radius:11px!important;
+}
+.runway-action-result,
+.runway-action-success,
+.runway-action-fail{
+  padding:10px 12px!important;
+  margin:8px 0!important;
+  border-radius:14px!important;
+  font-size:.88rem!important;
+  line-height:1.28!important;
+}
+.runway-visible-effects{
+  gap:6px!important;
+  padding:8px 10px!important;
+  margin-bottom:8px!important;
+}
+@media(min-width:760px){
+  .card.decision-card .options,
+  .runway-pre-choice .options{
+    grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
+  }
+}

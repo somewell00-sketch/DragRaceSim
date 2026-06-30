@@ -77,6 +77,20 @@ function getCritiqueText(placement, challengeId, risk, success){
   return parts.join(' ');
 }
 
+function isLastCompetitiveEpisodeBeforeFinale(ep){
+  if(!ep || ep.special)return false;
+  // The season decides the finale size when it is created.
+  // Therefore the last competitive episode is always the episode with
+  // exactly one more active queen than the fixed finale size.
+  const finaleSize=gameState.season?.finaleSize || 4;
+  const activeCount=ep.activeCount || gameState.queens.filter(q=>!q.isEliminated).length;
+  return activeCount===finaleSize+1;
+}
+function getFinalStretchPositiveCritique(s, ep){
+  const praisePlacement=s.placement==='SAFE'?'SAFE':'HIGH';
+  return getCritiqueText(praisePlacement, ep.challengeType, s.risk, true) || `${s.name} receives warm praise from the panel for making it this far and showing why she belongs near the finale.`;
+}
+
 
 
 function recentPlacementStreak(q, placement){
@@ -107,7 +121,7 @@ function getWinThrottlePenalty(q){
   return getJudgesExpectationPenalty(q);
 }
 function isLegacyCompetitiveEpisode(ep){
-  return getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
+  return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
 }
 function legacyAllStarsPressure(q, ep){
   // Legacy gives out two WINs per episode, so repeated frontrunner weeks need
@@ -416,6 +430,88 @@ function ensureBallRunwayScores(ep,q){
 }
 
 
+
+function isSnatchGameOfLoveEpisode(ep){
+  return !!(ep && ep.challengeType==='snatchgame' && getSeasonFormat()!=='regular' && !['premiere','premiere_no_elim','lalaparuza'].includes(ep.special));
+}
+
+function ensureSnatchGameOfLoveGroups(scored, ep){
+  const current=ep.snatchGameOfLoveGroups;
+  const scoredIds=new Set(scored.map(s=>s.queenId));
+  if(Array.isArray(current) && current.length===2){
+    const valid=current.every(group=>Array.isArray(group) && group.every(id=>scoredIds.has(id)));
+    const covered=current.flat().filter(id=>scoredIds.has(id)).length===scored.length;
+    if(valid && covered)return current;
+  }
+  const ids=shuffle(scored.map(s=>s.queenId));
+  const mid=Math.ceil(ids.length/2);
+  ep.snatchGameOfLoveGroups=[ids.slice(0,mid), ids.slice(mid)];
+  return ep.snatchGameOfLoveGroups;
+}
+
+function snatchGameOfLoveGroupWinners(scored, ep){
+  const groups=ensureSnatchGameOfLoveGroups(scored, ep);
+  const winners=groups.map(group=>{
+    return scored
+      .filter(s=>group.includes(s.queenId))
+      .sort((a,b)=>b.score-a.score)[0]||null;
+  }).filter(Boolean);
+
+  if(winners.length<2){
+    scored.forEach(s=>{ if(!winners.find(w=>w.queenId===s.queenId))winners.push(s); });
+  }
+
+  return winners
+    .filter((s,idx,arr)=>arr.findIndex(x=>x.queenId===s.queenId)===idx)
+    .slice(0,2)
+    .sort((a,b)=>b.score-a.score);
+}
+
+function applySnatchGameOfLoveLegacyPlacements(scored, ep){
+  scored.forEach(s=>s.placement='SAFE');
+  const winners=snatchGameOfLoveGroupWinners(scored, ep);
+  const winnerIds=new Set(winners.map(s=>s.queenId));
+  winners.forEach(s=>s.placement='WIN');
+
+  const bottomCount=Math.min(3, Math.max(0, scored.length-winnerIds.size));
+  const bottom=scored.filter(s=>!winnerIds.has(s.queenId)).slice(-bottomCount);
+  bottom.forEach(s=>s.placement='BTM');
+
+  const high=scored.find(s=>!winnerIds.has(s.queenId) && s.placement==='SAFE');
+  if(high)high.placement='HIGH';
+
+  ep.top2Queens=winners.map(s=>s.queenId);
+  ep.bottomQueens=bottom.map(s=>s.queenId);
+  ep.legacyVotes={};
+  ep.top2Queens.forEach(id=>{ep.legacyVotes[id]=chooseLipstick(id, ep.bottomQueens);});
+}
+
+function applySnatchGameOfLoveAssassinPlacements(scored, ep){
+  scored.forEach(s=>s.placement='SAFE');
+  const winners=snatchGameOfLoveGroupWinners(scored, ep);
+  const top=winners[0]||scored[0];
+  const high=winners.find(s=>s.queenId!==top?.queenId)||scored.find(s=>s.queenId!==top?.queenId);
+  const protectedIds=new Set([top?.queenId, high?.queenId].filter(Boolean));
+
+  if(top)top.placement='WIN';
+  if(high)high.placement='HIGH';
+
+  const bottomCount=Math.min(3, Math.max(0, scored.length-protectedIds.size));
+  const bottom=scored.filter(s=>!protectedIds.has(s.queenId)).slice(-bottomCount);
+  bottom.forEach(s=>s.placement='BTM');
+
+  ep.topQueenId=top?.queenId||null;
+  ep.snatchGameOfLoveTop2=winners.map(s=>s.queenId);
+  ep.bottomQueens=bottom.map(s=>s.queenId);
+  ep.assassinTopVote=ep.topQueenId?chooseLipstick(ep.topQueenId, ep.bottomQueens):null;
+  ep.assassinGroupVotes={};
+  const activeVoterIds=new Set(scored.map(s=>s.queenId));
+  scored.forEach(s=>{
+    if(s.queenId!==ep.topQueenId && activeVoterIds.has(s.queenId))ep.assassinGroupVotes[s.queenId]=chooseAssassinVote(s.queenId, ep.bottomQueens);
+  });
+  ep.lipSyncAssassin=typeof createLipSyncAssassin==='function'?createLipSyncAssassin():{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,attributes:{lipSync:rand(8,9),cunt:rand(5,9)},statistics:{},publicScores:{production:20},momentum:0,inventory:{reveals:1}};
+}
+
 function applyLegacyPlacements(scored, ep){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
@@ -427,6 +523,23 @@ function applyLegacyPlacements(scored, ep){
   ep.bottomQueens=scored.slice(-bottomCount).map(s=>s.queenId);
   ep.legacyVotes={};
   ep.top2Queens.forEach(id=>{ep.legacyVotes[id]=chooseLipstick(id, ep.bottomQueens);});
+}
+
+function applyAssassinPlacements(scored, ep){
+  scored.forEach(s=>s.placement='SAFE');
+  if(scored[0])scored[0].placement='WIN';
+  if(scored[1])scored[1].placement='HIGH';
+  const bottomCount=Math.min(3, Math.max(0, scored.length-1));
+  scored.slice(-bottomCount).forEach(s=>s.placement='BTM');
+  ep.topQueenId=scored[0]?.queenId||null;
+  ep.bottomQueens=scored.slice(-bottomCount).map(s=>s.queenId);
+  ep.assassinTopVote=ep.topQueenId?chooseLipstick(ep.topQueenId, ep.bottomQueens):null;
+  ep.assassinGroupVotes={};
+  const activeVoterIds=new Set(scored.map(s=>s.queenId));
+  scored.forEach(s=>{
+    if(s.queenId!==ep.topQueenId && activeVoterIds.has(s.queenId))ep.assassinGroupVotes[s.queenId]=chooseAssassinVote(s.queenId, ep.bottomQueens);
+  });
+  ep.lipSyncAssassin=typeof createLipSyncAssassin==='function'?createLipSyncAssassin():{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,attributes:{lipSync:8,cunt:8},statistics:{},publicScores:{production:20},momentum:0,inventory:{reveals:1}};
 }
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
@@ -475,8 +588,15 @@ function calculateEpisodeResults(playerChoices={}){
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
 
-  if(getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
-    applyLegacyPlacements(scored, ep);
+  const seasonFormat=getSeasonFormat();
+  const useSnatchGameOfLove=isSnatchGameOfLoveEpisode(ep);
+  if(seasonFormat==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+    if(useSnatchGameOfLove) applySnatchGameOfLoveLegacyPlacements(scored, ep);
+    else applyLegacyPlacements(scored, ep);
+  }
+  if(seasonFormat==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+    if(useSnatchGameOfLove) applySnatchGameOfLoveAssassinPlacements(scored, ep);
+    else applyAssassinPlacements(scored, ep);
   }
 
   if(ep.special==='premiere_no_elim'){
@@ -492,7 +612,7 @@ function calculateEpisodeResults(playerChoices={}){
   // Do not run win redistribution here, because that would create a challenge WIN
   // before the lip sync has happened. The two best queens remain TOP2 until
   // resolveLipSync() promotes only the lip sync winner to WIN.
-  if(ep.special!=='premiere_no_elim' && getSeasonFormat()!=='legacy'){
+  if(ep.special!=='premiere_no_elim' && !['legacy','assassin'].includes(getSeasonFormat())){
     applyPassiveWinCap(scored,ep);
     applyWinThrottles(scored,ep);
   }
@@ -513,24 +633,30 @@ function calculateEpisodeResults(playerChoices={}){
     const fatigueText=s.fatigue?` • Fatigue ${s.fatigue}`:'';
     const legacyPressureText=s.legacyPressure?` • All Stars pressure ${s.legacyPressure}`:'';
     s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${extra}${teamText}${winThrottleText}`;
-    s.critique=getCritiqueText(s.placement,ep.challengeType,s.risk,success);
+    const finalStretchPraise=isLastCompetitiveEpisodeBeforeFinale(ep);
+    s.critique=finalStretchPraise?getFinalStretchPositiveCritique(s,ep):getCritiqueText(s.placement,ep.challengeType,s.risk,success);
     if(ep.judgingMode==='team' && s.teamName){
       const teamScore=ep.teamScores?.find(t=>t.teamId===s.teamId);
-      if(s.placement==='WIN' || s.placement==='HIGH')s.critique=`${s.teamName} worked as a unit, and ${s.name} helped make the group stand out. ${s.critique}`;
-      if(s.placement==='LOW' || s.placement==='BTM')s.critique=`${s.teamName} struggled to connect as a group, and ${s.name} could not escape that energy. ${s.critique}`;
-      if(teamScore?.chemistry>0)s.critique+=` The chemistry helped the performance feel tighter.`;
-      if(teamScore?.chemistry<0)s.critique+=` The lack of chemistry showed.`;
+      if(finalStretchPraise){
+        s.critique=`${s.teamName} gets a final stretch spotlight, and ${s.name} receives praise for what she brought to the group. ${s.critique}`;
+        if(teamScore?.chemistry>0)s.critique+=` The chemistry helped the performance feel tighter.`;
+      }else{
+        if(s.placement==='WIN' || s.placement==='HIGH')s.critique=`${s.teamName} worked as a unit, and ${s.name} helped make the group stand out. ${s.critique}`;
+        if(s.placement==='LOW' || s.placement==='BTM')s.critique=`${s.teamName} struggled to connect as a group, and ${s.name} could not escape that energy. ${s.critique}`;
+        if(teamScore?.chemistry>0)s.critique+=` The chemistry helped the performance feel tighter.`;
+        if(teamScore?.chemistry<0)s.critique+=` The lack of chemistry showed.`;
+      }
     }
-    if(s.winThrottlePenalty<=-0.5 && (s.placement==='WIN' || s.placement==='HIGH')){
+    if(!finalStretchPraise && s.winThrottlePenalty<=-0.5 && (s.placement==='WIN' || s.placement==='HIGH')){
       s.critique = `${s.critique} At this point, the judges know what she can do, so the bar is higher.`.trim();
     }
-    if(s.winThrottled){
+    if(!finalStretchPraise && s.winThrottled){
       s.critique = `${s.critique} The judges still see the excellence, but this week the win slipped toward a fresher storyline.`.trim();
     }
     if(s.promotedByWinThrottle){
       s.critique = `${s.critique} Tonight, the panel was ready to spread the spotlight, and ${s.name} seized the opening.`.trim();
     }
-    if(isPlayer && ep.passiveWorkroom && s.placement!=='SAFE'){
+    if(!finalStretchPraise && isPlayer && ep.passiveWorkroom && s.placement!=='SAFE'){
       s.critique = `${s.critique} ${getPassiveWorkroomCritique(s.placement, s.name)}`.trim();
     }
   });
@@ -614,12 +740,43 @@ function applyLegacyLipstickRelationshipPenalty(winnerId, eliminatedQueenId, ep)
   return changes;
 }
 
+
+function applyAssassinVoteRelationshipPenalty(topQueenId, eliminatedQueenId, ep){
+  if(!ep || ep.assassinVoteRelationshipPenaltyApplied || !gameState.relationships)return [];
+  const changes=[];
+  const votes=Object.assign({}, ep.assassinGroupVotes||{});
+  if(ep.topQueenId && ep.assassinTopVote)votes[ep.topQueenId]=ep.assassinTopVote;
+  Object.entries(votes).forEach(([voterId,chosenId])=>{
+    if(!voterId || !chosenId || voterId===chosenId || chosenId===eliminatedQueenId)return;
+    const voter=gameState.queens.find(q=>q.id===voterId && !q.isEliminated);
+    const chosen=gameState.queens.find(q=>q.id===chosenId && !q.isEliminated);
+    if(!voter || !chosen)return;
+    const isTop=voterId===ep.topQueenId;
+    const affinityLoss=isTop?-16:-7;
+    const respectLoss=isTop?-3:-1;
+    if(typeof changeRelationship==='function'){
+      changeRelationship(voterId,chosenId,affinityLoss,respectLoss);
+      changeRelationship(chosenId,voterId,Math.round(affinityLoss*0.55),Math.round(respectLoss*0.5));
+    }
+    changes.push({voterId,chosenId,affinity:affinityLoss,respect:respectLoss});
+  });
+  ep.assassinVoteRelationshipPenaltyApplied=true;
+  ep.assassinVoteRelationshipPenalties=changes;
+  return changes;
+}
+
 function resolveLipSync(playerMoves=null){
   const ep=gameState.currentEpisode;
   const song=ep.song;
-  const bottom=((getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)) ? (ep.top2Queens||[]) : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens))
-    .map(id=>gameState.queens.find(q=>q.id===id))
+  const format=getSeasonFormat();
+  const isAssassinEpisode=format==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
+  const duelIds=(format==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special))
+    ? (ep.top2Queens||[])
+    : (isAssassinEpisode ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens));
+  const bottom=duelIds
+    .map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||createLipSyncAssassin()) : gameState.queens.find(q=>q.id===id))
     .filter(Boolean);
+  if(isAssassinEpisode && !ep.lipSyncAssassin)ep.lipSyncAssassin=bottom.find(q=>q.isAssassin)||createLipSyncAssassin();
   if(bottom.length<2){
     console.warn('Lip sync could not resolve because fewer than two queens were found.', {episode:ep.number, special:ep.special, top2Queens:ep.top2Queens, bottomQueens:ep.bottomQueens});
     return null;
@@ -727,6 +884,31 @@ function resolveLipSync(playerMoves=null){
     return ep.lipSyncResult;
   }
 
+
+  if(isAssassinEpisode){
+    const winner=results[0], loser=results[1];
+    const topWon=winner.queenId===ep.topQueenId;
+    const bottomIds=ep.bottomQueens||[];
+    const groupVotes=ep.assassinGroupVotes||{};
+    const groupTally=tallyVotes(groupVotes);
+    const groupEntries=Object.entries(groupTally).filter(([id])=>bottomIds.includes(id));
+    const maxGroupVotes=groupEntries.length?Math.max(...groupEntries.map(([,v])=>v)):0;
+    const groupTieIds=groupEntries.filter(([,v])=>v===maxGroupVotes).map(([id])=>id);
+    const hasGroupTie=groupTieIds.length>1;
+    const topChoice=(ep.assassinTopVote && bottomIds.includes(ep.assassinTopVote)) ? ep.assassinTopVote : (bottomIds[0]||null);
+    const groupChoice=hasGroupTie ? null : (groupTieIds[0] || bottomIds[0] || null);
+    const eliminatedQueenId=topWon ? topChoice : (hasGroupTie ? topChoice : groupChoice);
+    ep.placements.forEach(p=>{
+      if(p.queenId===ep.topQueenId){p.placement='WIN'; p.lipSyncWinner=topWon;}
+      if(p.queenId===eliminatedQueenId)p.legacyEliminated=true;
+    });
+    ep.lipSyncResult={song,results,outcome:'assassinElimination',survivorId:winner.queenId,topQueenId:ep.topQueenId,assassinId:'lip_sync_assassin',assassinWon:!topWon,eliminatedQueenId,eliminatedQueenIds:[eliminatedQueenId],difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10,topVote:topChoice,groupVotes:groupTally,rawGroupVotes:groupVotes,groupChoice,groupTieIds,groupTieResolvedByTop:(!topWon && hasGroupTie)};
+    recordIconicLipSync(ep, ep.lipSyncResult);
+    ep.eliminatedQueenId=eliminatedQueenId;
+    saveGame();
+    return ep.lipSyncResult;
+  }
+
   const survivor=results[0], eliminated=results[1];
   const diff=Math.abs(results[0].score10-results[1].score10);
   let outcome='normal';
@@ -795,6 +977,15 @@ function applyEpisodeStats(){
         if(out && typeof applyLegacyLipstickRelationshipPenalty==='function')applyLegacyLipstickRelationshipPenalty(win.id,out.id,ep);
       }
       if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
+    } else if(ep.lipSyncResult.outcome==='assassinElimination'){
+      const top=gameState.queens.find(q=>q.id===ep.lipSyncResult.topQueenId);
+      const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
+      if(top){
+        if(!ep.lipSyncResult.assassinWon){top.statistics.lipSyncWins++; applyChoiceEffects({momentum:0.5,fans:0.8,production:0.4,stress:3},{queen:top,note:'Assassin lip sync win.',source:'lip-sync-result',save:false});}
+        else {top.statistics.lipSyncLosses++; applyChoiceEffects({momentum:-0.5,stress:6},{queen:top,note:'Lost to the Lip Sync Assassin.',source:'lip-sync-result',save:false});}
+        if(out && typeof applyAssassinVoteRelationshipPenalty==='function')applyAssassinVoteRelationshipPenalty(top.id,out.id,ep);
+      }
+      if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
     } else if(ep.lipSyncResult.outcome==='top2Win'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
       if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }
@@ -810,6 +1001,7 @@ function applyEpisodeStats(){
       if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
     }
   }
+  if(typeof registerReturnTwistAfterElimination==='function')registerReturnTwistAfterElimination(ep);
   if(typeof markPremierePhaseDone==='function')markPremierePhaseDone();
   ep.statsApplied=true;
   gameState.episodeHistory.push(JSON.parse(JSON.stringify(ep)));

@@ -60,7 +60,7 @@ function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
   const defaultPersonality=p[Math.floor(Math.random()*p.length)].id;
   const randomType=t[Math.floor(Math.random()*t.length)].name;
-  const formatOptions=[['regular','Regular Season',false],['legacy','All Stars — Lip Sync for Your Legacy',false],['assassin','All Stars — Lip Sync Assassin (Coming Soon)',true],['no_elimination','No Elimination (Coming Soon)',true],['brackets','Tournament Brackets (Coming Soon)',true]].map(([value,label,disabled])=>`<option value="${value}" ${disabled?'disabled':''}>${label}</option>`).join('');
+  const formatOptions=[['regular','Regular Season',false],['legacy','All Stars — Lip Sync for Your Legacy',false],['assassin','All Stars — Lip Sync Assassin',false],['no_elimination','No Elimination (Coming Soon)',true],['brackets','Tournament Brackets (Coming Soon)',true]].map(([value,label,disabled])=>`<option value="${value}" ${disabled?'disabled':''}>${label}</option>`).join('');
   const castOptions=castOptionsForFormat('regular');
   const typeOptions=t.map(x=>`<option value="${x.name}" ${x.name===randomType?'selected':''}>${x.name}</option>`).join('');
   const personalityOptions=p.map(x=>`<option value="${x.id}" ${x.id===defaultPersonality?'selected':''}>${x.name}</option>`).join('');
