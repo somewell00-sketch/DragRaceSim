@@ -424,58 +424,48 @@ window.GAME_DATA.talentPerformances = [
   { "name": "Hyperpop keytar performance", "type": "music" },
   { "name": "Nostalgic 2000s pop-punk anthem", "type": "music" },
 
-  // VOCALS (Canto e uso da voz)
   { "name": "Sultry jazz club vocal cover", "type": "vocals" },
   { "name": "Broadway showtune belt-out", "type": "vocals" },
   { "name": "Autotuned hyperpop meltdown", "type": "vocals" },
   { "name": "Yodeling in 6-inch stilettos", "type": "vocals" },
 
-  // PERFORMANCE (Dança, Lipsync e presença de palco)
   { "name": "High-energy voguing and death drops", "type": "performance" },
   { "name": "Sensual contemporary slow-dance", "type": "performance" },
   { "name": "Spooky exorcism-themed dance", "type": "performance" },
   { "name": "K-Pop choreo dynamic mashup", "type": "performance" },
   { "name": "Glitch-art illusion hip hop dance", "type": "performance" },
 
-  // STUNT (Acrobacias, perigo e impacto)
   { "name": "Aerial silk spinning acrobatics", "type": "stunt" },
   { "name": "Blindfolded knife-throwing (at a cutout)", "type": "stunt" },
   { "name": "Contortionist box escape act", "type": "stunt" },
   { "name": "Extreme roller-skating lip sync", "type": "stunt" },
 
-  // COMEDY (Humor, piadas e stand-up)
-  { "name": "Roasting the judges roast session", "type": "comedy" },
+=  { "name": "Roasting the judges roast session", "type": "comedy" },
   { "name": "Prop-heavy chaotic stand-up comedy", "type": "comedy" },
   { "name": "Sarcastic flight attendant safety briefing", "type": "comedy" },
 
-  // THEATRE (Poesia, drama e declamações)
   { "name": "Shakespearian drama but make it hoe", "type": "theatre" },
   { "name": "Dramatic reading of hate comments", "type": "theatre" },
   { "name": "Tragic mime performance trapped in a box", "type": "theatre" },
 
-  // VARIETY (Habilidades diversas, circo, artes)
   { "name": "Hypnotic LED hula-hoop dance", "type": "variety" },
   { "name": "Live speed-painting with high heels", "type": "variety" },
   { "name": "Shadow puppet emotional storytelling", "type": "variety" },
   { "name": "Ventriliquist act with a shady doll", "type": "variety" },
 
-  // ACTING (Atuação e esquetes)
   { "name": "Soap opera villain dramatic death scene", "type": "acting" },
   { "name": "One-woman multi-character historical drama", "type": "acting" },
   { "name": "Over-the-top infomercial breakdown", "type": "acting" },
 
-  // CAMP (Brega, exagerado, focado em conceito bobo)
   { "name": "Iconic pop culture meme reenactment", "type": "camp" },
   { "name": "Hot dog eating contest presentation", "type": "camp" },
   { "name": "Extreme exorcism of a fake demon doll", "type": "camp" },
   { "name": "ASMR hot glue gun crafting tutorial", "type": "camp" },
 
-  // RUNWAY (Moda, passarela e roupas)
   { "name": "Quadruple outfit tear-away reveal", "type": "runway" },
   { "name": "High-fashion avant-garde structural walk", "type": "runway" },
   { "name": "Inflatable garment transformation walk", "type": "runway" },
 
-  // WEIRD (O bizarro, incompreensível e maravilhoso)
   { "name": "Staring contest with the audience", "type": "weird" },
   { "name": " interpretive dance about cellular mitosis", "type": "weird" },
   { "name": "Screaming at vegetables for 2 minutes", "type": "weird" },
