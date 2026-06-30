@@ -1,18 +1,15 @@
 // Auto-split from the old js/data.js. Edit this file to expand songs.
 window.GAME_DATA = window.GAME_DATA || {};
 window.GAME_DATA.songs = [
-  // ============================================================
-  // DRAG RACE US - TEMPORADAS 1-5
-  // ============================================================
   { "title": "Supermodel (You Better Work)", "artist": "RuPaul", "energy": "high" },
   { "title": "Cover Girl", "artist": "RuPaul", "energy": "high" },
   { "title": "Shut Up and Drive", "artist": "Rihanna", "energy": "high" },
-  { "title": "This Will Be (An Everlasting Love)", "artist": "Natalie Cole", "energy": "medium" },
+  { "title": "This Will Be (An Everlasting Love)", "artist": "Natalie Cole", "energy": "medium" }, // mantive
   { "title": "No More Tears (Enough Is Enough)", "artist": "Barbra Streisand & Donna Summer", "energy": "high" },
   { "title": "Stronger", "artist": "Britney Spears", "energy": "high" },
-  { "title": "I Have Nothing", "artist": "Whitney Houston", "energy": "medium" },
+  { "title": "I Have Nothing", "artist": "Whitney Houston", "energy": "low" }, // high→low (balada poderosa)
   { "title": "My Lovin' (You're Never Gonna Get It)", "artist": "En Vogue", "energy": "high" },
-  { "title": "Vogue", "artist": "Madonna", "energy": "medium" },
+  { "title": "Vogue", "artist": "Madonna", "energy": "medium" }, // mantive
   { "title": "We Break the Dawn", "artist": "Michelle Williams", "energy": "high" },
   { "title": "Bad Romance", "artist": "Lady Gaga", "energy": "high" },
   { "title": "I'm Every Woman", "artist": "Chaka Khan", "energy": "high" },
@@ -20,61 +17,52 @@ window.GAME_DATA.songs = [
   { "title": "Single Ladies (Put a Ring on It)", "artist": "Beyoncé", "energy": "high" },
   { "title": "Toxic", "artist": "Britney Spears", "energy": "high" },
   { "title": "It's Raining Men", "artist": "The Weather Girls", "energy": "high" },
-  { "title": "Black Velvet", "artist": "Alannah Myles", "energy": "medium" },
+  { "title": "Black Velvet", "artist": "Alannah Myles", "energy": "low" }, // medium→low (balada blues)
   { "title": "Lovin' Is Really My Game", "artist": "Brainstorm", "energy": "medium" },
   { "title": "Meeting in the Ladies Room", "artist": "Klymaxx", "energy": "high" },
   { "title": "I'm So Excited", "artist": "The Pointer Sisters", "energy": "high" },
 
-  // ============================================================
-  // DRAG RACE US - TEMPORADAS 6-10
-  // ============================================================
   { "title": "Stupid Girl", "artist": "Garbage", "energy": "high" },
   { "title": "Sissy That Walk", "artist": "RuPaul", "energy": "high" },
   { "title": "Geronimo", "artist": "RuPaul", "energy": "high" },
   { "title": "Born This Way", "artist": "Lady Gaga", "energy": "high" },
   { "title": "Call Me", "artist": "Blondie", "energy": "high" },
-  { "title": "Last Dance", "artist": "Donna Summer", "energy": "medium" },
+  { "title": "Last Dance", "artist": "Donna Summer", "energy": "medium" }, // mantive
   { "title": "You Make Me Feel (Mighty Real)", "artist": "Sylvester", "energy": "high" },
   { "title": "Like a Prayer", "artist": "Madonna", "energy": "high" },
   { "title": "Vibeology", "artist": "Paula Abdul", "energy": "high" },
   { "title": "Break Free", "artist": "Ariana Grande ft. Zedd", "energy": "high" },
   { "title": "Roar", "artist": "Katy Perry", "energy": "high" },
-  { "title": "Rumour Has It", "artist": "Adele", "energy": "high" },
+  { "title": "Rumour Has It", "artist": "Adele", "energy": "medium" }, // high→medium (groove mid-tempo)
   { "title": "Twist of Fate", "artist": "Olivia Newton-John", "energy": "medium" },
   { "title": "Gonna Make You Sweat (Everybody Dance Now)", "artist": "C+C Music Factory", "energy": "high" },
   { "title": "I Wanna Dance with Somebody", "artist": "Whitney Houston", "energy": "high" },
-  { "title": "And I Am Telling You I'm Not Going", "artist": "Jennifer Holliday", "energy": "medium" },
+  { "title": "And I Am Telling You I'm Not Going", "artist": "Jennifer Holliday", "energy": "low" }, // medium→low (balada intensa)
   { "title": "I Will Survive", "artist": "Gloria Gaynor", "energy": "medium" },
-  { "title": "Don't Cry for Me Argentina", "artist": "Madonna", "energy": "medium" },
+  { "title": "Don't Cry for Me Argentina", "artist": "Madonna", "energy": "low" }, // medium→low (balada)
   { "title": "Causing a Commotion", "artist": "Madonna", "energy": "high" },
 
-  // ============================================================
-  // DRAG RACE US - TEMPORADAS 11-16
-  // ============================================================
   { "title": "Physical", "artist": "Dua Lipa", "energy": "high" },
   { "title": "Break Up (Bye Bye)", "artist": "The Cast of RuPaul's Drag Race", "energy": "high" },
   { "title": "Starships", "artist": "Nicki Minaj", "energy": "high" },
   { "title": "The Boy Is Mine", "artist": "Brandy & Monica", "energy": "medium" },
   { "title": "Buttons", "artist": "The Pussycat Dolls", "energy": "high" },
-  { "title": "It's All Coming Back to Me Now", "artist": "Céline Dion", "energy": "medium" },
+  { "title": "It's All Coming Back to Me Now", "artist": "Céline Dion", "energy": "medium" }, // mantive
   { "title": "I'm Your Baby Tonight", "artist": "Whitney Houston", "energy": "high" },
   { "title": "I Kissed a Girl", "artist": "Katy Perry", "energy": "high" },
   { "title": "Swish Swish", "artist": "Katy Perry ft. Nicki Minaj", "energy": "high" },
-  { "title": "Un-Break My Heart", "artist": "Toni Braxton", "energy": "medium" },
-  { "title": "Dreamgirls", "artist": "The Dreamgirls Cast", "energy": "medium" },
+  { "title": "Un-Break My Heart", "artist": "Toni Braxton", "energy": "low" }, // medium→low (balada clássica)
+  { "title": "Dreamgirls", "artist": "The Dreamgirls Cast", "energy": "medium" }, // mantive
   { "title": "I'm a Slave 4 U", "artist": "Britney Spears", "energy": "high" },
   { "title": "Work Bitch", "artist": "Britney Spears", "energy": "high" },
   { "title": "Into You", "artist": "Ariana Grande", "energy": "high" },
   { "title": "Greedy", "artist": "Ariana Grande", "energy": "high" },
   { "title": "7 Rings", "artist": "Ariana Grande", "energy": "high" },
 
-  // ============================================================
-  // DRAG RACE ALL STARS
-  // ============================================================
   { "title": "Dancing on My Own", "artist": "Robyn", "energy": "medium" },
   { "title": "E.T.", "artist": "Katy Perry", "energy": "high" },
   { "title": "Green Light", "artist": "Lorde", "energy": "high" },
-  { "title": "Wrecking Ball", "artist": "Miley Cyrus", "energy": "high" },
+  { "title": "Wrecking Ball", "artist": "Miley Cyrus", "energy": "medium" }, // high→medium (balada dramática)
   { "title": "If U Seek Amy", "artist": "Britney Spears", "energy": "high" },
   { "title": "Womanizer", "artist": "Britney Spears", "energy": "high" },
   { "title": "Waiting for Tonight", "artist": "Jennifer Lopez", "energy": "high" },
@@ -87,12 +75,9 @@ window.GAME_DATA.songs = [
   { "title": "Anaconda", "artist": "Nicki Minaj", "energy": "high" },
   { "title": "Super Bass", "artist": "Nicki Minaj", "energy": "high" },
 
-  // ============================================================
-  // RUPAUL'S DRAG RACE UK
-  // ============================================================
   { "title": "I'm Outta Love", "artist": "Anastacia", "energy": "high" },
   { "title": "Toy", "artist": "Netta", "energy": "high" },
-  { "title": "Memory", "artist": "Cats Original Cast", "energy": "medium" },
+  { "title": "Memory", "artist": "Cats Original Cast", "energy": "low" }, // medium→low (balada teatral)
   { "title": "Murder on the Dancefloor", "artist": "Sophie Ellis-Bextor", "energy": "high" },
   { "title": "Don't Call Me Baby", "artist": "Madison Avenue", "energy": "high" },
   { "title": "Sisters Are Doin' It for Themselves", "artist": "Eurythmics", "energy": "high" },
@@ -101,20 +86,14 @@ window.GAME_DATA.songs = [
   { "title": "Relax", "artist": "Frankie Goes to Hollywood", "energy": "high" },
   { "title": "You Spin Me Round", "artist": "Dead or Alive", "energy": "high" },
 
-  // ============================================================
-  // CANADA'S DRAG RACE
-  // ============================================================
   { "title": "Honey", "artist": "Céline Dion", "energy": "high" },
-  { "title": "When a Man Loves a Woman", "artist": "Jann Arden", "energy": "medium" },
+  { "title": "When a Man Loves a Woman", "artist": "Jann Arden", "energy": "low" }, // medium→low (balada)
   { "title": "C'est la vie", "artist": "Khaled", "energy": "medium" },
   { "title": "I Drove All Night", "artist": "Céline Dion", "energy": "high" },
   { "title": "Run Away with Me", "artist": "Carly Rae Jepsen", "energy": "high" },
   { "title": "Call Me Maybe", "artist": "Carly Rae Jepsen", "energy": "high" },
   { "title": "A Little Bit of Love", "artist": "Anjulie", "energy": "medium" },
 
-  // ============================================================
-  // AUSTRALIA/NEW ZEALAND'S DRAG RACE
-  // ============================================================
   { "title": "Spinning Around", "artist": "Kylie Minogue", "energy": "high" },
   { "title": "Can't Get You Out of My Head", "artist": "Kylie Minogue", "energy": "high" },
   { "title": "Love at First Sight", "artist": "Kylie Minogue", "energy": "high" },
@@ -123,20 +102,15 @@ window.GAME_DATA.songs = [
   { "title": "Torn", "artist": "Natalie Imbruglia", "energy": "medium" },
   { "title": "Kiss", "artist": "Prince", "energy": "high" },
 
-  // ============================================================
-  // ESPANHA'S DRAG RACE
-  // ============================================================
   { "title": "Despacio", "artist": "La Casa Azul", "energy": "medium" },
   { "title": "A Quien Le Importa", "artist": "Thalía", "energy": "high" },
   { "title": "Mala Mujer", "artist": "C. Tangana", "energy": "high" },
-  { "title": "Ese Hombre", "artist": "Rocío Jurado", "energy": "medium" },
-
+  { "title": "Ese Hombre", "artist": "Rocío Jurado", "energy": "low" }, // medium→low (balada flamenca)
 
   { "title": "If I Could Turn Back Time", "artist": "Cher", "energy": "medium" },
   { "title": "Believe", "artist": "Cher", "energy": "high" },
   { "title": "Strong Enough", "artist": "Cher", "energy": "high" },
   { "title": "I'm Not Going Down", "artist": "Tina Turner", "energy": "high" },
-
 
   { "title": "Man! I Feel Like a Woman!", "artist": "Shania Twain", "energy": "high" },
   { "title": "That's My Girl", "artist": "Fifth Harmony", "energy": "high" },
@@ -153,41 +127,38 @@ window.GAME_DATA.songs = [
   { "title": "The Shoop Shoop Song (It's in His Kiss)", "artist": "Cher", "energy": "medium" },
   { "title": "If I Could Turn Back Time", "artist": "Cher", "energy": "medium" },
   { "title": "Take on Me", "artist": "A-ha", "energy": "high" },
-  { "title": "Total Eclipse of the Heart", "artist": "Bonnie Tyler", "energy": "medium" },
+  { "title": "Total Eclipse of the Heart", "artist": "Bonnie Tyler", "energy": "medium" }, // mantive
   { "title": "Holding Out for a Hero", "artist": "Bonnie Tyler", "energy": "high" },
   { "title": "Girls Just Wanna Have Fun", "artist": "Cyndi Lauper", "energy": "high" },
-  { "title": "Time After Time", "artist": "Cyndi Lauper", "energy": "medium" },
+  { "title": "Time After Time", "artist": "Cyndi Lauper", "energy": "low" }, // medium→low (balada)
   { "title": "I'm Every Woman", "artist": "Chaka Khan", "energy": "high" },
-  { "title": "Through the Fire", "artist": "Chaka Khan", "energy": "medium" },
-  { "title": "One Night Only", "artist": "Jennifer Holliday", "energy": "medium" },
-  { "title": "And I Am Telling You", "artist": "Jennifer Holliday", "energy": "medium" },
+  { "title": "Through the Fire", "artist": "Chaka Khan", "energy": "low" }, // medium→low (balada)
+  { "title": "One Night Only", "artist": "Jennifer Holliday", "energy": "low" }, // medium→low (balada)
+  { "title": "And I Am Telling You", "artist": "Jennifer Holliday", "energy": "low" }, // medium→low (balada)
   { "title": "Dreamgirls Medley", "artist": "The Dreamgirls Cast", "energy": "medium" },
-
 
   { "title": "Come Through", "artist": "Priyanka ft. Lemon", "energy": "high" },
   { "title": "Better Than the Original", "artist": "Mocedades", "energy": "medium" },
   { "title": "Stupid Love", "artist": "Lady Gaga", "energy": "high" },
   { "title": "Rain on Me", "artist": "Lady Gaga & Ariana Grande", "energy": "high" },
 
-
   { "title": "Santa Claus Is Coming to Town", "artist": "Various", "energy": "medium" },
   { "title": "Last Christmas", "artist": "Wham!", "energy": "medium" },
   { "title": "All I Want for Christmas Is You", "artist": "Mariah Carey", "energy": "medium" },
-  { "title": "I'll Be Home for Christmas", "artist": "Various", "energy": "medium" },
-
+  { "title": "I'll Be Home for Christmas", "artist": "Various", "energy": "low" }, // medium→low (balada natalina)
 
   { "title": "Indestrutível", "artist": "Pabllo Vittar", "energy": "high" },
   { "title": "Proibidona", "artist": "Anitta", "energy": "high" },
   { "title": "Envolver", "artist": "Anitta", "energy": "high" },
   { "title": "Girl from Rio", "artist": "Anitta", "energy": "medium" },
-  { "title": "Flores", "artist": "VITÃO", "energy": "medium" },
-  { "title": "Triste com T", "artist": "Gloria Groove", "energy": "medium" },
+  { "title": "Flores", "artist": "VITÃO", "energy": "low" }, // medium→low (balada)
+  { "title": "Triste com T", "artist": "Gloria Groove", "energy": "low" }, // medium→low (balada)
   { "title": "A Dona Aranha", "artist": "Gloria Groove", "energy": "high" },
   { "title": "Bumbum de Ouro", "artist": "MC Bin Laden", "energy": "high" },
   { "title": "Tá OK", "artist": "Dennis DJ, Kevin O Chris", "energy": "high" },
   { "title": "Lança Perfume", "artist": "MC Rita", "energy": "high" },
   { "title": "Fame", "artist": "Irene Cara", "energy": "high" },
-  { "title": "Flashdance... What a Feeling", "artist": "Irene Cara", "energy": "high" },
+  { "title": "Flashdance... What a Feeling", "artist": "Irene Cara", "energy": "medium" }, // high→medium
   { "title": "Maniac", "artist": "Michael Sembello", "energy": "high" },
   { "title": "Footloose", "artist": "Kenny Loggins", "energy": "high" },
   { "title": "Let's Hear It for the Boy", "artist": "Deniece Williams", "energy": "high" },
@@ -213,28 +184,26 @@ window.GAME_DATA.songs = [
   { "title": "Edge of Glory", "artist": "Lady Gaga", "energy": "high" },
   { "title": "Judas", "artist": "Lady Gaga", "energy": "high" },
 
-
-  { "title": "The Greatest Love of All", "artist": "Whitney Houston", "energy": "medium" },
-  { "title": "I Will Always Love You", "artist": "Whitney Houston", "energy": "medium" },
-  { "title": "Run to You", "artist": "Whitney Houston", "energy": "medium" },
-  { "title": "All the Man That I Need", "artist": "Whitney Houston", "energy": "medium" },
-  { "title": "Saving All My Love for You", "artist": "Whitney Houston", "energy": "medium" },
-  { "title": "My Heart Will Go On", "artist": "Céline Dion", "energy": "medium" },
-  { "title": "Because You Loved Me", "artist": "Céline Dion", "energy": "medium" },
-  { "title": "The Power of Love", "artist": "Céline Dion", "energy": "medium" },
-  { "title": "Hero", "artist": "Mariah Carey", "energy": "medium" },
-  { "title": "Without You", "artist": "Mariah Carey", "energy": "medium" },
-  { "title": "Vision of Love", "artist": "Mariah Carey", "energy": "medium" },
+  { "title": "The Greatest Love of All", "artist": "Whitney Houston", "energy": "low" }, // medium→low (balada)
+  { "title": "I Will Always Love You", "artist": "Whitney Houston", "energy": "low" }, // medium→low (balada)
+  { "title": "Run to You", "artist": "Whitney Houston", "energy": "low" }, // medium→low (balada)
+  { "title": "All the Man That I Need", "artist": "Whitney Houston", "energy": "low" }, // medium→low (balada)
+  { "title": "Saving All My Love for You", "artist": "Whitney Houston", "energy": "low" }, // medium→low (balada)
+  { "title": "My Heart Will Go On", "artist": "Céline Dion", "energy": "low" }, // medium→low (balada)
+  { "title": "Because You Loved Me", "artist": "Céline Dion", "energy": "low" }, // medium→low (balada)
+  { "title": "The Power of Love", "artist": "Céline Dion", "energy": "low" }, // medium→low (balada)
+  { "title": "Hero", "artist": "Mariah Carey", "energy": "low" }, // medium→low (balada)
+  { "title": "Without You", "artist": "Mariah Carey", "energy": "low" }, // medium→low (balada)
+  { "title": "Vision of Love", "artist": "Mariah Carey", "energy": "medium" }, // mantive
   { "title": "Emotions", "artist": "Mariah Carey", "energy": "high" },
-  { "title": "Whenever You Call", "artist": "Mariah Carey", "energy": "medium" },
-  { "title": "Listen", "artist": "Beyoncé", "energy": "medium" },
-  { "title": "Halo", "artist": "Beyoncé", "energy": "medium" },
+  { "title": "Whenever You Call", "artist": "Mariah Carey", "energy": "low" }, // medium→low (balada)
+  { "title": "Listen", "artist": "Beyoncé", "energy": "low" }, // medium→low (balada)
+  { "title": "Halo", "artist": "Beyoncé", "energy": "low" }, // medium→low (balada)
   { "title": "If I Were a Boy", "artist": "Beyoncé", "energy": "medium" },
-  { "title": "Dangerously in Love", "artist": "Beyoncé", "energy": "medium" },
+  { "title": "Dangerously in Love", "artist": "Beyoncé", "energy": "low" }, // medium→low (balada)
   { "title": "If I Had You", "artist": "Adam Lambert", "energy": "high" },
   { "title": "Whataya Want from Me", "artist": "Adam Lambert", "energy": "medium" },
   { "title": "Better Than I Know Myself", "artist": "Adam Lambert", "energy": "medium" },
-
 
   { "title": "You Make Me Feel (Mighty Real)", "artist": "Sylvester", "energy": "high" },
   { "title": "Dance (Disco Heat)", "artist": "Sylvester", "energy": "high" },
@@ -253,7 +222,6 @@ window.GAME_DATA.songs = [
   { "title": "He's the Greatest Dancer", "artist": "Sister Sledge", "energy": "high" },
   { "title": "Lost in Music", "artist": "Sister Sledge", "energy": "high" },
 
-
   { "title": "Havana", "artist": "Camila Cabello", "energy": "medium" },
   { "title": "Senorita", "artist": "Shawn Mendes & Camila Cabello", "energy": "medium" },
   { "title": "I Like It", "artist": "Cardi B, Bad Bunny & J Balvin", "energy": "high" },
@@ -271,27 +239,25 @@ window.GAME_DATA.songs = [
   { "title": "Woman", "artist": "Doja Cat", "energy": "high" },
   { "title": "Get Into It (Yuh)", "artist": "Doja Cat", "energy": "high" },
   { "title": "Good 4 U", "artist": "Olivia Rodrigo", "energy": "high" },
-  { "title": "Drivers License", "artist": "Olivia Rodrigo", "energy": "medium" },
+  { "title": "Drivers License", "artist": "Olivia Rodrigo", "energy": "low" }, // medium→low (balada)
   { "title": "Deja Vu", "artist": "Olivia Rodrigo", "energy": "high" },
   { "title": "Brutal", "artist": "Olivia Rodrigo", "energy": "high" },
   { "title": "Montero (Call Me By Your Name)", "artist": "Lil Nas X", "energy": "medium" },
   { "title": "Industry Baby", "artist": "Lil Nas X", "energy": "high" },
   { "title": "That's What I Want", "artist": "Lil Nas X", "energy": "high" },
 
-
   { "title": "Respect", "artist": "Aretha Franklin", "energy": "high" },
   { "title": "Think", "artist": "Aretha Franklin", "energy": "high" },
   { "title": "Chain of Fools", "artist": "Aretha Franklin", "energy": "high" },
-  { "title": "Natural Woman", "artist": "Aretha Franklin", "energy": "medium" },
-  { "title": "Killing Me Softly", "artist": "Roberta Flack", "energy": "medium" },
-  { "title": "The First Time Ever I Saw Your Face", "artist": "Roberta Flack", "energy": "medium" },
+  { "title": "Natural Woman", "artist": "Aretha Franklin", "energy": "low" }, // medium→low (balada)
+  { "title": "Killing Me Softly", "artist": "Roberta Flack", "energy": "low" }, // medium→low (balada)
+  { "title": "The First Time Ever I Saw Your Face", "artist": "Roberta Flack", "energy": "low" }, // medium→low (balada)
   { "title": "I'll Be There", "artist": "Jackson 5", "energy": "medium" },
   { "title": "ABC", "artist": "Jackson 5", "energy": "high" },
   { "title": "I Want You Back", "artist": "Jackson 5", "energy": "high" },
   { "title": "Ain't No Mountain High Enough", "artist": "Marvin Gaye & Tammi Terrell", "energy": "high" },
   { "title": "Ain't Nothing Like the Real Thing", "artist": "Marvin Gaye & Tammi Terrell", "energy": "medium" },
   { "title": "Let's Get It On", "artist": "Marvin Gaye", "energy": "medium" },
-
 
   { "title": "I Love Rock 'n' Roll", "artist": "Joan Jett", "energy": "high" },
   { "title": "Bad Reputation", "artist": "Joan Jett", "energy": "high" },
@@ -307,7 +273,6 @@ window.GAME_DATA.songs = [
   { "title": "Let's Dance", "artist": "David Bowie", "energy": "high" },
   { "title": "Fame", "artist": "David Bowie", "energy": "high" },
 
-
   { "title": "Naughty Girl", "artist": "Beyoncé", "energy": "medium" },
   { "title": "Baby Boy", "artist": "Beyoncé ft. Sean Paul", "energy": "high" },
   { "title": "Work It", "artist": "Missy Elliott", "energy": "high" },
@@ -321,12 +286,11 @@ window.GAME_DATA.songs = [
   { "title": "Nasty", "artist": "Janet Jackson", "energy": "high" },
   { "title": "Control", "artist": "Janet Jackson", "energy": "high" },
 
-
-  { "title": "I Love You Always Forever", "artist": "Donna Lewis", "energy": "medium" },
+  { "title": "I Love You Always Forever", "artist": "Donna Lewis", "energy": "low" }, // medium→low (balada)
   { "title": "Kiss Me", "artist": "Sixpence None the Richer", "energy": "medium" },
   { "title": "Torn", "artist": "Natalie Imbruglia", "energy": "medium" },
-  { "title": "Truly Madly Deeply", "artist": "Savage Garden", "energy": "medium" },
-  { "title": "I Knew I Loved You", "artist": "Savage Garden", "energy": "medium" },
+  { "title": "Truly Madly Deeply", "artist": "Savage Garden", "energy": "low" }, // medium→low (balada)
+  { "title": "I Knew I Loved You", "artist": "Savage Garden", "energy": "low" }, // medium→low (balada)
   { "title": "The Sign", "artist": "Ace of Base", "energy": "high" },
   { "title": "All That She Wants", "artist": "Ace of Base", "energy": "high" },
   { "title": "Beautiful Life", "artist": "Ace of Base", "energy": "high" },
@@ -345,7 +309,7 @@ window.GAME_DATA.songs = [
   { "title": "She's a Bitch", "artist": "Missy Elliott", "energy": "high" },
   { "title": "Gossip Folks", "artist": "Missy Elliott", "energy": "high" },
   { "title": "The Rain", "artist": "Missy Elliott", "energy": "medium" },
- { "title": "Baby Shark", "artist": "Pinkfong", "energy": "high" },
+  { "title": "Baby Shark", "artist": "Pinkfong", "energy": "high" },
   { "title": "The Chicken Dance", "artist": "Traditional", "energy": "high" },
   { "title": "The Hokey Pokey", "artist": "Traditional", "energy": "high" },
   { "title": "The Macarena", "artist": "Los Del Rio", "energy": "high" },
@@ -363,12 +327,12 @@ window.GAME_DATA.songs = [
   { "title": "Dragostea Din Tei", "artist": "O-Zone", "energy": "high" },
   { "title": "Blue (Da Ba Dee)", "artist": "Eiffel 65", "energy": "high" },
   { "title": "The Ketchup Song", "artist": "Las Ketchup", "energy": "high" },
-{ "title": "The Ride of the Valkyries", "artist": "Richard Wagner", "energy": "high" },
+  { "title": "The Ride of the Valkyries", "artist": "Richard Wagner", "energy": "high" },
   { "title": "Dance of the Sugar Plum Fairy", "artist": "Tchaikovsky", "energy": "medium" },
- { "title": "Beethoven's 5th Symphony", "artist": "Ludwig van Beethoven", "energy": "high" },
+  { "title": "Beethoven's 5th Symphony", "artist": "Ludwig van Beethoven", "energy": "high" },
   { "title": "Moonlight Sonata", "artist": "Ludwig van Beethoven", "energy": "low" },
   { "title": "The Nutcracker Suite", "artist": "Tchaikovsky", "energy": "medium" },
-{ "title": "Never Gonna Give You Up", "artist": "Rick Astley", "energy": "medium" },
+  { "title": "Never Gonna Give You Up", "artist": "Rick Astley", "energy": "medium" },
   { "title": "Caramelldansen", "artist": "Caramella Girls", "energy": "high" },
   { "title": "Numa Numa (Dragostea Din Tei)", "artist": "O-Zone", "energy": "high" },
   { "title": "Tunak Tunak Tun", "artist": "Daler Mehndi", "energy": "high" },
@@ -381,7 +345,7 @@ window.GAME_DATA.songs = [
   { "title": "Moskau", "artist": "Dschinghis Khan", "energy": "high" },
   { "title": "Rasputin", "artist": "Boney M.", "energy": "high" },
   { "title": "Daddy Cool", "artist": "Boney M.", "energy": "high" },
-{ "title": "Twinkle Twinkle Little Star", "artist": "Traditional", "energy": "low" },
+  { "title": "Twinkle Twinkle Little Star", "artist": "Traditional", "energy": "low" },
   { "title": "Baa Baa Black Sheep", "artist": "Traditional", "energy": "low" },
   { "title": "Itsy Bitsy Spider", "artist": "Traditional", "energy": "low" },
   { "title": "Row Row Row Your Boat", "artist": "Traditional", "energy": "low" },
