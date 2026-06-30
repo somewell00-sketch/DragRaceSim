@@ -9,10 +9,11 @@ function lipSyncEnergyLabel(song){
 function assassinIntroCardsHtml(ep, duelQueens){
   const assassin=ep?.lipSyncAssassin || {name:'Lip Sync Assassin'};
   const song=ep?.song || {};
+  const topQueen=gameState.queens.find(q=>q.id===ep?.topQueenId);
   const duel=(duelQueens||[]).map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>');
 
   return `<div class="card assassin-intro-card">
-    <p><strong>One All Star stands before me.</strong></p>
+    <p><strong>One All Star stands before me.</strong><br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></p>
     <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>
     <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
     <p>But first...</p>
@@ -25,13 +26,13 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <p>A legendary lip sync assassin enters the stage.</p>
   </div>
   <div class="hero">
-    ${bigMomentHeader('The music starts...', 'LIP SYNC FOR YOUR LEGACY', 'win')}
+    ${bigMomentHeader('The time has come, for you to', 'LIP SYNC FOR YOUR LEGACY', 'win')}
+    <p class="eyebrow">The music starts...</p>
     <h2>${escapeHtml(song.title||'The song')}</h2>
-    <p>${escapeHtml(song.artist||'The artist')}</p>
+    <p>by ${escapeHtml(song.artist||'The artist')}</p>
     <div class="lipsync-portraits">${duel}</div>
   </div>`;
 }
-
 
 function isPlayerActiveInCurrentEpisode(){
   const ep=gameState.currentEpisode;
@@ -64,14 +65,22 @@ function renderLipSync(){
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
   const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-const assassinCards=assassinIntroCardsHtml(ep,bottom);  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">${isAssassin?assassinCards:normalLipSyncCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
+const assassinCards=assassinIntroCardsHtml(ep,bottom);
+  const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
+  const pendingAssassinGroupVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId!==ep.topQueenId && !ep.playerAssassinGroupVoteChosen;
+  const initialCards=(isAssassin && (pendingAssassinTopVote||pendingAssassinGroupVote)) ? '' : (isAssassin?assassinCards:normalLipSyncCards);
+  window.__preserveScrollY=window.scrollY;
+setHTML(`<main class="layout"><section class="screen">${initialCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLipSync));
   if(isLegacy && playerInBottom && !ep.playerLegacyLipstickChosen){
     renderLegacyLipstickChoice(()=>renderLipSyncStrategyChoice());
-  } else if(isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen){
-    renderAssassinLipstickChoice(()=>renderLipSyncStrategyChoice());
-  } else if(isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId!==ep.topQueenId && !ep.playerAssassinGroupVoteChosen){
+  } else if(pendingAssassinTopVote){
+    renderAssassinLipstickChoice(()=>{
+      ep.assassinIntroShown=true;
+      saveGame();
+      renderLipSync();
+    });
+  } else if(pendingAssassinGroupVote){
     renderAssassinGroupVoteChoice(()=>{
       const result=resolveLipSync();
       applyEpisodeStats();
@@ -1247,8 +1256,9 @@ function renderLipSyncResult(result){
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
-  const introBlock=isAssassin ? assassinIntroCardsHtml(ep,resultQueens) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', isAssassin?'LIP SYNC ASSASSIN':(isTournament?'LIP SYNC FOR YOUR LEGACY':(isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')))), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
+  const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
+  const resultHero=isAssassin ? '' : `<div class="hero">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>`;
+  document.querySelector('.screen').innerHTML=`${resultHero}
   ${introBlock}
   <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ✦ ✦ 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
   ${lipSyncDecisionCards(result)}
