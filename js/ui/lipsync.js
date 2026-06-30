@@ -13,7 +13,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
   const duel=(duelQueens||[]).map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>');
 
   return `<div class="card assassin-intro-card">
-    <p class="legacy-lipsync-win"><strong>One All Star stands before me.</strong><br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></p>
+    <h3>One All Star stands before me.<br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></h3>
     <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>
     <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
     <p>But first...</p>
@@ -52,8 +52,8 @@ function renderLipSync(){
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
   const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
   const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament)
-    ? '<p class="legacy-lipsync-win"><strong>Two top queens stand before me.</strong></p>'
-    : '<p class="legacy-lipsync-win"><strong>Two queens stand before me.</strong></p>');
+    ? '<h3>Two top queens stand before me.</h3>'
+    : '<h3>Two queens stand before me.</h3>');
   const prompt=isAssassin
     ? "This is your chance to beat the assassin and make your lipstick count. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isTournament
