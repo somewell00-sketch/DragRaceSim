@@ -617,41 +617,41 @@
       ]
     },
     "fan favorite": {
-      "positive": [
-        "There is something about you people want to root for.",
-        "The audience connects with you, and I can see why.",
-        "You have a warmth that reaches past the runway.",
-        "Your charisma is undeniable, and the fans are eating it up.",
-        "People see themselves in you—and that is powerful.",
-        "The love for you extends beyond this room.",
-        "You have built a fanbase that will follow you anywhere.",
-        "Your authenticity resonates with so many people.",
-        "The fans are rallying behind you. That is no small thing.",
-        "You have the kind of star quality that makes people invest in you.",
-        "The audience is on your side.",
-        "You are a people's champion.",
-        "Your connection with the fans is special.",
-        "You are loved for being exactly who you are.",
-        "The fans see you and they love you."
-      ],
-      "negative": [
-        "Fan love is beautiful, but it cannot carry you alone.",
-        "The audience adores you—now show them why you deserve to stay.",
-        "You have the support, but you need to deliver the performances.",
-        "Being a fan favorite comes with responsibility. Step up.",
-        "We all love you, but we need to see the fire.",
-        "The fans are waiting for you to break through.",
-        "Dont rely on popularity to save you.",
-        "You have the heart of the fans—now give them a winner.",
-        "The love is there. Now make it mean something.",
-        "Fan favorites can become champions. Show us you are ready.",
-        "You are popular, but popularity doesn't win.",
-        "You need to earn the love with your performance.",
-        "The fans are cheering, but are you listening?",
-        "You are being carried by the audience. Start walking.",
-        "Love is not enough to win this competition."
-      ]
-    },
+  "positive": [
+    "There is a natural charm about you that makes people want to root for you.",
+    "Your charisma fills this entire room, and it is impossible to ignore.",
+    "You have a warmth that instantly connects with anyone watching.",
+    "Your authenticity is your greatest weapon on this stage.",
+    "You have that rare, magnetic star quality that makes people instantly invest in you.",
+    "It is impossible not to smile when you walk onto this runway.",
+    "You have the heart of a true people\'s champion, my dear.",
+    "Your energy is incredibly infectious. We are all captivated by it.",
+    "You are loved in this room for being exactly, unapologetically who you are.",
+    "There is a beautiful, grounded realness to your drag that resonates deeply.",
+    "You don\'t just perform; you make us feel like we are part of your world.",
+    "Your likability is through the roof. You simply radiate star power.",
+    "You have that special spark that makes an audience fall in love in seconds.",
+    "The camera absolutely loves you, and so do we.",
+    "Your spirit on that stage is a gift. Never lose that warmth."
+  ],
+  "negative": [
+    "Carisma and a beautiful smile can only carry you so far in this competition.",
+    "We all adore your personality, but now you need to give us a winning performance.",
+    "You have all the charm in the world, but you need to start delivering the details.",
+    "Being the lovable queen comes with a responsibility to step up and fight.",
+    "We see your beautiful heart, but we need to see some fire in your eyes.",
+    "Do not rely on your natural charm to save you from a bad week.",
+    "Having a magnetic personality won\'t protect a weak garment on this runway.",
+    "You have the likability of a winner, but you aren\'t performing like one yet.",
+    "Natural charm is a great foundation, but you need to build a champion on top of it.",
+    "We want to root for you so badly, but you have to give us the technique.",
+    "Charm alone does not win a maxi challenge. You need to earn it.",
+    "You are incredibly endearing, but endearment doesn\'t make a flawless silhouette.",
+    "We love who you are, but we are not seeing enough of what you can actually do.",
+    "You cannot coast through this race just by being sweet and relatable.",
+    "A gorgeous personality is wonderful, but it is not enough to survive a lip sync."
+  ]
+},
     "villain edit": {
       "positive": [
         "Whether people agree with you or not, they cannot stop watching you.",
@@ -683,7 +683,7 @@
         "Being disliked is not the same as being dominant.",
         "Your behavior is costing you allies.",
         "You are creating a reputation that will follow you.",
-        "The audience is turning on you.",
+        "The audience might be turning on you.",
         "You need to find the line between villain and victim.",
         "Your edit is becoming toxic."
       ]
