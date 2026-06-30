@@ -13,7 +13,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
   const duel=(duelQueens||[]).map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>');
 
   return `<div class="card assassin-intro-card">
-    <p><strong>One All Star stands before me.</strong><br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></p>
+    <p class="legacy-lipsync-win"><strong>One All Star stands before me.</strong><br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></p>
     <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>
     <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
     <p>But first...</p>
