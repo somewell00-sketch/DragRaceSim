@@ -1,4 +1,4 @@
-const attrDefs=[['cunt','✨ CUNT'],['lipSync','🎤 Lip Sync'],['makeup','💄 Makeup'],['sewing','🪡 Sewing'],['runway','👠 Runway'],['acting','🎭 Acting']];
+const attrDefs=[['cunt','✨ C.U.N.T'],['lipSync','🎤 Lip Sync'],['makeup','💄 Beauty'],['sewing','🪡 Sewing'],['runway','👠 Runway'],['acting','🎭 Performance']];
 function getTypePreset(typeName){
   const type=gameState.data.queenTypes.find(t=>t.name===typeName);
   return type?.attributes || gameState.data.queenTypes.find(t=>t.name==='Jack of All Trades')?.attributes || {cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7};
