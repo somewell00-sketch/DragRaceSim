@@ -440,7 +440,7 @@ window.GAME_DATA.talentPerformances = [
   { "name": "Contortionist box escape act", "type": "stunt" },
   { "name": "Extreme roller-skating lip sync", "type": "stunt" },
 
-=  { "name": "Roasting the judges roast session", "type": "comedy" },
+  { "name": "Roasting the judges roast session", "type": "comedy" },
   { "name": "Prop-heavy chaotic stand-up comedy", "type": "comedy" },
   { "name": "Sarcastic flight attendant safety briefing", "type": "comedy" },
 
