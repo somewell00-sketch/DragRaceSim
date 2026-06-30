@@ -30,19 +30,27 @@ function lipSyncStrategyText(strategy){return LIP_SYNC_STRATEGIES[strategy]?.tex
 function lipSyncStrategyScore(strategy, song, q){
   // v20: return a 0–10 score for this specific performance choice.
   // This is the "lip sync performance of the week" component, separate from base ability.
-  const high=song?.energy==='high';
+  // Song tone now lightly rewards or punishes strategy fit without changing the lip sync system.
+  const energy=(song?.energy||'medium').toLowerCase();
+  const toneModifiers={
+    high:{dance:0.8,stunts:0.8,overshadow:0.4,emotion:-0.6},
+    medium:{},
+    low:{emotion:0.8,sell_lyrics:0.8,dance:-0.6,stunts:-1.0}
+  };
+  const toneMod=toneModifiers[energy]?.[strategy]||0;
+  const high=energy==='high';
   const reveals=q.inventory?.reveals||0;
   const a=q.attributes||{};
   const clamp10=v=>clamp(v,0,10);
   switch(strategy){
     case 'emotion':
-      return clamp10((high?4.2:6.2) + (a.acting||0)*0.28 + (a.cunt||0)*0.18 + rand(-1.0,1.4));
+      return clamp10(6.2 + toneMod + (a.acting||0)*0.28 + (a.cunt||0)*0.18 + rand(-1.0,1.4));
     case 'sell_lyrics':
-      return clamp10(5.1 + (a.cunt||0)*0.26 + (a.acting||0)*0.22 + rand(-1.0,1.2));
+      return clamp10(5.1 + toneMod + (a.cunt||0)*0.26 + (a.acting||0)*0.22 + rand(-1.0,1.2));
     case 'dance':
-      return clamp10((high?5.8:4.2) + (a.lipSync||0)*0.32 + (a.cunt||0)*0.10 + rand(-1.2,1.6));
+      return clamp10(5.0 + toneMod + (a.lipSync||0)*0.32 + (a.cunt||0)*0.10 + rand(-1.2,1.6));
     case 'stunts':
-      return clamp10((high?5.2:3.6) + (a.lipSync||0)*0.30 + rand(-2.8,3.4));
+      return clamp10(4.4 + toneMod + (a.lipSync||0)*0.30 + rand(-2.8,3.4));
     case 'save_reveal':
       if(reveals<=0) return clamp10(3.2 + rand(-1.0,0.8));
       q.inventory.reveals=Math.max(0,reveals-1);
@@ -58,7 +66,7 @@ function lipSyncStrategyScore(strategy, song, q){
     case 'play_safe':
       return clamp10(4.8 + (a.lipSync||0)*0.16 + rand(-0.7,0.7));
     case 'overshadow':
-      return clamp10((high?5.0:4.5) + (a.cunt||0)*0.22 + (a.lipSync||0)*0.18 + rand(-2.6,2.8));
+      return clamp10(4.5 + toneMod + (a.cunt||0)*0.22 + (a.lipSync||0)*0.18 + rand(-2.6,2.8));
     default:
       return clamp10(4.8 + rand(-1,1));
   }
