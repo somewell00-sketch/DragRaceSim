@@ -121,7 +121,7 @@ function getWinThrottlePenalty(q){
   return getJudgesExpectationPenalty(q);
 }
 function isLegacyCompetitiveEpisode(ep){
-  return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
+  return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza','tournament_bracket'].includes(ep?.special);
 }
 function legacyAllStarsPressure(q, ep){
   // Legacy gives out two WINs per episode, so repeated frontrunner weeks need
@@ -512,6 +512,29 @@ function applySnatchGameOfLoveAssassinPlacements(scored, ep){
   ep.lipSyncAssassin=typeof createLipSyncAssassin==='function'?createLipSyncAssassin():{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,attributes:{lipSync:rand(8,9),cunt:rand(5,9)},statistics:{},publicScores:{production:20},momentum:0,inventory:{reveals:1}};
 }
 
+
+function applyTournamentPlacements(scored, ep){
+  // Bracket episodes do not have safe queens or bottoms. The Top 2 win the challenge;
+  // everyone else receives positive critiques and remains eligible for the point vote.
+  scored.forEach(s=>s.placement='SAFE');
+  if(scored[0])scored[0].placement='WIN';
+  if(scored[1])scored[1].placement='WIN';
+  if(scored[2])scored[2].placement='HIGH';
+  ep.top2Queens=scored.slice(0,2).map(s=>s.queenId);
+  ep.bottomQueens=[];
+  ep.tournamentVotes={};
+  const topSet=new Set(ep.top2Queens);
+  scored.forEach(s=>{
+    if(topSet.has(s.queenId))return;
+    if(s.queenId===gameState.playerQueenId && (ep.participantIds||[]).includes(gameState.playerQueenId)){
+      ep.playerTournamentPointVoteChosen=false;
+      return;
+    }
+    ep.tournamentVotes[s.queenId]=chooseTournamentPointVote(s.queenId, scored, ep.top2Queens);
+  });
+  if(typeof recomputeTournamentVotes==='function')recomputeTournamentVotes(ep);
+}
+
 function applyLegacyPlacements(scored, ep){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
@@ -598,6 +621,9 @@ function calculateEpisodeResults(playerChoices={}){
     if(useSnatchGameOfLove) applySnatchGameOfLoveAssassinPlacements(scored, ep);
     else applyAssassinPlacements(scored, ep);
   }
+  if(isTournamentFormat(seasonFormat) && ep.special==='tournament_bracket'){
+    applyTournamentPlacements(scored, ep);
+  }
 
   if(ep.special==='premiere_no_elim'){
     scored.forEach(s=>s.placement='SAFE');
@@ -612,12 +638,12 @@ function calculateEpisodeResults(playerChoices={}){
   // Do not run win redistribution here, because that would create a challenge WIN
   // before the lip sync has happened. The two best queens remain TOP2 until
   // resolveLipSync() promotes only the lip sync winner to WIN.
-  if(ep.special!=='premiere_no_elim' && !['legacy','assassin'].includes(getSeasonFormat())){
+  if(!['premiere_no_elim','tournament_bracket'].includes(ep.special) && !['legacy','assassin'].includes(getSeasonFormat())){
     applyPassiveWinCap(scored,ep);
     applyWinThrottles(scored,ep);
   }
   scored.sort((a,b)=>{
-    const order={WIN:0,HIGH:1,SAFE:2,LOW:3,BTM:4};
+    const order={WIN:0,HIGH:1,CRITIQUE:2,SAFE:3,LOW:4,BTM:5};
     if(order[a.placement]!==order[b.placement])return order[a.placement]-order[b.placement];
     return b.score-a.score;
   });
@@ -634,7 +660,8 @@ function calculateEpisodeResults(playerChoices={}){
     const legacyPressureText=s.legacyPressure?` • All Stars pressure ${s.legacyPressure}`:'';
     s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${extra}${teamText}${winThrottleText}`;
     const finalStretchPraise=isLastCompetitiveEpisodeBeforeFinale(ep);
-    s.critique=finalStretchPraise?getFinalStretchPositiveCritique(s,ep):getCritiqueText(s.placement,ep.challengeType,s.risk,success);
+    const tournamentPraise=ep.special==='tournament_bracket';
+    s.critique=(finalStretchPraise||tournamentPraise)?getFinalStretchPositiveCritique(s,ep):getCritiqueText(s.placement,ep.challengeType,s.risk,success);
     if(ep.judgingMode==='team' && s.teamName){
       const teamScore=ep.teamScores?.find(t=>t.teamId===s.teamId);
       if(finalStretchPraise){
@@ -661,7 +688,8 @@ function calculateEpisodeResults(playerChoices={}){
     }
   });
   ep.placements=scored;
-  ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,['legacy','assassin'].includes(getSeasonFormat())?3:2).map(s=>s.queenId);
+  if(ep.special==='tournament_bracket')ep.bottomQueens=[];
+  else ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,['legacy','assassin'].includes(getSeasonFormat())?3:2).map(s=>s.queenId);
   saveGame();
   return scored;
 }
@@ -770,7 +798,8 @@ function resolveLipSync(playerMoves=null){
   const song=ep.song;
   const format=getSeasonFormat();
   const isAssassinEpisode=format==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
-  const duelIds=(format==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special))
+  const isTournamentEpisode=isTournamentFormat(format) && ep.special==='tournament_bracket';
+  const duelIds=((format==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)) || isTournamentEpisode)
     ? (ep.top2Queens||[])
     : (isAssassinEpisode ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens));
   const bottom=duelIds
@@ -860,6 +889,18 @@ function resolveLipSync(playerMoves=null){
       }
     });
     ep.lipSyncResult={song,results,outcome:'top2Win',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10};
+    recordIconicLipSync(ep, ep.lipSyncResult);
+    ep.eliminatedQueenId=null;
+    saveGame();
+    return ep.lipSyncResult;
+  }
+
+  if(isTournamentEpisode){
+    const winner=results[0], loser=results[1];
+    ep.placements.forEach(p=>{
+      if((ep.top2Queens||[]).includes(p.queenId)){p.placement='WIN'; p.lipSyncWinner=(p.queenId===winner.queenId);}
+    });
+    ep.lipSyncResult={song,results,outcome:'tournamentPoints',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10,tournamentVotes:ep.tournamentVotes||{},tournamentVoteTally:ep.tournamentVoteTally||{},tournamentVotedPointQueenIds:ep.tournamentVotedPointQueenIds||[],tournamentVotedPointQueenId:null};
     recordIconicLipSync(ep, ep.lipSyncResult);
     ep.eliminatedQueenId=null;
     saveGame();
@@ -968,7 +1009,16 @@ function applyEpisodeStats(){
     applyChoiceEffects(effects,{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
   }
   if(ep.lipSyncResult){
-    if(ep.lipSyncResult.outcome==='legacyElimination'){
+    if(ep.lipSyncResult.outcome==='tournamentPoints'){
+      (ep.top2Queens||[]).forEach(id=>addTournamentPoints(id,2));
+      if(ep.lipSyncResult.survivorId){
+        addTournamentPoints(ep.lipSyncResult.survivorId,1);
+        const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+        if(win){win.statistics.lipSyncWins++; applyChoiceEffects({momentum:0.5,fans:0.8,production:0.4,stress:1},{queen:win,note:'Tournament lip sync win.',source:'lip-sync-result',save:false});}
+      }
+      Object.entries(ep.lipSyncResult.tournamentVoteTally || ep.tournamentVoteTally || {}).forEach(([queenId,count])=>addTournamentPoints(queenId, Number(count)||0));
+      ep.eliminatedQueenId=null;
+    } else if(ep.lipSyncResult.outcome==='legacyElimination'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
       const out=gameState.queens.find(q=>q.id===ep.lipSyncResult.eliminatedQueenId);
       if(win){
@@ -1002,6 +1052,7 @@ function applyEpisodeStats(){
     }
   }
   if(typeof registerReturnTwistAfterElimination==='function')registerReturnTwistAfterElimination(ep);
+  if(ep.special==='tournament_bracket' && typeof finishTournamentGroupIfNeeded==='function')finishTournamentGroupIfNeeded();
   if(typeof markPremierePhaseDone==='function')markPremierePhaseDone();
   ep.statsApplied=true;
   gameState.episodeHistory.push(JSON.parse(JSON.stringify(ep)));

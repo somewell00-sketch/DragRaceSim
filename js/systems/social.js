@@ -202,7 +202,14 @@ const UNTUCKED_SPONTANEOUS = [
   '{a} and {b} exchange a look that says more than a monologue.',
   '{a} calls out the room for fake compliments.',
   '{a} quietly checks on {b}, and it feels genuine.',
-  'The lounge goes silent for three dangerous seconds.'
+  'The lounge goes silent for three dangerous seconds.',
+'Someone off-camera drops a glass, and the entire room jumps in shock.',
+  '{a} dramatically stares at her drink and mutters: "This is a nightmare."',
+  '{a} bursts out laughing for absolutely no reason, making the silence even more awkward.',
+  'The entire cast suddenly looks up at the ceiling as production adjusts the lighting grid.',
+  '{a} sighs deeply and says: "I just want to take these heels off so badly."',
+  '{a} and {b} simultaneously roll their eyes while another queen speaks.',
+  'An incredibly loud, dramatic metallic sound effect echoes through the edit.'
 ];
 
 function ensureQueenSocialStats(q){
@@ -221,7 +228,7 @@ function getPlayerQueen(){return gameState.queens.find(q=>q.id===gameState.playe
 
 function randomLiveQueens(count=3, excludeIds=[]){
   const excluded=new Set(excludeIds.filter(Boolean));
-  return shuffle(liveQueens(false).filter(q=>!excluded.has(q.id))).slice(0,count);
+  return shuffle(episodeScopedQueens(false).filter(q=>!excluded.has(q.id))).slice(0,count);
 }
 function relationshipEffectsFor(targets, affinity=0, respect=0){
   return (targets||[]).map(q=>({target:q.id,affinity,respect}));
@@ -447,20 +454,37 @@ function applyJudgeResponse(kind){
 function liveQueens(excludePlayer=false){
   return gameState.queens.filter(q=>!q.isEliminated && (!excludePlayer || q.id!==gameState.playerQueenId));
 }
+function episodeScopedQueens(excludePlayer=false){
+  const ep=gameState.currentEpisode;
+  let pool=liveQueens(excludePlayer);
+  if(ep?.special==='tournament_bracket' && Array.isArray(ep.participantIds) && ep.participantIds.length){
+    const activeIds=new Set(ep.participantIds);
+    pool=pool.filter(q=>activeIds.has(q.id));
+  }
+  return pool;
+}
+function isPlayerInCurrentEpisode(){
+  const ep=gameState.currentEpisode;
+  if(ep?.special==='tournament_bracket' && Array.isArray(ep.participantIds) && ep.participantIds.length){
+    return ep.participantIds.includes(gameState.playerQueenId);
+  }
+  const player=getPlayerQueen();
+  return !!player && !player.isEliminated;
+}
 function fillSocialText(t, a, b){
   return String(t||'').replace(/\{a\}/g,a?.name||'A queen').replace(/\{b\}/g,b?.name||'another queen');
 }
 function generateWorkroomSocialEvents(){
   const ep=gameState.currentEpisode;
   if(ep.socialEvents && ep.socialEvents.length)return ep.socialEvents;
-  const active=liveQueens();
+  const active=episodeScopedQueens();
   const player=getPlayerQueen();
   const events=[];
   const count=Math.random()<0.25?3:2;
   for(let i=0;i<count;i++){
     const ev=sample(SOCIAL_EVENTS);
     const others=shuffle(active.filter(q=>q.id!==player.id));
-    const involvesPlayer=Math.random()<0.45;
+    const involvesPlayer=isPlayerInCurrentEpisode() && Math.random()<0.45;
     let a=others[0]||player, b=others[1]||player;
     let text='';
     if(involvesPlayer && player && others.length){
@@ -482,12 +506,12 @@ function generateWorkroomSocialEvents(){
   return events;
 }
 function getUntuckedTargets(){
-  return liveQueens(true).sort((a,b)=>a.name.localeCompare(b.name));
+  return episodeScopedQueens(true).sort((a,b)=>a.name.localeCompare(b.name));
 }
 function generateUntuckedSpontaneous(){
   const ep=gameState.currentEpisode;
   if(ep.untuckedSpontaneous)return ep.untuckedSpontaneous;
-  const active=liveQueens();
+  const active=episodeScopedQueens();
   const a=sample(active), b=sample(active.filter(q=>q.id!==a?.id));
   ep.untuckedSpontaneous=fillSocialText(sample(UNTUCKED_SPONTANEOUS),a,b);
   saveGame();
@@ -575,7 +599,7 @@ function relationshipShiftSummary(fromId,toId){
 function evolveRelationshipsDuringEpisode(){
   const ep=gameState.currentEpisode;
   if(!ep || ep.relationshipDriftDone)return [];
-  const active=liveQueens();
+  const active=episodeScopedQueens();
   const player=getPlayerQueen();
   const notes=[];
   reinforceAlliances().forEach(n=>notes.push(n));
@@ -638,7 +662,34 @@ const NPC_SOCIAL_EVENTS = [
   {type:'alliance', text:'{a} and {b} quietly start comparing notes for future weeks.', effects:{affinity:20,respect:11,queens:2}},
   {type:'sabotage', text:'{a} “accidentally” leaves {b} with the weaker material pile.', effects:{affinity:-36,respect:-13,performance:-1,stress:5,production:3.8,fans:-1.25,queens:-1.5}},
   {type:'comfort', text:'{a} checks on {b} after the critiques hit hard.', effects:{affinity:25,respect:9,stress:-4,fans:2.6,queens:2}},
-  {type:'jealousy', text:'{a} admits she is tired of watching {b} get praise.', effects:{affinity:-18,respect:4,stress:3,production:2.6,queens:-0.5}}
+  {type:'jealousy', text:'{a} admits she is tired of watching {b} get praise.', effects:{affinity:-18,respect:4,stress:3,production:2.6,queens:-0.5}},
+{type:'friendship', text:'{a} lends {b} her favorite lace-front wig after a styling disaster.', effects:{affinity:26,respect:12,performance:1,stress:-4,queens:2}},
+  {type:'mentor', text:'{a} shares a deeply personal mirror moment with {b} while doing their base makeup.', effects:{affinity:24,respect:18,stress:-3,production:4.5,fans:3.5,queens:2.5}},
+  {type:'conflict', text:'{a} accuses {b} of stealing her rhinestones and custom body glue from her station.', effects:{affinity:-32,respect:-12,stress:6,production:4.0,queens:-1.5}},
+  {type:'shade', text:'{a} stares intently at {b}\'s garment, sighs heavily, and walks away without saying a word.', effects:{affinity:-22,respect:5,stress:4,production:3.2,fans:1.8}},
+  {type:'alliance', text:'{a} and {b} secretly agree to target the strongest queen in the room during the next group challenge.', effects:{affinity:22,respect:8,stress:2,production:4.2,queens:1.5}},
+  {type:'sabotage', text:'{a} gives {b} terrible, misleading runway advice on purpose while the production crew is on break.', effects:{affinity:-40,respect:-16,performance:-2,stress:7,production:-1.0,queens:-2}},
+  {type:'comfort', text:'{a} helps {b} zip up her tight corset when she notices she is having a panic attack.', effects:{affinity:28,respect:14,stress:-6,fans:2.8,queens:2}},
+  {type:'jealousy', text:'{a} critiques {b}\'s look behind her back, claiming the judges are showing blatant favoritism.', effects:{affinity:-20,respect:-6,stress:4,production:3.0,fans:-1.5,queens:-0.5}},
+  
+  {type:'drama', text:'{a} looks at {b}\'s outfit and mutters: "Well... at least you have a beautiful face."', effects:{affinity:-25,respect:-5,stress:5,production:3.5,fans:2.0,queens:-1}},
+  {type:'drama', text:'{a} aggressively interrupts {b}\'s emotional moment to ask if anyone has seen her extra pair of hips.', effects:{affinity:-18,respect:-10,stress:3,production:4.8,fans:3.0,queens:-1}},
+  {type:'friendship', text:'{a} teaches {b} how to properly block her eyebrows for a cleaner canvas.', effects:{affinity:20,respect:15,performance:1,stress:-2,fans:1.5,queens:1}},
+  {type:'conflict', text:'{a} and {b} get into a tense argument over who gets to use the good industrial sewing machine first.', effects:{affinity:-26,respect:-8,stress:5,production:3.5,queens:-1}},
+  {type:'shade', text:'{a} asks {b} if she brought her runway outfit from a Halloween thrift store.', effects:{affinity:-24,respect:-4,stress:6,production:3.9,fans:2.5,queens:-1}},
+  {type:'comfort', text:'{a} breaks down crying at her station, telling {b} about how her family rejected her when she started drag.', effects:{affinity:28,respect:15,stress:-4,production:4.8,fans:4.0,queens:3}},
+  {type:'comfort', text:'{a} opens up to {b} about finally being accepted by her parents after years of silence, making the whole room emotional.', effects:{affinity:30,respect:18,stress:-6,production:5.0,fans:5.0,queens:3.5}},
+  {type:'comfort', text:'{a} confesses to {b} that she was homeless before finding her drag family, and {b} hugs her tight.', effects:{affinity:29,respect:16,stress:-5,production:4.9,fans:4.5,queens:3}},
+  {type:'friendship', text:'{a} wipes away {b}\'s tears as they bond over their shared struggles growing up queer in a small town.', effects:{affinity:27,respect:14,stress:-5,fans:3.8,queens:2.5}},
+  {type:'comfort', text:'{a} feels overwhelmed by the competition, but {b} sits with her, holding her hand and reminding her that she belongs here.', effects:{affinity:26,respect:12,stress:-7,fans:3.0,queens:2}},
+  {type:'comfort', text:'{a} shares a painful story about losing her drag mother, and {b} stops painting her face to listen and offer comfort.', effects:{affinity:25,respect:15,stress:-4,production:4.6,fans:4.2,queens:2.5}},
+  {type:'friendship', text:'{a} and {b} share a beautiful moment looking at old photos of their chosen families back home.', effects:{affinity:22,respect:10,stress:-3,fans:2.5,queens:1.5}},
+{type:'shade', text:'{a} gathers a small circle of queens at her station to make fun of {b}\'s tragic sewing skills.', effects:{affinity:-30,respect:-10,stress:6,production:4.2,fans:1.5,queens:-2}},
+  {type:'friendship', text:'{a} stands up on a table and starts an impromptu, high-energy runway walk tutorial for the entire cast.', effects:{affinity:15,respect:18,performance:1,stress:-4,production:4.5,fans:3.5,queens:3}},
+  {type:'conflict', text:'{a} loudly announces to the whole room that {b} has been talking trash behind everyone\'s backs.', effects:{affinity:-35,respect:-15,stress:8,production:5.5,fans:2.0,queens:-3}},
+  {type:'drama', text:'{a} stands in front of the mirrors and drops a massive emotional bombshell, reducing the entire cast to tears.', effects:{affinity:20,respect:15,stress:-3,production:5.2,fans:4.8,queens:4}},
+  {type:'conflict', text:'{a} and {b} get into a screaming match so intense that a producer has to step in to break them up.', effects:{affinity:-40,respect:-18,stress:9,production:6.5,fans:-1.0,queens:-2.5}},
+  {type:'friendship', text:'The fire alarm accidentally goes off, forcing {a}, {b}, and the rest of the girls to evacuate in half-done makeup.', effects:{affinity:18,stress:5,production:4.0,fans:5.0,queens:2}}
 ];
 
 const UNTUCKED_NPC_EVENTS = [
@@ -648,9 +699,32 @@ const UNTUCKED_NPC_EVENTS = [
   {text:'{a} and {b} make a tiny pact to watch each other’s backs.', effects:{affinity:21,respect:13,queens:2}},
   {text:'{a} throws a little shade at {b}, and everyone pretends not to hear.', effects:{affinity:-15,respect:-4,stress:2,production:2.6,queens:-0.5}},
   {text:'{a} admits she underestimated {b}.', effects:{respect:19,affinity:9,queens:1.5}},
-  {text:'{a} says {b} is getting a winner edit, and the lounge goes quiet.', effects:{affinity:-11,respect:11,stress:3,production:3.8,queens:-0.5}}
-];
+  {text:'{a} says {b} is getting a winner edit, and the lounge goes quiet.', effects:{affinity:-11,respect:11,stress:3,production:3.8,queens:-0.5}},
 
+  {text:'{a} looks at {b} and says: "Your drag is beautiful, but your personality is garbage."', effects:{affinity:-30,respect:-12,stress:6,production:5.0,fans:2.0,queens:-2}},
+  {text:'{a} starts screaming at {b} while aggressively removing her heavy jewelry.', effects:{affinity:-28,respect:-15,stress:8,production:5.5,fans:3.0,queens:-2}},
+  {text:'{a} rolls her eyes so hard at {b}\'s explanation that she almost ruins her makeup.', effects:{affinity:-18,respect:-8,stress:3,production:3.0,fans:1.5}},
+  {text:'{a} dramatically storms out of the lounge to smoke a cigarette, leaving {b} talking alone.', effects:{affinity:-22,respect:-10,stress:5,production:4.5,fans:2.5,queens:-1}},
+  {text:'{a} points at {b} and shouts: "I am NOT talking to you, I am talking to the judges!"', effects:{affinity:-25,respect:-14,stress:7,production:5.0,fans:3.5,queens:-1.5}},
+  {text:'{a} laughs hysterically in {b}\'s face during a serious confrontation.', effects:{affinity:-35,respect:-18,stress:9,production:6.0,fans:2.8,queens:-3}},
+
+  {text:'{a} whispers to {b} that the producers are clearly trying to orchestrate a rivalry between them.', effects:{affinity:18,respect:12,stress:4,production:-2.0,queens:1.5}},
+  {text:'{a} accuses {b} of hiding her true personality when the cameras start rolling.', effects:{affinity:-24,respect:8,stress:5,production:4.0,fans:-1.0,queens:-1}},
+  {text:'{a} stares straight into the camera lens while {b} is giving a boring speech.', effects:{affinity:-8,respect:5,production:3.5,fans:4.0}},
+  {text:'{a} tells {b} that her runway outfit looked like a craft project, destroying her confidence.', effects:{affinity:-26,respect:-5,stress:8,production:4.2,fans:-2.0,queens:-1}},
+  {text:'{a} tries to start a fake alliance with {b} just to avoid getting chosen for the lipsync.', effects:{affinity:5,respect:-10,stress:2,production:3.9,queens:0.5}},
+
+  {text:'{a} breaks down in tears talking about her childhood, and {b} holds her hand tightly.', effects:{affinity:28,respect:15,stress:-6,fans:5.0,queens:3}},
+  {text:'{a} admits to {b} that she felt completely invisible until this very challenge.', effects:{affinity:22,respect:14,stress:-4,fans:3.8,queens:2}},
+  {text:'{a} opens up about an old family trauma, making {b} and the entire lounge weep.', effects:{affinity:25,respect:18,stress:-5,fans:6.0,queens:4}},
+  {text:'{a} tells {b} that seeing her drag inspired her to finally come out to her parents.', effects:{affinity:30,respect:22,stress:-7,fans:5.5,queens:3.5}},
+
+  {text:'{a} randomly stands up, does a high kick, rips her dress, and {b} starts screaming in panic.', effects:{affinity:5,respect:-5,stress:6,production:5.0,fans:4.5,queens:1}},
+  {text:'{a} tries to fix {b}\'s wig, but accidentally pulls the whole thing off, creating an awkward silence.', effects:{affinity:-12,respect:-10,stress:5,production:4.8,fans:5.0,queens:-0.5}},
+  {text:'{a} aggressively sips her drink through a straw while glaring fixedly at {b}.', effects:{affinity:-14,respect:6,stress:3,production:3.2,fans:3.0}},
+  {text:'{a} falls asleep on the couch while {b} is pouring her heart out.', effects:{affinity:-20,respect:-12,stress:4,production:4.5,fans:4.2,queens:-2}},
+  {text:'{a} claims she saw a ghost in the lighting rig, but {b} thinks she\'s just high on hairspray.', effects:{affinity:8,stress:2,production:3.5,fans:3.8,queens:1}}
+];
 function ensureQueenV14Stats(q){
   ensureQueenSocialStats(q);
   if(q.confidence===undefined) q.confidence=50;
@@ -731,8 +805,8 @@ function simulateNpcEpisodeChoices(){
   ensureAllQueenV14Stats();
   const playerId=gameState.playerQueenId;
   const notes=[];
-  const player=gameState.queens.find(q=>q.id===playerId); if(player)applyPersonalityEpisodeDrift(player);
-  liveQueens(false).filter(q=>q.id!==playerId).forEach(q=>{
+  const player=gameState.queens.find(q=>q.id===playerId); if(player && isPlayerInCurrentEpisode())applyPersonalityEpisodeDrift(player);
+  episodeScopedQueens(false).filter(q=>q.id!==playerId).forEach(q=>{
     applyPersonalityEpisodeDrift(q);
     const prepId=chooseNpcPrep(q);
     const prep=NPC_PREP_CHOICES[prepId];
@@ -753,7 +827,7 @@ function simulateNpcEpisodeChoices(){
   saveGame();
 }
 function chooseNpcHelpTarget(q){
-  const candidates=liveQueens(false).filter(o=>o.id!==q.id);
+  const candidates=episodeScopedQueens(false).filter(o=>o.id!==q.id);
   if(!candidates.length)return null;
   return candidates.map(o=>({o,score:(gameState.relationships?.[q.id]?.[o.id]?.affinity||0)+(gameState.relationships?.[q.id]?.[o.id]?.respect||0)+rand(-20,20)})).sort((a,b)=>b.score-a.score)[0].o;
 }
@@ -790,7 +864,7 @@ function generateNpcSocialEvents(stage='workroom'){
   const key=stage==='untucked'?'npcUntuckedEvents':'npcSocialEvents';
   if(ep[key])return ep[key];
   const pool=stage==='untucked'?UNTUCKED_NPC_EVENTS:NPC_SOCIAL_EVENTS;
-  const active=liveQueens(false);
+  const active=episodeScopedQueens(false);
   const count=stage==='untucked'?(Math.random()<0.35?1:2):(Math.random()<0.2?1:(Math.random()<0.65?2:3));
   const events=[];
   for(let i=0;i<count;i++){
@@ -819,11 +893,11 @@ function queenEnergyStressMod(q){
 function applyWeeklyWearAndTear(){
   const ep=gameState.currentEpisode;
   if(ep.weeklyWearDone)return;
-  liveQueens(false).forEach(q=>{
+  episodeScopedQueens(false).forEach(q=>{
     ensureQueenV14Stats(q);
     applyChoiceEffects({energy:rand(-5,2),stress:rand(-2,6)},{queen:q,note:'Weekly wear and tear.',source:'weekly-wear',save:false});
   });
   ep.weeklyWearDone=true;
 }
-function npcCastStatusList(limit=6){ return liveQueens(true).slice(0,limit).map(q=>`<li><strong>${escapeHtml(q.name)}</strong> is moving through the episode in her own way.</li>`).join(''); }
+function npcCastStatusList(limit=6){ return episodeScopedQueens(true).slice(0,limit).map(q=>`<li><strong>${escapeHtml(q.name)}</strong> is moving through the episode in her own way.</li>`).join(''); }
 function allQueenStatusMini(q){ return playerRelationshipLabel(q.id); }

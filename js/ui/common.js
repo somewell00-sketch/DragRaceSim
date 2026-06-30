@@ -106,16 +106,37 @@ function episodeChallengeBrief(ep){
 }
 
 function queenSidebar(){
-  const active=gameState.queens.filter(q=>!q.isEliminated).sort((a,b)=>a.name.localeCompare(b.name));
+  const bracketState=gameState.season?.brackets;
+  const inTournamentGroup=typeof isTournamentFormat==='function' && isTournamentFormat(getSeasonFormat()) && bracketState && bracketState.stage!=='final';
+  const currentGroup=bracketState?.currentGroup||null;
+  const groupForQueen=(q)=>{
+    if(!bracketState?.groups)return null;
+    return q.tournamentBracket || Object.keys(bracketState.groups).find(g=>(bracketState.groups[g]||[]).includes(q.id)) || null;
+  };
+  const active=gameState.queens.filter(q=>!q.isEliminated).sort((a,b)=>{
+    if(inTournamentGroup){
+      const aIn=groupForQueen(a)===currentGroup;
+      const bIn=groupForQueen(b)===currentGroup;
+      if(aIn!==bIn)return aIn?-1:1;
+      const ga=groupForQueen(a)||'Z', gb=groupForQueen(b)||'Z';
+      if(ga!==gb)return ga.localeCompare(gb);
+    }
+    return a.name.localeCompare(b.name);
+  });
   const frontIds=currentFrontRunnerIds();
   const moodBadge=(q)=>q.id===gameState.playerQueenId?'':`<span class="sidebar-mood" title="How she sees you">${playerRelationshipLabel(q.id)}</span>`;
   const personaLine=(q)=>`<span class="small sidebar-persona queen-archetype queen-archetype--subtle">${queenPersonaTypeHtml(q)}</span>`;
-  const trackLine=(q)=>`<span class="small sidebar-track-count">${Number(q.statistics?.wins)||0} WIN / ${Number(q.statistics?.bottoms)||0} BTM</span>`;
+  const trackLine=(q)=> inTournamentGroup
+    ? `<span class="small sidebar-track-count">${Number(bracketState?.pointsByQueenId?.[q.id] ?? q.tournamentPoints ?? 0)} PTS</span>`
+    : `<span class="small sidebar-track-count">${Number(q.statistics?.wins)||0} WIN / ${Number(q.statistics?.bottoms)||0} BTM</span>`;
   return `<aside class="sidebar"><div class="card queens-sidebar-card"><div class="sidebar-title"><h3>Queens still in</h3><span class="sidebar-count">${active.length}/${gameState.queens.length}</span></div><div class="queen-list">${active.map(q=>{
     const isFrontRunner=frontIds.includes(q.id);
     const frontTag=isFrontRunner?`<span class="badge arc front-runner">front-runner</span>`:'';
     const isPlayer=q.id===gameState.playerQueenId;
-    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''} ${isPlayer?'player-queen-card':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${isPlayer?'<span class="small sidebar-player-label">Your queen</span>':''}${personaLine(q)}${trackLine(q)}${frontTag}</div></div>`;
+    const group=groupForQueen(q);
+    const outOfBracket=inTournamentGroup && group!==currentGroup;
+    const groupBadge=(inTournamentGroup && group)?`<span class="small sidebar-bracket-label">Bracket ${escapeHtml(group)}</span>`:'';
+    return `<div class="queen-item sidebar-queen-row ${isFrontRunner?'front-runner-card':''} ${isPlayer?'player-queen-card':''} ${group?`tournament-bracket-${group}`:''} ${outOfBracket?'tournament-out-of-bracket':''}"><div class="sidebar-portrait-wrap">${queenPortraitHtml(q,'sm')}${moodBadge(q)}</div><div class="queen-item-copy"><strong>${queenDisplayName(q)}</strong>${isPlayer?'<span class="small sidebar-player-label">Your queen</span>':''}${groupBadge}${personaLine(q)}${trackLine(q)}${frontTag}</div></div>`;
   }).join('')}</div></div>${playerCanSkipToFinale()?`<button class="secondary" id="skipToFinaleBtn">⏭ Skip to Finale</button> `:''}<button class="secondary" id="openHistory">📋 Track Record</button> <button class="ghost" id="saveBtn">💾 Save</button> <button class="ghost" id="restartBtn">↺ Restart</button></aside>`;
 }
 function bindCommon(onHistory){document.querySelector('#openHistory')?.addEventListener('click',onHistory); document.querySelector('#skipToFinaleBtn')?.addEventListener('click',()=>{if(confirm('Skip the remaining episodes and jump to the finale?'))skipToFinaleStart();}); document.querySelector('#saveBtn')?.addEventListener('click',()=>{saveGame(); alert('Season saved in this browser.');}); document.querySelector('#restartBtn')?.addEventListener('click',()=>{if(confirm('Restart the season? Your current save will be cleared.')){clearSave(); resetState(); renderQueenCreator();}});}
@@ -176,7 +197,8 @@ function sortEpisodeKeys(keys){
 function historyTable(){
   const eps=sortEpisodeKeys([...new Set(gameState.queens.flatMap(q=>q.episodeHistory.map(h=>h.episode))) ]);
   const ordered=getQueenStandingOrder();
-  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement,h):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
+  const bracketClass=(q)=>{const b=gameState.season?.brackets; const g=q?.tournamentBracket || (b?.groups?Object.keys(b.groups).find(key=>(b.groups[key]||[]).includes(q.id)):null); return g?`tournament-track-bracket-${g}`:'';};
+  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr class="${bracketClass(q)}"><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement,h):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
 
 function queenNameById(id){

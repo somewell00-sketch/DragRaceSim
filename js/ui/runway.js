@@ -321,6 +321,7 @@ function runwayWalkCard(p, placements, momentMap, opts={}){
 }
 
 function runwaySafeDecisionBlock(ep, placements){
+  if(ep?.special==='tournament_bracket')return '';
   const activeCount=gameState.queens.filter(q=>!q.isEliminated).length;
   const safeQueens=placements.filter(p=>p.placement==='SAFE');
   if(!safeQueens.length)return '';
@@ -509,7 +510,8 @@ function finalStretchCritiqueBucket(p){
 }
 function composedJudgeCritique(p, placements, ep){
   const finalStretchPraise=isFinalStretchPraiseEpisodeForCritiques(ep);
-  const bucket=finalStretchPraise?finalStretchCritiqueBucket(p):critiqueBucket(p);
+  const tournamentPraise=ep?.special==='tournament_bracket';
+  const bucket=tournamentPraise?(p.placement==='WIN'?'win':'high'):(finalStretchPraise?finalStretchCritiqueBucket(p):critiqueBucket(p));
   const challengeId=challengeCritiqueId(ep);
   const q=gameState.queens.find(x=>x.id===p.queenId);
   if(typeof recalcNarrativeTags==='function') recalcNarrativeTags();
@@ -533,40 +535,50 @@ function composedJudgeCritique(p, placements, ep){
 function renderJudgesCritiques(){
   const ep=gameState.currentEpisode;
   const placements=ep.placements;
-  const playerInBottom=ep.bottomQueens.includes(gameState.playerQueenId);
+  const isTournament=ep.special==='tournament_bracket';
+  const playerInBottom=!isTournament && ep.bottomQueens.includes(gameState.playerQueenId);
   const lowQueens=placements.filter(p=>p.placement==='LOW');
   const winners=placements.filter(p=>p.placement==='WIN');
   const highs=placements.filter(p=>p.placement==='HIGH');
   const bottomSorted=placements.filter(p=>p.placement==='BTM').sort((a,b)=>a.score-b.score);
   const worst=bottomSorted[0];
   const secondWorst=bottomSorted[1];
-  const critiqueQueens=placements.filter(p=>p.placement!=='SAFE').sort((a,b)=>a.name.localeCompare(b.name));
+  const critiqueQueens=(isTournament?placements:placements.filter(p=>p.placement!=='SAFE')).sort((a,b)=>a.name.localeCompare(b.name));
   const critiques=critiqueQueens.map(p=>{
     const snatch=ep.snatchCharacters?.find(c=>c.queenId===p.queenId);
     const snatchLine=snatch?`<p class="small">as <strong>${escapeHtml(snatch.character)}</strong></p>`:'';
     const q=gameState.queens.find(x=>x.id===p.queenId);
-    return `<article class="critique critique-${critiqueBucket(p)}"><div class="critique-head">${q?queenPortraitHtml(q,'md'):''}<div><h4>${escapeHtml(p.name)}</h4>${snatchLine}</div></div><div class="judge-critique-grid">${composedJudgeCritique(p, placements, ep)}</div></article>`;
+    return `<article class="critique critique-${isTournament?(p.placement==='WIN'?'win':'high'):critiqueBucket(p)}"><div class="critique-head">${q?queenPortraitHtml(q,'md'):''}<div><h4>${escapeHtml(p.name)}</h4>${snatchLine}</div></div><div class="judge-critique-grid">${composedJudgeCritique(p, placements, ep)}</div></article>`;
   }).join('');
   const playerPlacement=placements.find(p=>p.queenId===gameState.playerQueenId);
-  const playerGetsCritique=playerPlacement && playerPlacement.placement!=='SAFE';
+  const playerGetsCritique=playerPlacement && (!ep.participantIds || ep.participantIds.includes(gameState.playerQueenId)) && (isTournament || playerPlacement.placement!=='SAFE');
   const judgeResponseBlock=(playerGetsCritique && !ep.judgeResponseApplied && !ep.judgeResponseSkipped) ? `<div class="card important decision-card"><h3>Your response to the judges</h3><p>The critique is landing. You can respond, or simply continue without saying anything.</p><div class="options">${Object.entries(JUDGE_RESPONSES).map(([id,o])=>choiceButtonHtml({id,attr:'data-judge',label:o.label,desc:o.description})).join('')}</div></div>` : (ep.judgeResponseApplied?`<div class="card subtle"><h3>Your response</h3><p>${escapeHtml((ep.playerEffects?.notes||[]).slice(-1)[0]||'You answered the judges.')}</p></div>`:(ep.judgeResponseSkipped&&playerGetsCritique?`<div class="card subtle"><h3>Your response</h3><p>${escapeHtml(passiveJudgeNote(playerPlacement, placements))}</p></div>`:''));
   const topAnnouncements=[];
   const bottomAnnouncements=[];
-  highs.slice().reverse().forEach(h=>topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===h.queenId),'xs')} <strong>${escapeHtml(h.name)}</strong>, you are safe.</p>`));
-  if(winners.length===1){
-    topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===winners[0].queenId),'xs')} <strong>Condragulations, ${escapeHtml(winners[0].name)}. You are the winner of this week’s challenge.</strong></p>`);
-  }else if(winners.length>1){
-    topAnnouncements.push(`<p><strong>Condragulations, ${winners.map(w=>escapeHtml(w.name)).join(' and ')}. You are the winners of this week’s challenge.</strong></p>`);
+  if(isTournament){
+    const nonWinners=placements.filter(p=>p.placement!=='WIN').sort((a,b)=>a.name.localeCompare(b.name));
+    if(winners.length>1)topAnnouncements.push(`<p><strong>Condragulations, ${winners.map(w=>escapeHtml(w.name)).join(' and ')}. You are the Top 2 of this bracket challenge.</strong></p><p>Each of you earns <strong>2 tournament points</strong> and will lip sync for one extra point.</p>`);
+    if(nonWinners.length){
+      const names=nonWinners.map(qp=>escapeHtml(qp.name)).join(', ');
+      bottomAnnouncements.push(`<p><strong>${names}</strong>, you remain in the bracket and will cast a point vote after the lip sync.</p>`);
+    }
+  }else{
+    highs.slice().reverse().forEach(h=>topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===h.queenId),'xs')} <strong>${escapeHtml(h.name)}</strong>, you are safe.</p>`));
+    if(winners.length===1){
+      topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===winners[0].queenId),'xs')} <strong>Condragulations, ${escapeHtml(winners[0].name)}. You are the winner of this week’s challenge.</strong></p>`);
+    }else if(winners.length>1){
+      topAnnouncements.push(`<p><strong>Condragulations, ${winners.map(w=>escapeHtml(w.name)).join(' and ')}. You are the winners of this week’s challenge.</strong></p>`);
+    }
+    bottomSorted.forEach((b,idx)=>{
+      const line = idx===0
+        ? `I’m sorry, but you are up for elimination.`
+        : `I’m sorry, my dear, but you are also up for elimination.`;
+      bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===b.queenId),'xs')} <strong>${escapeHtml(b.name)}</strong>, ${line}</p>`);
+    });
+    lowQueens.forEach(l=>bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===l.queenId),'xs')} <strong>${escapeHtml(l.name)}</strong>, you are safe.</p>`));
   }
-  bottomSorted.forEach((b,idx)=>{
-    const line = idx===0
-      ? `I’m sorry, but you are up for elimination.`
-      : `I’m sorry, my dear, but you are also up for elimination.`;
-    bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===b.queenId),'xs')} <strong>${escapeHtml(b.name)}</strong>, ${line}</p>`);
-  });
-  lowQueens.forEach(l=>bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===l.queenId),'xs')} <strong>${escapeHtml(l.name)}</strong>, you are safe.</p>`));
   setHTML(`<main class="layout"><section class="screen">
-    <div class="hero"><span class="badge">Judges</span><h2>Judges’ Critiques</h2><p>The safe queens are backstage. The tops and bottoms remain on the main stage.</p></div>
+    <div class="hero"><span class="badge">Judges</span><h2>Judges’ Critiques</h2><p>${isTournament?'Every queen in this bracket receives critiques. Tonight is about points, not survival.':'The safe queens are backstage. The tops and bottoms remain on the main stage.'}</p></div>
     <div class="card"><h3>Critiques</h3><div class="critique-list">${critiques}</div></div>
     ${judgeResponseBlock}
     <div class="card"><h3>Decisions</h3>${topAnnouncements.join('')}<hr class="decision-divider">${bottomAnnouncements.join('')}</div>

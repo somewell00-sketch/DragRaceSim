@@ -3909,3 +3909,144 @@ button.option,
     grid-template-columns:repeat(auto-fit,minmax(220px,1fr))!important;
   }
 }
+
+/* Tournament brackets sidebar polish */
+.queen-item.sidebar-queen-row.tournament-bracket-A,
+.queen-item.sidebar-queen-row.tournament-bracket-B,
+.queen-item.sidebar-queen-row.tournament-bracket-C{
+  position: relative;
+  border-width: 1px;
+}
+.queen-item.sidebar-queen-row.tournament-bracket-A{ box-shadow: inset 0 0 0 2px rgba(255, 145, 55, .75); }
+.queen-item.sidebar-queen-row.tournament-bracket-B{ box-shadow: inset 0 0 0 2px rgba(255, 71, 166, .70); }
+.queen-item.sidebar-queen-row.tournament-bracket-C{ box-shadow: inset 0 0 0 2px rgba(158, 89, 255, .72); }
+.queen-item.sidebar-queen-row.tournament-out-of-bracket{
+  opacity: .30;
+  filter: saturate(.75);
+}
+.queen-item.sidebar-queen-row.tournament-out-of-bracket:hover{
+  opacity: .48;
+}
+.sidebar-bracket-label{
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  opacity: .78;
+  font-size: .72rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+}
+.tournament-vote-table table td,
+.tournament-vote-table table th{
+  text-align: left;
+}
+
+
+/* Tournament bracket color memory in Track Record */
+tr.tournament-track-bracket-A{ box-shadow: inset 3px 0 0 rgba(255, 145, 55, .75); }
+tr.tournament-track-bracket-B{ box-shadow: inset 3px 0 0 rgba(255, 71, 166, .70); }
+tr.tournament-track-bracket-C{ box-shadow: inset 3px 0 0 rgba(158, 89, 255, .72); }
+
+/* Stronger Tournament bracket origin borders */
+.tournament-bracket-A,
+.tournament-bracket-B,
+.tournament-bracket-C{
+  position: relative;
+}
+.tournament-bracket-A::after,
+.tournament-bracket-B::after,
+.tournament-bracket-C::after{
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+}
+.tournament-bracket-A::after{ border: 2px solid rgba(255, 145, 55, .78); }
+.tournament-bracket-B::after{ border: 2px solid rgba(255, 71, 166, .72); }
+.tournament-bracket-C::after{ border: 2px solid rgba(158, 89, 255, .74); }
+tr.tournament-track-bracket-A,
+tr.tournament-track-bracket-B,
+tr.tournament-track-bracket-C{
+  position: relative;
+}
+tr.tournament-track-bracket-A td:first-child{ box-shadow: inset 4px 0 0 rgba(255, 145, 55, .78); }
+tr.tournament-track-bracket-B td:first-child{ box-shadow: inset 4px 0 0 rgba(255, 71, 166, .72); }
+tr.tournament-track-bracket-C td:first-child{ box-shadow: inset 4px 0 0 rgba(158, 89, 255, .74); }
+
+/* Lip Sync For Your Life impact cards */
+.lipsync-ru-card.important{
+  text-align:center;
+  border-color:rgba(255,255,255,.22);
+}
+.lipsync-ru-card h3,
+.lipsync-finale-card h3{
+  margin-top:0;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.lipsync-impact-card{
+  display:flex;
+  align-items:center;
+  gap:1.1rem;
+  position:relative;
+  overflow:hidden;
+  border-width:1px;
+}
+.lipsync-impact-card::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.12;
+  background:linear-gradient(135deg,currentColor,transparent 55%);
+}
+.lipsync-impact-shantay{color:#c7ffdf;border-color:rgba(129,255,184,.38);}
+.lipsync-impact-sashay{color:#ffd1d1;border-color:rgba(255,130,130,.38);}
+.lipsync-impact-portrait{
+  flex:0 0 auto;
+  position:relative;
+  z-index:1;
+}
+.lipsync-impact-copy{
+  position:relative;
+  z-index:1;
+  flex:1;
+  min-width:0;
+}
+.lipsync-impact-label{
+  margin:0 0 .25rem;
+  font-size:.78rem;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+  font-weight:900;
+  opacity:.86;
+}
+.lipsync-impact-copy h2{
+  margin:.1rem 0 .35rem;
+  line-height:1;
+  font-size:clamp(2rem,5vw,3.4rem);
+}
+.lipsync-impact-line{
+  margin:.2rem 0 .35rem;
+  font-size:1.15rem;
+  color:#fff;
+}
+.lipsync-impact-card blockquote{
+  margin:.8rem 0 0;
+  padding:.7rem .9rem;
+  border-left:3px solid currentColor;
+  background:rgba(255,255,255,.05);
+  border-radius:12px;
+  color:rgba(255,255,255,.88);
+  font-style:italic;
+}
+.lipsync-finale-card{text-align:center;}
+@media (max-width:640px){
+  .lipsync-impact-card{align-items:flex-start;gap:.8rem;}
+  .lipsync-impact-copy h2{font-size:clamp(1.55rem,9vw,2.4rem);}
+}
+
+.lipsync-finale-left,.lipsync-finale-left *{text-align:left !important;}
+.lipsync-finale-left .music-cue{text-align:left !important;}

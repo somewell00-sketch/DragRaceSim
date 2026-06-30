@@ -48,7 +48,7 @@ function updateCreatorPreview(){
 
 function castOptionsForFormat(format='regular'){
   const allowed=(typeof getAllowedCastSizes==='function'?getAllowedCastSizes(format):[8,9,10,11,12,13,14,15,16]);
-  const randomAllowed=format!=='brackets';
+  const randomAllowed=!['brackets','tournament'].includes(format);
   return `${randomAllowed?'<option value="random" selected>Random cast size</option>':''}${allowed.map((n,i)=>`<option value="${n}" ${!randomAllowed&&i===0?'selected':''}>${n} queens</option>`).join('')}`;
 }
 function updateCastSizeOptionsForFormat(){
@@ -60,7 +60,7 @@ function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
   const defaultPersonality=p[Math.floor(Math.random()*p.length)].id;
   const randomType=t[Math.floor(Math.random()*t.length)].name;
-  const formatOptions=[['regular','Regular Season',false],['legacy','All Stars — Lip Sync for Your Legacy',false],['assassin','All Stars — Lip Sync Assassin',false],['no_elimination','No Elimination (Coming Soon)',true],['brackets','Tournament Brackets (Coming Soon)',true]].map(([value,label,disabled])=>`<option value="${value}" ${disabled?'disabled':''}>${label}</option>`).join('');
+  const formatOptions=[['regular','Regular Season',false],['legacy','All Stars — Lip Sync for Your Legacy',false],['assassin','All Stars — Lip Sync Assassin',false],['no_elimination','No Elimination (Coming Soon)',true],['tournament','Tournament Brackets',false]].map(([value,label,disabled])=>`<option value="${value}" ${disabled?'disabled':''}>${label}</option>`).join('');
   const castOptions=castOptionsForFormat('regular');
   const typeOptions=t.map(x=>`<option value="${x.name}" ${x.name===randomType?'selected':''}>${x.name}</option>`).join('');
   const personalityOptions=p.map(x=>`<option value="${x.id}" ${x.id===defaultPersonality?'selected':''}>${x.name}</option>`).join('');

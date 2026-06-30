@@ -314,6 +314,29 @@ setHTML(`<main class="layout"><section class="screen">
 function isPlayerEliminatedSpectator(){
   return !!gameState.season?.spectatorMode && !!gameState.queens.find(q=>q.id===gameState.playerQueenId)?.isEliminated;
 }
+
+function renderTournamentObserverWorkroom(){
+  const ep=gameState.currentEpisode;
+  if(!ep){generateEpisode(); return renderTournamentObserverWorkroom();}
+  if(!ep.placements?.length){
+    ep.workroomComplete=true;
+    ep.playerChallengeRisk='safe';
+    calculateEpisodeResults({risk:'safe'});
+  }
+  const group=ep.tournamentBracket?.group || gameState.season?.brackets?.currentGroup || '';
+  const names=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ');
+  window.__preserveScrollY=window.scrollY;
+setHTML(`<main class="layout"><section class="screen">
+    <div class="hero"><span class="badge">Bracket ${escapeHtml(group)}</span><h2>${escapeHtml(ep.themeName||ep.challengeName||'Tournament Challenge')}</h2><p>This bracket is competing now. Your queen watches without making decisions.</p></div>
+    <div class="card"><h3>Competing queens</h3><p>${names}</p></div>
+    ${challengeContentBlock(ep)}
+    ${talentContentBlock(ep)}
+    <button id="continue">Watch the Main Stage</button>
+  </section>${queenSidebar()}</main>`);
+  bindCommon(()=>showHistory(renderTournamentObserverWorkroom));
+  document.querySelector('#continue').addEventListener('click',()=>renderRunway());
+}
+
 function renderSeasonObserverWorkroom(){
   const ep=gameState.currentEpisode;
   if(!ep){generateEpisode(); return renderSeasonObserverWorkroom();}
@@ -379,6 +402,7 @@ function renderWorkroom(){
   if(ep.special==='lalaparuza')return renderLalaparuzaEpisode();
   if(ep.special==='return_smackdown')return renderReturnSmackdownEpisode();
   if(typeof isCurrentEpisodePremiereObserver==='function' && isCurrentEpisodePremiereObserver())return renderPremiereObserverWorkroom();
+  if(ep.special==='tournament_bracket' && ep.participantIds && !ep.participantIds.includes(gameState.playerQueenId))return renderTournamentObserverWorkroom();
   if(isPlayerEliminatedSpectator())return renderSeasonObserverWorkroom();
   ensureAllQueenV14Stats();
   applyWeeklyWearAndTear();

@@ -20,21 +20,24 @@ function renderLipSync(){
   const ep=gameState.currentEpisode;
   const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isAssassin=getSeasonFormat()==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
-  const duelIds=isLegacy ? (ep.top2Queens||[]) : (isAssassin ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens));
+  const isTournament=ep.special==='tournament_bracket';
+  const duelIds=isTournament ? (ep.top2Queens||[]) : (isLegacy ? (ep.top2Queens||[]) : (isAssassin ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)));
   const bottom=duelIds.map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
-  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
-  const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy)
+  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
+  const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament)
     ? 'Two top queens stand before me.'
     : 'Two queens stand before me.');
   const prompt=isAssassin
     ? "This is your chance to beat the assassin and make your lipstick count. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : (isTournament
+    ? "Ladies, this is your chance to win an extra tournament point. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isLegacy
     ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
-  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The music starts...', isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
+      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
+  const normalLipSyncCards=`<div class="hero">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p><div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
   const assassinCards=`<div class="hero">${bigMomentHeader('The music starts...', 'LIP SYNC ASSASSIN', 'win')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>${assassinIntroCardsHtml(ep,bottom)}`;
   window.__preserveScrollY=window.scrollY;
 setHTML(`<main class="layout"><section class="screen">${isAssassin?assassinCards:normalLipSyncCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
@@ -51,6 +54,11 @@ setHTML(`<main class="layout"><section class="screen">${isAssassin?assassinCards
     });
   } else if(playerInBottom){
     renderLipSyncStrategyChoice();
+  } else if(isTournament && isPlayerActiveInCurrentEpisode() && !(ep.top2Queens||[]).includes(gameState.playerQueenId) && !ep.playerTournamentPointVoteChosen){
+    const result=resolveLipSync();
+    // Tournament point votes happen after the lip sync, inside Untucked.
+    // Do not apply episode stats yet because the player's vote still needs to be counted.
+    renderLipSyncResult(result);
   } else {
     const result=resolveLipSync();
     applyEpisodeStats();
@@ -134,6 +142,53 @@ function renderAssassinGroupVoteChoice(onContinue){
   }));
 }
 
+
+function tournamentVoteTableHtml(epOrResult){
+  const ep=gameState.currentEpisode||{};
+  const votes=epOrResult?.tournamentVotes || ep.tournamentVotes || {};
+  const voterIds=Object.keys(votes).filter(Boolean).sort((a,b)=>qName(a).localeCompare(qName(b)));
+  if(!voterIds.length)return '';
+  return `<div class="table-wrap tournament-vote-table"><table><thead><tr><th>Queen</th><th>Voted For</th></tr></thead><tbody>${voterIds.map(voterId=>`<tr><td><strong>${escapeHtml(qName(voterId))}</strong></td><td>${escapeHtml(qName(votes[voterId]))}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderTournamentPointVoteChoice(onContinue){
+  const ep=gameState.currentEpisode;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const candidates=(ep?.placements||[])
+    .map(p=>gameState.queens.find(q=>q.id===p.queenId))
+    .filter(q=>q && q.id!==gameState.playerQueenId)
+    .sort((a,b)=>a.name.localeCompare(b.name));
+  const step=document.querySelector('#step') || document.querySelector('#tournamentPointVoteChoice');
+  if(!step || !player || player.isEliminated || (ep?.participantIds && !ep.participantIds.includes(player.id)) || !candidates.length){
+    ep.playerTournamentPointVoteChosen=true;
+    if(typeof recomputeTournamentVotes==='function')recomputeTournamentVotes(ep);
+    if(ep.lipSyncResult && ep.lipSyncResult.outcome==='tournamentPoints'){
+      ep.lipSyncResult.tournamentVotes=ep.tournamentVotes||{};
+      ep.lipSyncResult.tournamentVoteTally=ep.tournamentVoteTally||{};
+      ep.lipSyncResult.tournamentVotedPointQueenIds=ep.tournamentVotedPointQueenIds||[];
+    }
+    saveGame();
+    onContinue?.();
+    return;
+  }
+  step.classList.add('decision-card','important');
+  const topSet=new Set(ep.top2Queens||[]);
+  step.innerHTML=`<h3>Cast Your Point Vote</h3><p>The lip sync is over. Now every queen who did not win the challenge votes to award one extra tournament point.</p><p class="small">You may vote for anyone except yourself. The other queens usually prioritize someone outside the Top 2.</p><div class="options">${candidates.map(q=>choiceButtonHtml({id:q.id,attr:'data-tournament-point-vote',label:`🗳️ ${escapeHtml(q.name)}`,desc:topSet.has(q.id)?'Vote for one of the challenge winners.':'Vote for a queen who did not win the challenge.'})).join('')}</div>`;
+  document.querySelectorAll('[data-tournament-point-vote]').forEach(btn=>btn.addEventListener('click',()=>{
+    ep.tournamentVotes=ep.tournamentVotes||{};
+    ep.tournamentVotes[player.id]=btn.dataset.tournamentPointVote;
+    ep.playerTournamentPointVoteChosen=true;
+    if(typeof recomputeTournamentVotes==='function')recomputeTournamentVotes(ep);
+    if(ep.lipSyncResult && ep.lipSyncResult.outcome==='tournamentPoints'){
+      ep.lipSyncResult.tournamentVotes=ep.tournamentVotes||{};
+      ep.lipSyncResult.tournamentVoteTally=ep.tournamentVoteTally||{};
+      ep.lipSyncResult.tournamentVotedPointQueenIds=ep.tournamentVotedPointQueenIds||[];
+    }
+    saveGame();
+    onContinue?.();
+  }));
+}
+
 function renderLipSyncStrategyChoice(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   const reveals=player?.inventory?.reveals||0;
@@ -150,7 +205,7 @@ function renderLipSyncStrategyChoice(){
   ];
   const step=document.querySelector('#step');
   step.classList.add('decision-card','important');
-  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>${getSeasonFormat()==='legacy'?'You are in the Top 2. Choose the story you want to tell on stage.':(getSeasonFormat()==='assassin'?'You are facing the Lip Sync Assassin. Choose the story you want to tell on stage.':'You are in the Bottom. Choose the story you want to tell on stage.')}</p><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
+  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>${(getSeasonFormat()==='legacy'||gameState.currentEpisode?.special==='tournament_bracket')?'You are in the Top 2. Choose the story you want to tell on stage.':(getSeasonFormat()==='assassin'?'You are facing the Lip Sync Assassin. Choose the story you want to tell on stage.':'You are in the Bottom. Choose the story you want to tell on stage.')}</p><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
     const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
     return choiceButtonHtml({id,attr:'data-strategy',label,desc,disabled});
   }).join('')}</div>`;
@@ -274,7 +329,7 @@ const V20_LIPSYNC_TEXT={
 function resultTier(result){
   if(result.outcome==='doubleShantay') return 'doubleShantay';
   if(result.outcome==='doubleSashay') return 'doubleSashay';
-  if(result.outcome==='top2Win') return 'top2Win';
+  if(result.outcome==='top2Win' || result.outcome==='tournamentPoints') return 'top2Win';
   const diff=result.difference ?? Math.abs((result.results?.[0]?.score10||0)-(result.results?.[1]?.score10||0));
   const high=Math.max(...result.results.map(r=>r.score10));
   if(high<6.5) return 'weak';
@@ -1006,6 +1061,108 @@ function lipSyncNarrative(result){
   const c=buildLipSyncCommentary(result);
   return c.lines.map((line,i)=>`<p${i===0?' class="lead"':''}>${formatLipSyncLine(line,result)}</p>`).join('');
 }
+
+function farewellData(){
+  return gameState?.data?.farewellLines || window.GAME_DATA?.farewellLines || {};
+}
+function normKey(value){
+  return String(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+}
+function farewellTypeKey(q){
+  const t=normKey(q?.type || q?.queenType || q?.typeName);
+  if(t.includes('weird'))return 'weird';
+  if(t.includes('fashion')||t.includes('look')||t.includes('runway'))return 'fashion';
+  if(t.includes('comedy')||t.includes('comic'))return 'comedy';
+  if(t.includes('dance')||t.includes('dancing')||t.includes('perform'))return 'dancing';
+  if(t.includes('pageant'))return 'pageant';
+  if(t.includes('camp'))return 'camp';
+  if(t.includes('alternative')||t.includes('alt'))return 'alternative';
+  if(t.includes('makeup')||t.includes('beauty'))return 'look';
+  if(t.includes('acting')||t.includes('theatre')||t.includes('theater'))return 'acting';
+  if(t.includes('sing')||t.includes('vocal'))return 'singing';
+  if(t.includes('social')||t.includes('congenial'))return 'social';
+  return 'default';
+}
+function farewellPersonalityKey(q){
+  const raw=q?.personality?.id || q?.personalityId || q?.personality?.name || q?.personality || '';
+  const k=normKey(raw);
+  if(k.includes('shy'))return 'shy';
+  if(k.includes('confident')||k.includes('bold'))return 'confident';
+  if(k.includes('professional')||k.includes('focused'))return 'professional';
+  if(k.includes('strategic')||k.includes('strategy'))return 'strategic';
+  if(k.includes('kind')||k.includes('warm'))return 'kind';
+  if(k.includes('chaotic')||k.includes('chaos'))return 'chaotic';
+  if(k.includes('shady')||k.includes('shade'))return 'shady';
+  if(k.includes('dramatic')||k.includes('drama'))return 'dramatic';
+  if(k.includes('weird')||k.includes('odd'))return 'weird';
+  return 'default';
+}
+function farewellPick(group,key,fallback=''){
+  const data=farewellData();
+  const node=data?.[group] || {};
+  return shortPick(node?.[key], shortPick(node?.default, fallback));
+}
+function ruFarewellThanks(q){
+  const data=farewellData();
+  const template=shortPick(data.rupaulThanks, 'Thank you for sharing your {talent} with {quality}.');
+  const talent=farewellPick('talentsByType', farewellTypeKey(q), 'drag');
+  const quality=farewellPick('qualitiesByPersonality', farewellPersonalityKey(q), 'heart');
+  return fillTemplate(template,{talent,quality});
+}
+function queenExitQuote(q){
+  return farewellPick('queenExitByPersonality', farewellPersonalityKey(q), 'This is not the end of my story.');
+}
+function rupaulDecisionIntro(){
+  return shortPick(farewellData().rupaulIntros, 'The time has come...');
+}
+function rupaulFinalLine(){
+  return shortPick(farewellData().ruFinale, "If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?");
+}
+function impactQueenCard(q, label, line, variant='default', extra=''){
+  if(!q)return '';
+  const safeVariant=String(variant||'default').replace(/[^a-z0-9_-]/gi,'');
+  return `<div class="card lipsync-impact-card lipsync-impact-${safeVariant}">
+    <div class="lipsync-impact-portrait">${queenPortraitHtml(q,'xl')}</div>
+    <div class="lipsync-impact-copy">
+      <p class="lipsync-impact-label">${escapeHtml(label||'')}</p>
+      <h2>${escapeHtml(q.name||'Queen')}</h2>
+      <p class="lipsync-impact-line"><strong>${escapeHtml(line||'')}</strong></p>
+      ${extra||''}
+    </div>
+  </div>`;
+}
+function standardLsfylDecisionCards(result){
+  if(result.outcome==='doubleShantay'){
+    const queens=[...result.results].map(r=>gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p></div>` + queens.map(q=>impactQueenCard(q,'DOUBLE SHANTAY','You both stay.','shantay')).join('');
+  }
+  if(result.outcome==='doubleSashay'){
+    const queens=[...result.results].map(r=>gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>I’m sorry, my dears, but neither of you survived this lip sync.</strong></p></div>` + queens.map(q=>impactQueenCard(q,'SASHAY AWAY','Sashay away.','sashay',`<p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote>`)).join('');
+  }
+  const survivor=gameState.queens.find(q=>q.id===result.survivorId);
+  const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
+  if(!survivor || !eliminated)return `<div class="card">${lipSyncDecisionText(result)}</div>`;
+  return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p></div>
+    ${impactQueenCard(survivor,'SHANTAY', 'Shantay, you stay.', 'shantay', '<p>You fought for your place in this competition.</p>')}
+    ${impactQueenCard(eliminated,'SASHAY AWAY', 'Sashay away.', 'sashay', `<p>${escapeHtml(ruFarewellThanks(eliminated))}</p><blockquote>${escapeHtml(queenExitQuote(eliminated))}</blockquote>`)};`.replace(/;$/, '');
+}
+function lipSyncDecisionCards(result){
+  if(['legacyElimination','assassinElimination','tournamentPoints','top2Win'].includes(result.outcome)){
+    return `<div class="card">${lipSyncDecisionText(result)}</div>`;
+  }
+  return standardLsfylDecisionCards(result);
+}
+function finalAmenCard(){
+  return `<div class="card lipsync-finale-card lipsync-finale-left"><h3>RuPaul</h3><p>${escapeHtml(rupaulFinalLine())}</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue spotlight-cue">💡 ✦ 💡</p></div>`;
+}
+
+
+function lipstickFarewellBlock(q){
+  const name=escapeHtml(q?.name||'My dear');
+  return `<div class="lipstick-farewell"><h3>${name}</h3><p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote><p><strong>Now... sashay away.</strong></p></div>`;
+}
+
 function lipSyncDecisionText(result){
   const ep=gameState.currentEpisode;
   if(result.outcome==='legacyElimination'){
@@ -1013,7 +1170,7 @@ function lipSyncDecisionText(result){
     const loser=result.results.find(r=>r.queenId!==result.survivorId);
     const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
     const bottoms=(ep.bottomQueens||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).sort((a,b)=>a.localeCompare(b));
-    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are a winner, baby!</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p><p class="legacy-bottom-call">The bottom queens<br><strong>${bottoms.join(',<br>')}</strong><br>please step forward.</p><p class="legacy-power-line"><strong>${escapeHtml(winner?.name||'Winner')}</strong>, with great power comes great responsibility.<br><br>Who have you decided to give the chop?</p><p><strong>${escapeHtml(winner?.name||'The winning queen')}</strong> reveals the lipstick...</p><div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(eliminated?.name||'a bottom queen')}.</p></div><p>${escapeHtml(eliminated?.name||'My dear')}, sashay away.</p>`;
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are a winner, baby!</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p><p class="legacy-bottom-call">The bottom queens<br><strong>${bottoms.join(',<br>')}</strong><br>please step forward.</p><p class="legacy-power-line"><strong>${escapeHtml(winner?.name||'Winner')}</strong>, with great power comes great responsibility.<br><br>Who have you decided to give the chop?</p><p><strong>${escapeHtml(winner?.name||'The winning queen')}</strong> reveals the lipstick...</p><div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(eliminated?.name||'a bottom queen')}.</p></div>${lipstickFarewellBlock(eliminated)}`;
   }
   if(result.outcome==='assassinElimination'){
     const top=gameState.queens.find(q=>q.id===result.topQueenId);
@@ -1032,7 +1189,12 @@ function lipSyncDecisionText(result){
       ? `<div class="card subtle"><p>The group vote is tied between <strong>${tieNames.map(escapeHtml).join('</strong> and <strong>')}</strong>.</p><p>In the event of a tie, the power reverts back to the top All Star of the week.</p><p><strong>${escapeHtml(top?.name||'Winner')}</strong>, who have you chosen to get the chop?</p></div>`
       : '';
     const firstRevealName=tieBlock ? 'A TIE!' : (eliminated?.name||'a bottom queen');
-    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winnerName)}.</strong><br><strong>You are a winner, baby!</strong></p>${loserLine}<p class="legacy-bottom-call">The bottom queens<br><strong>${bottoms.join(',<br>')}</strong><br>please step forward.</p><p class="legacy-power-line"><strong>My queens</strong>, with great power comes great responsibility.<br><br>${escapeHtml(question)}</p><p><strong>${escapeHtml(revealName)}</strong> reveals the lipstick...</p><div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(firstRevealName)}${tieBlock?'':'.'}</p></div>${tieBlock}${tieBlock?`<div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The final lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(eliminated?.name||'a bottom queen')}.</p></div>`:''}<p>${escapeHtml(eliminated?.name||'My dear')}, sashay away.</p>`;
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winnerName)}.</strong><br><strong>You are a winner, baby!</strong></p>${loserLine}<p class="legacy-bottom-call">The bottom queens<br><strong>${bottoms.join(',<br>')}</strong><br>please step forward.</p><p class="legacy-power-line"><strong>My queens</strong>, with great power comes great responsibility.<br><br>${escapeHtml(question)}</p><p><strong>${escapeHtml(revealName)}</strong> reveals the lipstick...</p><div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(firstRevealName)}${tieBlock?'':'.'}</p></div>${tieBlock}${tieBlock?`<div class="lipstick-reveal"><p class="lipstick-reveal-kicker">The final lipstick reveals</p><p class="lipstick-reveal-dots">. . .</p><p class="lipstick-reveal-name">${escapeHtml(eliminated?.name||'a bottom queen')}.</p></div>`:''}${lipstickFarewellBlock(eliminated)}`;
+  }
+  if(result.outcome==='tournamentPoints'){
+    const winner=gameState.queens.find(q=>q.id===result.survivorId);
+    const loser=result.results.find(r=>r.queenId!==result.survivorId);
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are a winner, baby!</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p><p>The Top 2 each receive <strong>2 tournament points</strong>.</p><p><strong>${escapeHtml(winner?.name||'The lip sync winner')}</strong> receives <strong>1 extra point</strong> for winning the lip sync.</p><p>Every point vote awards <strong>1 tournament point</strong> to the queen who received it.</p>`;
   }
   if(result.outcome==='top2Win'){
     const winner=gameState.queens.find(q=>q.id===result.survivorId);
@@ -1049,19 +1211,23 @@ function renderLipSyncResult(result){
   const ep=gameState.currentEpisode;
   const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isAssassin=getSeasonFormat()==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
-  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
-  const intro=(ep.special==='premiere_no_elim'||isLegacy)?'Two top queens stand before me.':'Two queens stand before me.';
-  const prompt=isLegacy
+  const isTournament=ep.special==='tournament_bracket';
+  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
+  const intro=(ep.special==='premiere_no_elim'||isLegacy||isTournament)?'Two top queens stand before me.':'Two queens stand before me.';
+  const prompt=isTournament
+    ? "Ladies, this is your chance to win an extra tournament point. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : (isLegacy
     ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.");
+      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const introBlock=isAssassin ? assassinIntroCardsHtml(ep,resultQueens) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', isAssassin?'LIP SYNC ASSASSIN':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isAssassin)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
+  document.querySelector('.screen').innerHTML=`<div class="hero">${bigMomentHeader('The music starts...', isAssassin?'LIP SYNC ASSASSIN':(isTournament?'LIP SYNC FOR YOUR LEGACY':(isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')))), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>
   ${introBlock}
   <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ✦ ✦ 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
-  <div class="card">${lipSyncDecisionText(result)}<p>If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue spotlight-cue">💡 ✦ 💡</p></div>
+  ${lipSyncDecisionCards(result)}
+  ${finalAmenCard()}
   <button id="continue">Continue</button>`;
   scrollToTop();
   document.querySelector('#continue').addEventListener('click',renderUntucked);
