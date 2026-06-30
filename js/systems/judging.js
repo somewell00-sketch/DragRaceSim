@@ -361,6 +361,40 @@ function challengeDefinitionForEpisode(ep){
   return {id:ep.challengeType||'unknown', name:ep.challengeName||'Challenge', runwayWeight:.15, weights:{cunt:.30,lipSync:.20,acting:.20,runway:.20,makeup:.10}};
 }
 
+function normalizeTalentWeights(weights){
+  const all={cunt:0,lipSync:0,acting:0,runway:0,makeup:0,sewing:0,...(weights||{})};
+  const total=Object.values(all).reduce((sum,v)=>sum+(Number(v)||0),0) || 1;
+  Object.keys(all).forEach(k=>{ all[k]=(Number(all[k])||0)/total; });
+  return all;
+}
+function talentTypeForQueenInEpisode(ep,q){
+  const talent=(ep?.challengeContent?.talents||[]).find(t=>t.queenId===q?.id);
+  return String(talent?.talent?.type || 'performance').toLowerCase();
+}
+function talentWeightsForType(type){
+  const profiles={
+    music:{cunt:.24,lipSync:.32,acting:.16,runway:.10,makeup:.08,sewing:.10},
+    vocals:{cunt:.22,lipSync:.28,acting:.24,runway:.08,makeup:.08,sewing:.10},
+    performance:{cunt:.24,lipSync:.24,acting:.18,runway:.14,makeup:.10,sewing:.10},
+    dance:{cunt:.18,lipSync:.36,acting:.12,runway:.16,makeup:.08,sewing:.10},
+    stunt:{cunt:.20,lipSync:.34,acting:.10,runway:.16,makeup:.08,sewing:.12},
+    comedy:{cunt:.32,lipSync:.12,acting:.30,runway:.08,makeup:.08,sewing:.10},
+    theatre:{cunt:.24,lipSync:.14,acting:.34,runway:.10,makeup:.08,sewing:.10},
+    acting:{cunt:.24,lipSync:.12,acting:.36,runway:.10,makeup:.08,sewing:.10},
+    variety:{cunt:.26,lipSync:.20,acting:.20,runway:.12,makeup:.10,sewing:.12},
+    camp:{cunt:.30,lipSync:.14,acting:.24,runway:.10,makeup:.10,sewing:.12},
+    runway:{cunt:.16,lipSync:.10,acting:.08,runway:.28,makeup:.20,sewing:.18},
+    weird:{cunt:.28,lipSync:.18,acting:.18,runway:.12,makeup:.12,sewing:.12}
+  };
+  return normalizeTalentWeights(profiles[type]||profiles.performance);
+}
+function challengeWeightsForQueen(challenge,ep,q){
+  if(ep?.challengeType==='talent'){
+    return talentWeightsForType(talentTypeForQueenInEpisode(ep,q));
+  }
+  return challenge.weights;
+}
+
 function episodeFormModifier(q, ep){
   if(!q || !ep)return {score:0,label:''};
   const arc=(typeof ensurePerformanceArc==='function')?ensurePerformanceArc(q):q.performanceArc;
@@ -585,7 +619,8 @@ function calculateEpisodeResults(playerChoices={}){
   const scored=active.map(q=>{
     const qEffects=currentQueenEffects(q);
     const risk=q.id===gameState.playerQueenId?playerChoices.risk:(qEffects.risk||chooseAIRisk(q));
-    const base=weightedAttributeScore(q.attributes,challenge.weights);
+    const effectiveChallengeWeights=challengeWeightsForQueen(challenge,ep,q);
+    const base=weightedAttributeScore(q.attributes,effectiveChallengeWeights);
     const ballRunway=ensureBallRunwayScores(ep,q);
     if(ballRunway){
       ep.runwayRolls[q.id]=ballRunway.composite;
@@ -616,7 +651,7 @@ function calculateEpisodeResults(playerChoices={}){
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
