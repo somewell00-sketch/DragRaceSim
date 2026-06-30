@@ -430,7 +430,7 @@ function applySabotageAttempt(targetId){
   if(success){
     const note=`Your sabotage lands. ${target.name} takes a challenge penalty, gets stressed, and the relationship gets much worse.`;
     applyPlayerEffects({production:10.5,fans:-1.25,stress:4,affinity:-49,respect:-20,queens:-1.25},note,target.id);
-    applyQueenEffects(target,{challengeBonus:-1.6,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
+    applyQueenEffects(target,{challengeBonus:-4.0,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
     maybeVillainEdit(player,0.22,`successfully sabotaged ${target.name}`);
     episodeSocialNote('workroom',note);
   }else{
