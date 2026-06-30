@@ -1,8 +1,8 @@
 function lipSyncEnergyLabel(song){
   const energy=String(song?.energy||'').toLowerCase();
-  if(energy==='high')return '🔥🔥🔥';
-  if(energy==='medium')return '💡💡💡';
-  if(energy==='low')return '💧💧💧';
+  if(energy==='high')return '🔥 🔥 🔥 🔥 🔥';
+  if(energy==='medium')return '✨ ✨ ✨';
+  if(energy==='low')return '🌙';
   return '';
 }
 
@@ -1259,7 +1259,7 @@ function renderLipSyncResult(result){
   const resultHero=isAssassin ? '' : `<div class="hero">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>${escapeHtml(ep.song.artist)}</p></div>`;
   document.querySelector('.screen').innerHTML=`${resultHero}
   ${introBlock}
-  <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ✦ ✦ 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
+  <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
   ${lipSyncDecisionCards(result)}
   ${finalAmenCard()}
   <button id="continue">Continue</button>`;
