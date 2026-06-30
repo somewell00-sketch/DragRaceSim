@@ -18,10 +18,9 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
     <p>But first...</p>
     <p><strong>May this week's Lip Sync Assassin...</strong></p>
-    <p><strong>RuVeal herself!</strong></p>
   </div>
   <div class="card assassin-reveal-card important">
-    <p class="eyebrow">THE ASSASSIN ARRIVES</p>
+    <p class="eyebrow">RUVEEEEAAAL YOURSELF!</p>
     <h2>${escapeHtml(assassin.name||'Lip Sync Assassin')}</h2>
     <p>A legendary lip sync assassin enters the stage.</p>
   </div>
