@@ -2,7 +2,7 @@ function lipSyncEnergyLabel(song){
   const energy=String(song?.energy||'').toLowerCase();
   if(energy==='high')return '🔥 🔥 🔥 🔥 🔥';
   if(energy==='medium')return '✨ ✨ ✨';
-  if(energy==='low')return '🌙';
+  if(energy==='low')return '🕯️';
   return '';
 }
 
