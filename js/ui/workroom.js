@@ -472,8 +472,8 @@ function choiceEmoji(id){
     safe:'🛡️', risk:'🔥', unexpected:'🎲'
   }[id] || '•';
 }
-function optionButton(id, dataAttr, obj){
-  return `<button class="option" ${dataAttr}="${id}"><span class="choice-emoji" aria-hidden="true">${choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
+function optionButton(id, dataAttr, obj, extraAttrs=''){
+  return `<button class="option" ${dataAttr}="${id}" ${extraAttrs}><span class="choice-emoji" aria-hidden="true">${choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
 }
 function targetSelectHtml(id='targetSelect'){
   let targets=getUntuckedTargets();
@@ -493,10 +493,16 @@ function renderWorkroomChoice(){
   }));
 }
 function renderPreparationChoice(){
-  const prepButtons=Object.entries(PREP_CHOICES).map(([id,o])=>optionButton(id,'data-prep',o)).join('');
-  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p><div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  if(typeof ensureEffectQueenStats==='function')ensureEffectQueenStats(player);
+  const stamina=Math.round(player?.energy ?? 0);
+  const tooExhausted=stamina<30;
+  const prepButtons=Object.entries(PREP_CHOICES).map(([id,o])=>optionButton(id,'data-prep',o,(id==='rehearse'&&tooExhausted)?'disabled aria-disabled="true"':'')).join('');
+  const exhaustedMsg=tooExhausted?`<p class="small warning">You're too exhausted to rehearse more.</p>`:'';
+  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p><div class="small"><strong>Stamina</strong><br>${stamina} / 100</div>${exhaustedMsg}<div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
   document.querySelectorAll('[data-prep]').forEach(btn=>btn.addEventListener('click',()=>{
     const id=btn.dataset.prep;
+    if(id==='rehearse' && tooExhausted)return;
     const choice=PREP_CHOICES[id];
     if(choice.needsTarget){
       document.querySelector('#prepTarget').innerHTML=`<div class="card subtle decision-card"><h4>Who do you ask?</h4>${targetSelectHtml('prepTargetSelect')}<button id="confirmPrep">Confirm</button></div>`;

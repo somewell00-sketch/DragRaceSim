@@ -54,7 +54,7 @@ function renderLipSync(){
   const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
   const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament)
     ? '<h3>Two top queens stand before me.</h3>'
-    : '<h3>Two queens stand before me.</h3>');
+    : ((ep.bottomQueens||[]).length===3 ? '<h3>Three queens stand before me.</h3><p>Tonight, all three of you will lip sync for your lives.</p>' : '<h3>Two queens stand before me.</h3>'));
   const prompt=isAssassin
     ? "This is your chance to beat the assassin and make your lipstick count. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isTournament
@@ -1237,6 +1237,11 @@ function lipSyncDecisionText(result){
   }
   if(result.outcome==='doubleShantay'){const names=[...result.results].sort((a,b)=>a.name.localeCompare(b.name)).map(r=>escapeHtml(r.name)); return `<p><strong>${names[0]} and ${names[1]}, Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p>`;}
   if(result.outcome==='doubleSashay'){const names=[...result.results].sort((a,b)=>a.name.localeCompare(b.name)).map(r=>escapeHtml(r.name)); return `<p><strong>${names[0]} and ${names[1]}, I’m sorry, my dears, but neither of you survived this lip sync.</strong></p><p>Sashay away.</p>`;}
+  if(result.outcome==='tripleBottom'){
+    const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
+    const safeNames=(result.results||[]).filter(r=>r.queenId!==result.eliminatedQueenId).map(r=>escapeHtml(r.name)).join(' and ');
+    return `<p><strong>${safeNames}, Shantay, you stay.</strong></p><p><strong>${escapeHtml(eliminated?.name||'Queen')}</strong>, sashay away.</p>`;
+  }
   const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
   const survivor=gameState.queens.find(q=>q.id===result.survivorId);
   return `<p><strong>${escapeHtml(survivor.name)}, Shantay, you stay.</strong></p><p><strong>${escapeHtml(eliminated.name)}</strong>, sashay away.</p>`;
