@@ -1387,10 +1387,20 @@ function finalePublicRating(q, key){
   return clamp(50 + ((q.publicScores?.[key]||0)*0.45), 0, 100);
 }
 function finaleHistoryRating(q){
-  const st=q.statistics||{};
-  const raw=(st.wins||0)*16+(st.highs||0)*7+(st.safes||0)*2-(st.lows||0)*4-(st.bottoms||0)*7+(q.momentum||0)*2;
+  const st = q.statistics || {};
+
+  const raw =
+      (st.wins || 0) * 16 +
+    (st.highs || 0) * 10 +
+    (st.safes || 0) * 4 +
+    (st.lows || 0) * 0 -
+    (st.bottoms || 0) * 2 +
+    (q.momentum || 0) * 2;
+
   return clamp(raw, 0, 100);
 }
+
+
 function finaleLipRating(lipScore){
   // finalLipPerformance is roughly a 0-65 raw score. Turn it into a 0-100 rating.
   return clamp(lipScore*1.55, 0, 100);
