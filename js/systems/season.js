@@ -217,6 +217,10 @@ function makeExtraQueen(index){return makeGeneratedQueen(index,new Set());}
 function buildNpcCast(size){
   const maxNpc=Number(size||14)>=18?17:15;
   const needed=Math.max(7,Math.min(maxNpc,Number(size||14)-1));
+  return buildNpcCastExact(needed);
+}
+function buildNpcCastExact(count){
+  const needed=Math.max(0,Number(count)||0);
   const usedNames=new Set();
   const cast=[];
   for(let i=1;i<=needed;i++) cast.push(makeGeneratedQueen(i, usedNames));
@@ -666,6 +670,92 @@ function finishTournamentGroupIfNeeded(){
 }
 
 function startSeason(playerQueen, castSize='random', seasonFormat='regular'){const data=gameState.data; resetState(); gameState.data=data; const format=normalizeSeasonFormat(seasonFormat); const resolvedCastSize=resolveCastSizeForFormat(castSize,format); gameState.settings.castSize=resolvedCastSize; gameState.settings.seasonFormat=format; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:isTournamentFormat(format)?'tournament_entrance':'entrance',format,finaleSize,originalCastSize:gameState.queens.length,returnTwist:initializeReturnTwist(format),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; if(isTournamentFormat(format))gameState.season.brackets=initializeTournamentBrackets(); setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
+
+function resetQueenForNewSeason(q, isPlayer=false){
+  const clean=JSON.parse(JSON.stringify(q||{}));
+  clean.isPlayer=!!isPlayer;
+  clean.isEliminated=false;
+  clean.momentum=0;
+  clean.confidence=5;
+  clean.energy=80;
+  clean.stress=20;
+  clean.publicScores={production:0,queens:0,fans:0};
+  clean.inventory={reveals:3};
+  clean.statistics={wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0};
+  clean.episodeHistory=[];
+  clean.confessionals=[];
+  clean.performanceArc=null;
+  clean.tournamentPoints=0;
+  delete clean.placement;
+  delete clean.trackRecord;
+  delete clean.finalPlacement;
+  delete clean.eliminatedEpisode;
+  delete clean.returned;
+  delete clean.tournamentReturned;
+  delete clean.tournamentAdvanced;
+  delete clean.tournamentBracket;
+  return clean;
+}
+
+function allStarsRelationshipStrength(q, playerId){
+  const a=gameState.relationships?.[playerId]?.[q.id]||{};
+  const b=gameState.relationships?.[q.id]?.[playerId]||{};
+  return Math.max(Math.abs(Number(a.affinity)||0),Math.abs(Number(b.affinity)||0));
+}
+
+function chooseAllStarsReturningQueens(player){
+  const playerId=player?.id||gameState.playerQueenId;
+  const candidates=(gameState.queens||[]).filter(q=>q.id!==playerId && !q.isAssassin);
+  const scored=candidates.map(q=>{
+    const tags=(typeof seasonArcTags==='function')?seasonArcTags(q):[];
+    const placement=Number(q.finalPlacement)||999;
+    const rel=allStarsRelationshipStrength(q, playerId);
+    let score=0;
+    if(tags.includes('production darling'))score+=5000;
+    if(tags.includes('fan favorite'))score+=4000;
+    score+=Math.max(0,1000-placement*80);
+    score+=rel*3;
+    return {q,score};
+  }).sort((a,b)=>b.score-a.score);
+  const pool=scored.filter(item=>item.score>0).map(item=>item.q);
+  const count=Math.min(pool.length, Math.floor(Math.random()*3));
+  return pool.slice(0,count);
+}
+
+function startAllStarsSeasonFromCurrent(format){
+  const data=gameState.data;
+  const previousRelationships=JSON.parse(JSON.stringify(gameState.relationships||{}));
+  const previousQueens=gameState.queens||[];
+  const oldPlayer=previousQueens.find(q=>q.id===gameState.playerQueenId);
+  if(!oldPlayer)return;
+  const returning=chooseAllStarsReturningQueens(oldPlayer);
+  const nextPlayer=resetQueenForNewSeason(oldPlayer,true);
+  const nextReturning=returning.map(q=>resetQueenForNewSeason(q,false));
+  resetState();
+  gameState.data=data;
+  const normalized=normalizeSeasonFormat(format);
+  const resolvedCastSize=resolveCastSizeForFormat('random',normalized);
+  gameState.settings.castSize=resolvedCastSize;
+  gameState.settings.seasonFormat=normalized;
+  gameState.playerQueenId=nextPlayer.id;
+  const neededNpc=Math.max(0,resolvedCastSize-1-nextReturning.length);
+  const cast=buildNpcCastExact(neededNpc);
+  gameState.queens=shuffle([nextPlayer,...nextReturning,...cast]);
+  const finaleSize=pickFinaleSize(gameState.queens.length);
+  gameState.season={number:2,status:isTournamentFormat(normalized)?'tournament_entrance':'entrance',format:normalized,allStarsInvitation:true,finaleSize,originalCastSize:gameState.queens.length,returnTwist:initializeReturnTwist(normalized),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]};
+  if(isTournamentFormat(normalized))gameState.season.brackets=initializeTournamentBrackets();
+  setupPremiereStructure();
+  gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize);
+  initializePerformanceArcs();
+  initializeRelationships();
+  nextReturning.forEach(r=>{
+    if(previousRelationships?.[nextPlayer.id]?.[r.id])gameState.relationships[nextPlayer.id][r.id]=previousRelationships[nextPlayer.id][r.id];
+    if(previousRelationships?.[r.id]?.[nextPlayer.id])gameState.relationships[r.id][nextPlayer.id]=previousRelationships[r.id][nextPlayer.id];
+  });
+  if(typeof ensureAllSocialStats==='function')ensureAllSocialStats();
+  saveGame();
+}
+
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
   if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';

@@ -134,6 +134,55 @@ function postSeasonReception(q){
   </section>`;
 }
 
+
+function allStarsInvitationEligible(){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  if(!player || player.id===gameState.season?.winnerId)return false;
+  const tags=(typeof seasonArcTags==='function')?seasonArcTags(player):[];
+  return tags.includes('fan favorite') || tags.includes('production darling');
+}
+function renderAllStarsInvite(){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  setHTML(`<main class="screen">
+    <section class="hero finale-results-hero all-stars-invite-hero">
+      <span class="badge win">All Stars</span>
+      <h1>ALL STARS CALLING</h1>
+      ${player?`<div class="winner-portrait-wrap">${queenPortraitHtml(player,'xl','winner-portrait')}</div>`:''}
+      <p>You may not have won the crown...</p>
+      <p>But you've made quite an impression.</p>
+      <p>You've been invited to compete on <strong>RuPaul's Drag Race All Stars.</strong></p>
+      <div class="button-row">
+        <button id="acceptAllStars" class="primary">Accept the Mission</button>
+        <button id="returnMainMenu" class="secondary">Return to Main Menu</button>
+      </div>
+    </section>
+  </main>`);
+  document.querySelector('#acceptAllStars')?.addEventListener('click',renderAllStarsFormatSelection);
+  document.querySelector('#returnMainMenu')?.addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
+}
+function renderAllStarsFormatSelection(){
+  const formats=[
+    {id:'legacy',label:'Lip Sync For Your Legacy',desc:'The Top 2 lip sync for the power to eliminate.'},
+    {id:'assassin',label:'Lip Sync Assassin',desc:'The challenge winner faces an assassin, and the group vote may decide.'},
+    {id:'tournament',label:'Tournament Brackets',desc:'Queens compete through bracket groups before the final tournament stage.'}
+  ];
+  setHTML(`<main class="screen">
+    <section class="hero">
+      <span class="badge win">All Stars</span>
+      <h1>Choose your All Stars format</h1>
+      <p>Every All Stars season plays differently.</p>
+      <p>Choose the format you'd like to compete in.</p>
+    </section>
+    <section class="card decision-card">
+      <div class="options">${formats.map(f=>choiceButtonHtml({id:f.id,attr:'data-allstars-format',label:f.label,desc:f.desc})).join('')}</div>
+    </section>
+  </main>`);
+  document.querySelectorAll('[data-allstars-format]').forEach(btn=>btn.addEventListener('click',()=>{
+    startAllStarsSeasonFromCurrent(btn.dataset.allstarsFormat);
+    renderEntrance();
+  }));
+}
+
 function finaleStrategyOptionsHtml(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   const reveals=player?.inventory?.reveals||0;
@@ -670,7 +719,8 @@ function renderSummary(){
     <section class="card"><h2>Track Record</h2>${historyTable()}</section>
     ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}
     ${iconicLipSyncsTable()}
-    <button id="newGame">New season</button>
+    <div class="button-row"><button id="newGame">New season</button>${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
   </main>`);
   document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
+  document.querySelector('#allStarsInvite')?.addEventListener('click',renderAllStarsInvite);
 }

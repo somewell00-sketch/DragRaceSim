@@ -406,7 +406,8 @@ function episodeFormModifier(q, ep){
     return {score:Math.round((1.55+comeback)*10)/10,label:'Peak week'};
   }
   if(isBad){
-    const pressure=(q.statistics?.wins||0)>=2?0.35:0;
+    const wins=q.statistics?.wins||0;
+    const pressure=wins>=2?0.35:(wins>=1?0.20:0);
     return {score:Math.round((-1.55-pressure)*10)/10,label:'Bad week'};
   }
   return {score:0,label:''};
@@ -430,10 +431,33 @@ function vulnerabilityPressureModifier(q, ep){
   const week=ep?.number||0;
   if(week<4)return 0;
   let pressure=-0.35;
-  if((st.wins||0)>=1)pressure-=0.25;
+  if((st.wins||0)>=1)pressure-=0.35;
   if((st.highs||0)>=2)pressure-=0.20;
-  if((q.momentum||0)>=2)pressure-=0.15;
+  if((q.momentum||0)>=2)pressure-=0.20;
   return Math.round(pressure*10)/10;
+}
+
+function frontrunnerVolatilityModifier(q, ep){
+  // A queen who wins early should not become bottom-proof for the rest of the season.
+  // This is a small week-to-week exposure modifier, separate from the WIN throttle:
+  // it can pull a frontrunner into LOW/BTM on a bad week without making strong queens random.
+  if(!q || !ep)return 0;
+  const st=q.statistics||{};
+  const wins=st.wins||0;
+  if(wins<1)return 0;
+  const week=ep.number||0;
+  if(week<3)return 0;
+  const history=q.episodeHistory||[];
+  const last=history[history.length-1]?.placement||'';
+  const lows=st.lows||0;
+  const bottoms=st.bottoms||0;
+  let pressure=0;
+  if(last==='WIN')pressure-=0.75;
+  else pressure-=0.30;
+  pressure-=Math.min(0.50, wins*0.18);
+  if(lows===0 && bottoms===0)pressure-=0.25;
+  if((q.momentum||0)>=1.5)pressure-=0.15;
+  return Math.round(Math.max(-1.35, pressure)*10)/10;
 }
 
 function ballRunwayCategoryWeights(count){
@@ -633,6 +657,7 @@ function calculateEpisodeResults(playerChoices={}){
     const fatigue=winStreakFatigue(q);
     const legacyPressure=legacyAllStarsPressure(q,ep);
     const vulnerabilityPressure=vulnerabilityPressureModifier(q,ep);
+    const frontrunnerVolatility=frontrunnerVolatilityModifier(q,ep);
     const riskBonus=riskRoll(risk);
     const miniBonus=q.id===ep.miniWinnerId?3:0;
     if(q.id!==gameState.playerQueenId && ep.eventRolls[q.id]===undefined) ep.eventRolls[q.id]=rand(-1.25,1.25);
@@ -647,11 +672,11 @@ function calculateEpisodeResults(playerChoices={}){
     const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
-    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+vulnerabilityPressure+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
@@ -697,7 +722,8 @@ function calculateEpisodeResults(playerChoices={}){
     const isPlayer=s.queenId===gameState.playerQueenId;
     const pe=isPlayer?(ep.playerEffects||{}):(ep.queenEffects?.[s.queenId]||{});
     const cleanText=s.vulnerabilityPressure?` • Vulnerability ${s.vulnerabilityPressure}`:'';
-    const extra=` • Choices ${((pe.performance||0)+(pe.runway||0))>=0?'+':''}${(pe.performance||0)+(pe.runway||0)} • Energy/Stress ${s.energyStressMod>=0?'+':''}${s.energyStressMod}${cleanText}`;
+    const frontrunnerText=s.frontrunnerVolatility?` • Frontrunner volatility ${s.frontrunnerVolatility}`:'';
+    const extra=` • Choices ${((pe.performance||0)+(pe.runway||0))>=0?'+':''}${(pe.performance||0)+(pe.runway||0)} • Energy/Stress ${s.energyStressMod>=0?'+':''}${s.energyStressMod}${cleanText}${frontrunnerText}`;
     const teamText=ep.teams?.length?(ep.judgingMode==='team'?` • Team ${s.teamName||'team'} ${s.teamBonus>=0?'+':''}${s.teamBonus}`:' • Judged individually'):'';
     const winThrottleText=s.winThrottlePenalty?` • Judges' expectations ${s.winThrottlePenalty}`:'';
     const formText=s.episodeForm?` • ${s.episodeFormLabel||'Episode form'} ${s.episodeForm>=0?'+':''}${s.episodeForm}`:'';
@@ -1022,21 +1048,58 @@ function resolveLipSync(playerMoves=null){
   saveGame();
   return ep.lipSyncResult;
 }
+
+function placementTrendValue(placement){
+  const key=String(placement||'').toUpperCase();
+  const values={WIN:5,TOP2:5,HIGH:4,SAFE:3,LOW:2,BTM:1,ELIM:0};
+  return values[key] ?? null;
+}
+
+function placementTrendMomentum(previousPlacement,currentPlacement){
+  const current=placementTrendValue(currentPlacement);
+  if(current===null)return 0;
+  const previous=placementTrendValue(previousPlacement);
+  if(previous===null){
+    if(current>=5)return 1.25;
+    if(current>=4)return 0.75;
+    if(current<=1)return -1.25;
+    if(current<=2)return -0.75;
+    return 0;
+  }
+  const delta=current-previous;
+  if(delta>=3)return 1.5;
+  if(delta===2)return 1.15;
+  if(delta===1)return 0.65;
+  if(delta===0)return 0;
+  if(delta===-1)return -0.65;
+  if(delta===-2)return -1.15;
+  return -1.5;
+}
+
+function applyPlacementTrendMomentum(q,currentPlacement){
+  if(!q)return 0;
+  const history=q.episodeHistory||[];
+  const previousPlacement=history.length?history[history.length-1].placement:null;
+  const trend=placementTrendMomentum(previousPlacement,currentPlacement);
+  q.momentum=(typeof clamp==='function')?clamp(trend,-2,2):Math.max(-2,Math.min(2,trend));
+  return q.momentum;
+}
+
 function applyEpisodeStats(){
   const ep=gameState.currentEpisode;
   if(ep.statsApplied)return;
   ensureAllQueenV14Stats();
   const placementEffects={
-    WIN:{momentum:2,production:2.1,fans:2.65,confidence:10,stress:-8},
-    HIGH:{momentum:1,fans:1.3,confidence:5,stress:-3},
-    TOP2:{momentum:1,fans:1.3,confidence:5,stress:-3},
+    WIN:{production:2.1,fans:2.65,confidence:10,stress:-8},
+    HIGH:{fans:1.3,confidence:5,stress:-3},
+    TOP2:{fans:1.3,confidence:5,stress:-3},
     SAFE:{stress:2},
-    LOW:{momentum:-1,confidence:-5,stress:8},
-    BTM:{momentum:-2,confidence:-8,stress:12,energy:-8}
+    LOW:{confidence:-5,stress:8},
+    BTM:{confidence:-8,stress:12,energy:-8}
   };
   const legacyWinEffect=p=>p.lipSyncWinner
-    ? {momentum:-0.25,production:1.1,fans:1.2,confidence:4,stress:3}
-    : {momentum:-0.25,production:1.1,fans:1.2,confidence:4,stress:3};
+    ? {production:1.1,fans:1.2,confidence:4,stress:3}
+    : {production:1.1,fans:1.2,confidence:4,stress:3};
   for(const p of ep.placements){
     const q=gameState.queens.find(x=>x.id===p.queenId);
     if(!q)continue;
@@ -1050,8 +1113,9 @@ function applyEpisodeStats(){
     if(p.placement==='SAFE')q.statistics.safes++;
     if(p.placement==='LOW')q.statistics.lows++;
     if(p.placement==='BTM')q.statistics.bottoms++;
+    const trendMomentum=applyPlacementTrendMomentum(q,p.placement);
     const effects=(isLegacyCompetitiveEpisode(ep) && p.placement==='WIN') ? legacyWinEffect(p) : (placementEffects[p.placement]||{});
-    applyChoiceEffects(effects,{queen:q,note:`Episode placement: ${p.placement}.`,source:'episode-placement',save:false});
+    applyChoiceEffects(effects,{queen:q,note:`Episode placement: ${p.placement}. Momentum now reflects week-to-week placement trend (${trendMomentum>=0?'+':''}${trendMomentum}).`,source:'episode-placement',save:false});
   }
   if(ep.lipSyncResult){
     if(ep.lipSyncResult.outcome==='tournamentPoints'){
