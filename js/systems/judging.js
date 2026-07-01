@@ -1028,13 +1028,13 @@ function resolveLipSync(playerMoves=null){
   let eliminatedQueenId=eliminated.queenId;
   let eliminatedQueenIds=[eliminated.queenId];
 
-  if(results[0].score10<5.5 && results[1].score10<5.5 && !gameState.season.doubleSashayUsed){
+  if(results[0].score10<6 && results[1].score10<6 && !gameState.season.doubleSashayUsed){
     outcome='doubleSashay';
     gameState.season.doubleSashayUsed=true;
     survivorId=null;
     eliminatedQueenId=null;
     eliminatedQueenIds=results.map(r=>r.queenId);
-  } else if(diff<1 && results[0].score10>=8 && results[1].score10>=8 && !gameState.season.doubleShantayUsed){
+  } else if(diff<1 && results[0].score10>=7 && results[1].score10>=7 && !gameState.season.doubleShantayUsed){
     outcome='doubleShantay';
     gameState.season.doubleShantayUsed=true;
     survivorId=null;
