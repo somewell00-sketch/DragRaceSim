@@ -1149,6 +1149,7 @@ function applyEpisodeStats(){
     if(p.placement==='WIN'){
       q.statistics.wins++;
       if(typeof applyChallengeWinRelationshipPenalty==='function')applyChallengeWinRelationshipPenalty(q,ep);
+        if(typeof applyHighQueensWinnerJealousy==='function')applyHighQueensWinnerJealousy(q,ep);
     }
     if(p.placement==='HIGH'||p.placement==='TOP2')q.statistics.highs++;
     if(p.placement==='SAFE')q.statistics.safes++;
