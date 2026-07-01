@@ -70,8 +70,7 @@ const assassinCards=assassinIntroCardsHtml(ep,bottom);
   const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
   const pendingAssassinGroupVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId!==ep.topQueenId && !ep.playerAssassinGroupVoteChosen;
   const initialCards=(isAssassin && (pendingAssassinTopVote||pendingAssassinGroupVote)) ? '' : (isAssassin?assassinCards:normalLipSyncCards);
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">${initialCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen">${initialCards}<div class="card" id="step"></div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLipSync));
   if(isLegacy && playerInBottom && !ep.playerLegacyLipstickChosen){
     renderLegacyLipstickChoice(()=>renderLipSyncStrategyChoice());

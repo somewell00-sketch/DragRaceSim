@@ -130,8 +130,7 @@ function smackdownStrategyOptionsHtml(){
   }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
 }
 function renderLalaparuzaStrategyChoice(){
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>Choose how you will fight before the bracket begins.</p>${smackdownStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>Choose how you will fight before the bracket begins.</p>${smackdownStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLalaparuzaStrategyChoice));
   document.querySelectorAll('[data-smack-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
     gameState.currentEpisode.playerSmackdownStrategy=btn.dataset.smackStrategy;
@@ -180,8 +179,7 @@ function renderLalaparuzaEpisode(){
   const ep=gameState.currentEpisode;
   const playerInSmackdown=(ep.participantIds||gameState.queens.filter(q=>!q.isEliminated).map(q=>q.id)).includes(gameState.playerQueenId);
   const playerNeedsStrategy=playerInSmackdown && !ep.playerSmackdownStrategy;
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}<div class="card"><h3>The rules</h3><p>The queens are randomly paired. Winners are safe. Losers keep battling until only one queen is eliminated.</p></div>${playerNeedsStrategy?`<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>Choose how you will fight before the bracket begins.</p>${smackdownStrategyOptionsHtml()}</div>`:`<button id="startLala">Start the smackdown</button>`}</section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}<div class="card"><h3>The rules</h3><p>The queens are randomly paired. Winners are safe. Losers keep battling until only one queen is eliminated.</p></div>${playerNeedsStrategy?`<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>Choose how you will fight before the bracket begins.</p>${smackdownStrategyOptionsHtml()}</div>`:`<button id="startLala">Start the smackdown</button>`}</section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLalaparuzaEpisode));
   if(playerNeedsStrategy){
     document.querySelectorAll('[data-smack-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -213,8 +211,7 @@ function renderLalaparuzaResult(result){
     ? `<div class="card important decision-card"><h3>What do you want to do now?</h3><p>Your queen has been eliminated in the Lalaparuza, but the season can continue without your input.</p><div class="options"><button class="option" id="continueSpectator"><span class="choice-emoji" aria-hidden="true">👁️</span><span class="choice-copy"><strong>Continue watching as a spectator</strong><span class="small">Follow the remaining episodes, reunion and finale.</span></span></button><button class="option" id="seeFinalResult"><span class="choice-emoji" aria-hidden="true">⏭️</span><span class="choice-copy"><strong>See final result</strong><span class="small">Skip the rest of the season and start the finale from page 1/3.</span></span></button></div></div>`
     : '';
   const continueButton=(playerOut && !spectatorMode) ? '' : `<button id="continue">Next episode</button>`;
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${rows}<div class="card important lala-final-card"><h3>Final Bottom Lip Sync</h3><div class="lala-duel final">${lalaQueenChip(result.final.queenIds[0], result.final.winnerId===result.final.queenIds[0]?'survives':'sashay')}<span class="vs">VS</span>${lalaQueenChip(result.final.queenIds[1], result.final.winnerId===result.final.queenIds[1]?'survives':'sashay')}</div><p><strong>${escapeHtml(qName(result.final.winnerId))}</strong> survives the final lip sync. <strong>${escapeHtml(qName(result.final.loserId))}</strong> sashays away.</p></div>${eliminationChoiceBlock}${continueButton}</section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${rows}<div class="card important lala-final-card"><h3>Final Bottom Lip Sync</h3><div class="lala-duel final">${lalaQueenChip(result.final.queenIds[0], result.final.winnerId===result.final.queenIds[0]?'survives':'sashay')}<span class="vs">VS</span>${lalaQueenChip(result.final.queenIds[1], result.final.winnerId===result.final.queenIds[1]?'survives':'sashay')}</div><p><strong>${escapeHtml(qName(result.final.winnerId))}</strong> survives the final lip sync. <strong>${escapeHtml(qName(result.final.loserId))}</strong> sashays away.</p></div>${eliminationChoiceBlock}${continueButton}</section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderLalaparuzaResult(result)));
   const continueAfterLalaparuza=()=>{if(isFinaleReady()){if(shouldOfferReunionSmackdown())renderReunionSmackdown(); else {renderFinale();}}else{generateEpisode(); renderWorkroom();}};
   document.querySelector('#continue')?.addEventListener('click',continueAfterLalaparuza);
@@ -231,8 +228,7 @@ function renderReturnSmackdownEpisode(){
   const playerInSmackdown=(ep.participantIds||[]).includes(gameState.playerQueenId);
   const playerNeedsStrategy=playerInSmackdown && !ep.playerSmackdownStrategy;
   const names=participants.map(q=>escapeHtml(q.name)).join(', ');
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','One eliminated queen can fight her way back into the competition.')}</div><div class="card"><h3>The eliminated queens return</h3><p>${isRedemption?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${playerNeedsStrategy?`<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>You were eliminated, so choose how you will fight for your return.</p>${smackdownStrategyOptionsHtml()}</div>`:`<button id="startReturnSmackdown">Start the return smackdown</button>`}</section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','One eliminated queen can fight her way back into the competition.')}</div><div class="card"><h3>The eliminated queens return</h3><p>${isRedemption?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${playerNeedsStrategy?`<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>You were eliminated, so choose how you will fight for your return.</p>${smackdownStrategyOptionsHtml()}</div>`:`<button id="startReturnSmackdown">Start the return smackdown</button>`}</section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
   if(playerNeedsStrategy){
     document.querySelectorAll('[data-smack-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -257,8 +253,7 @@ function renderReturnSmackdownResult(result){
   const duelHtml=(d)=>`<div class="lala-duel">${chip(d.queenIds[0],d.winnerId===d.queenIds[0]?'wins':'out')}<span class="vs">VS</span>${chip(d.queenIds[1],d.winnerId===d.queenIds[1]?'wins':'out')}</div>`;
   const rows=(result.rounds||[]).map(r=>`<div class="card lala-round-card"><h3>Round ${r.round}</h3>${r.byeId?`<div class="lala-bye">${chip(r.byeId,'bye')}</div>`:''}<div class="lala-duel-list">${(r.duels||[]).map(duelHtml).join('')}</div></div>`).join('');
   const winner=queenById(result.winnerId);
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','The battle for a place back in the race is decided.')}</div>${rows}<div class="card important lala-final-card"><h3>A queen returns to the competition.</h3>${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong> has earned her way back into the race.</p></div><button id="continueAfterReturnSmackdown">Continue to the next episode</button></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','The battle for a place back in the race is decided.')}</div>${rows}<div class="card important lala-final-card"><h3>A queen returns to the competition.</h3>${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong> has earned her way back into the race.</p></div><button id="continueAfterReturnSmackdown">Continue to the next episode</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownResult(result)));
   document.querySelector('#continueAfterReturnSmackdown')?.addEventListener('click',()=>{gameState.currentEpisode=null; saveGame(); generateEpisode(); renderWorkroom();});
 }
@@ -297,8 +292,7 @@ function renderPremiereObserverWorkroom(){
   const groupLabel=ep.premiereSpecial?.phase?`Premiere Part ${ep.premiereSpecial.phase}`:'Premiere';
   const names=currentEpisodeParticipantNames().map(escapeHtml).join(', ');
   const talent=talentContentBlock(ep);
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">
+  setHTML(`<main class="layout"><section class="screen">
     <div class="hero"><span class="badge">${escapeHtml(groupLabel)}</span><h2>${escapeHtml(ep.challengeName||ep.themeName||'Premiere Challenge')}</h2><p>This half of the cast is competing this episode. There are no Workroom decisions for your queen yet.</p></div>
     <div class="card"><h3>Competing queens</h3><p>${names}</p></div>
     ${challengeContentBlock(ep)}
@@ -326,8 +320,7 @@ function renderTournamentObserverWorkroom(){
   }
   const group=ep.tournamentBracket?.group || gameState.season?.brackets?.currentGroup || '';
   const names=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ');
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">
+  setHTML(`<main class="layout"><section class="screen">
     <div class="hero"><span class="badge">Bracket ${escapeHtml(group)}</span><h2>${escapeHtml(ep.themeName||ep.challengeName||'Tournament Challenge')}</h2><p>This bracket is competing now. Your queen watches without making decisions.</p></div>
     <div class="card"><h3>Competing queens</h3><p>${names}</p></div>
     ${challengeContentBlock(ep)}
@@ -346,8 +339,7 @@ function renderSeasonObserverWorkroom(){
   if(ep.special==='return_smackdown')return renderReturnSmackdownEpisode();
   const names=(ep.participantIds||gameState.queens.filter(q=>!q.isEliminated).map(q=>q.id)).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ');
   const talent=talentContentBlock(ep);
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">
+  setHTML(`<main class="layout"><section class="screen">
     <div class="hero"><span class="badge">Episode ${ep.number}</span><h2>Spectator Mode</h2><p>Your queen has been eliminated. You are watching the remaining queens compete.</p></div>
     <div class="card"><h3>${escapeHtml(ep.challengeName)}</h3><p>${escapeHtml(ep.themeName||'')}</p><p class="small">Guest judge: ${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</p></div>
     <div class="card"><h3>Competing queens</h3><p>${names}</p></div>
@@ -430,8 +422,7 @@ function renderWorkroom(){
   const snatchBlock=(ep.challengeType==='snatchgame' && ep.snatchCharacters?.length)
     ? `<div class="card"><h3>Snatch Game Characters</h3><div class="snatch-grid">${ep.snatchCharacters.map(c=>`<div class="snatch-card"><strong>${escapeHtml(c.queenName)}</strong><span>${escapeHtml(c.character)}</span></div>`).join('')}</div></div>`
     : '';
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">
+  setHTML(`<main class="layout"><section class="screen">
     <div class="hero">
       <span class="badge">Episode ${ep.number}</span>
       <h2>${escapeHtml(ep.themeName)}</h2>

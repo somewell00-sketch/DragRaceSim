@@ -72,8 +72,7 @@ function renderUntucked(){
     ? `<div class="card important decision-card"><h3>What do you want to do now?</h3><p>Your queen has been eliminated, but the season can continue without your input.</p><div class="options"><button class="option" id="continueSpectator"><span class="choice-emoji" aria-hidden="true">👁️</span><span class="choice-copy"><strong>Continue watching as a spectator</strong><span class="small">Follow the remaining episodes, runways, lip syncs, reunion and finale.</span></span></button><button class="option" id="seeFinalResult"><span class="choice-emoji" aria-hidden="true">⏭️</span><span class="choice-copy"><strong>See final result</strong><span class="small">Skip the rest of the season and start the finale from page 1/3.</span></span></button></div></div>`
     : '';
   const continueButton=(needsTournamentPointVote || (playerJustEliminated && !spectatorMode)) ? '' : `<button id="continue">Next episode</button>`;
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen">
+  setHTML(`<main class="layout"><section class="screen">
     <div class="hero">
       <span class="badge">Untucked</span>
       <h2>${playerJustEliminated?'Your journey ends here.':title}</h2>
@@ -158,8 +157,7 @@ function reunionStrategyOptionsHtml(){
   }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
 }
 function renderReunionStrategyChoice(){
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Choose your lip sync strategy</h2><p>You were eliminated, so you compete for Queen of She Already Done Had Herses. Your strategy will apply whenever you lip sync in the bracket.</p></div><div class="card decision-card important"><h3>Your approach</h3>${reunionStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Choose your lip sync strategy</h2><p>You were eliminated, so you compete for Queen of She Already Done Had Herses. Your strategy will apply whenever you lip sync in the bracket.</p></div><div class="card decision-card important"><h3>Your approach</h3>${reunionStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderReunionStrategyChoice));
   document.querySelectorAll('[data-reunion-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
     gameState.currentEpisode=gameState.currentEpisode||{};
@@ -176,8 +174,7 @@ function renderReunionSmackdownResult(result){
   </div>`;
   const rows=result.rounds.map(r=>`<div class="card reunion-round-card"><h3>Reunion Round ${r.round}</h3>${r.byeId?`<p class="reunion-bye"><strong>${escapeHtml(qName(r.byeId))}</strong> receives a bye.</p>`:''}<div class="reunion-duel-list">${r.duels.map(duelHtml).join('')}</div></div>`).join('');
   const reunionWinner=gameState.queens.find(q=>q.id===result.winnerId);
-  window.__preserveScrollY=window.scrollY;
-setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Queen of She Already Done Had Herses</h2><p>The eliminated queens return for a lip sync bracket before the finale.</p></div>${rows}<div class="card important reunion-winner-card"><h3>Queen of She Already Done Had Herses.</h3>${reunionWinner?`<div class="winner-portrait-wrap">${queenPortraitHtml(reunionWinner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong></p></div><button id="toFinale">Continue to the Finale</button></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Queen of She Already Done Had Herses</h2><p>The eliminated queens return for a lip sync bracket before the finale.</p></div>${rows}<div class="card important reunion-winner-card"><h3>Queen of She Already Done Had Herses.</h3>${reunionWinner?`<div class="winner-portrait-wrap">${queenPortraitHtml(reunionWinner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong></p></div><button id="toFinale">Continue to the Finale</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReunionSmackdownResult(result)));
   document.querySelector('#toFinale').addEventListener('click',()=>{renderFinale();});
 }
