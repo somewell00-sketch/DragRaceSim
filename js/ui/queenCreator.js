@@ -149,8 +149,10 @@ function renderQueenCreator(){
      if(startBtn){startBtn.disabled=true; startBtn.textContent='Preparing cast...';}
      if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
      const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes});
-    saveCommunityQueen(queen).catch(console.warn);
-await startSeason(
+if(typeof saveCommunityQueen === 'function'){
+  saveCommunityQueen(queen).catch(console.warn);
+}
+     await startSeason(
   queen,
   document.querySelector('#castSize').value,
   document.querySelector('#seasonFormat')?.value || 'regular'
