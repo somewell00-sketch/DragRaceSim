@@ -473,7 +473,8 @@ function choiceEmoji(id){
   }[id] || '•';
 }
 function optionButton(id, dataAttr, obj){
-  return `<button class="option" ${dataAttr}="${id}"><span class="choice-emoji" aria-hidden="true">${choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
+  const disabled=obj?.disabled?'disabled':'';
+  return `<button class="option" ${disabled} ${dataAttr}="${id}"><span class="choice-emoji" aria-hidden="true">${choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
 }
 function targetSelectHtml(id='targetSelect'){
   let targets=getUntuckedTargets();
@@ -493,11 +494,17 @@ function renderWorkroomChoice(){
   }));
 }
 function renderPreparationChoice(){
-  const prepButtons=Object.entries(PREP_CHOICES).map(([id,o])=>optionButton(id,'data-prep',o)).join('');
-  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p><div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
-  document.querySelectorAll('[data-prep]').forEach(btn=>btn.addEventListener('click',()=>{
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const energy=Math.round(player?.energy ?? 80);
+  const prepChoices={...PREP_CHOICES};
+  if(energy<30 && prepChoices.rehearse){
+    prepChoices.rehearse={...prepChoices.rehearse,disabled:true,description:'You are too exhausted to rehearse more. Rest or ask for help.'};
+  }
+  const prepButtons=Object.entries(prepChoices).map(([id,o])=>optionButton(id,'data-prep',o)).join('');
+  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p><p class="small"><strong>Stamina:</strong> ${energy}/100</p><div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
+  document.querySelectorAll('[data-prep]:not([disabled])').forEach(btn=>btn.addEventListener('click',()=>{
     const id=btn.dataset.prep;
-    const choice=PREP_CHOICES[id];
+    const choice=prepChoices[id];
     if(choice.needsTarget){
       document.querySelector('#prepTarget').innerHTML=`<div class="card subtle decision-card"><h4>Who do you ask?</h4>${targetSelectHtml('prepTargetSelect')}<button id="confirmPrep">Confirm</button></div>`;
       document.querySelector('#confirmPrep').addEventListener('click',()=>{
