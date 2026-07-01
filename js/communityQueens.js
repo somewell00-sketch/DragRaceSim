@@ -4,17 +4,47 @@ const SUPABASE_KEY = 'sb_publishable_ZWRCRg4bhvPrkld0pkTcyg__dWY0VVb';
 const communityDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const COUNTRY_CODE_ALIASES = {
-  USA: 'US',
-  PRT: 'PT',
-  POR: 'PT',
-  UK: 'GB',
-  BRA: 'BR',
-  BRASIL: 'BR',
-  BRAZIL: 'BR',
-  PORTUGAL: 'PT',
-  UNITED_STATES: 'US',
-  UNITED_STATES_OF_AMERICA: 'US'
+  US: 'USA', USA: 'USA', UNITED_STATES: 'USA', UNITED_STATES_OF_AMERICA: 'USA', AMERICA: 'USA',
+  PT: 'PRT', PRT: 'PRT', POR: 'PRT', PORTUGAL: 'PRT',
+  BR: 'BRA', BRA: 'BRA', BRASIL: 'BRA', BRAZIL: 'BRA',
+  GB: 'GBR', UK: 'GBR', GBR: 'GBR', UNITED_KINGDOM: 'GBR',
+  CA: 'CAN', CAN: 'CAN', CANADA: 'CAN',
+  MX: 'MEX', MEX: 'MEX', MEXICO: 'MEX',
+  ES: 'ESP', ESP: 'ESP', SPAIN: 'ESP', ESPANA: 'ESP', ESPAÑA: 'ESP',
+  FR: 'FRA', FRA: 'FRA', FRANCE: 'FRA',
+  DE: 'DEU', DEU: 'DEU', GER: 'DEU', GERMANY: 'DEU', ALEMANHA: 'DEU',
+  IT: 'ITA', ITA: 'ITA', ITALY: 'ITA', ITALIA: 'ITA',
+  JP: 'JPN', JPN: 'JPN', JAPAN: 'JPN', JAPAO: 'JPN', JAPÃO: 'JPN',
+  AR: 'ARG', ARG: 'ARG', ARGENTINA: 'ARG',
+  CL: 'CHL', CHL: 'CHL', CHILE: 'CHL',
+  CO: 'COL', COL: 'COL', COLOMBIA: 'COL',
+  PE: 'PER', PER: 'PER', PERU: 'PER',
+  IE: 'IRL', IRL: 'IRL', IRELAND: 'IRL',
+  NL: 'NLD', NLD: 'NLD', NETHERLANDS: 'NLD', HOLLAND: 'NLD',
+  BE: 'BEL', BEL: 'BEL', BELGIUM: 'BEL',
+  AU: 'AUS', AUS: 'AUS', AUSTRALIA: 'AUS'
 };
+
+const TIMEZONE_LOCATION_FALLBACKS = {
+  'Europe/Lisbon': 'Lisbon, PRT',
+  'Atlantic/Azores': 'Ponta Delgada, PRT',
+  'America/Sao_Paulo': 'São Paulo, BRA',
+  'America/Fortaleza': 'Fortaleza, BRA',
+  'America/New_York': 'New York City, USA',
+  'America/Chicago': 'Chicago, USA',
+  'America/Denver': 'Denver, USA',
+  'America/Los_Angeles': 'Los Angeles, USA',
+  'Pacific/Honolulu': 'Honolulu, USA',
+  'Europe/London': 'London, GBR',
+  'Europe/Madrid': 'Madrid, ESP',
+  'Europe/Paris': 'Paris, FRA',
+  'Europe/Berlin': 'Berlin, DEU',
+  'Europe/Rome': 'Rome, ITA',
+  'Asia/Tokyo': 'Tokyo, JPN'
+};
+
+let cachedUserCommunityLocation = null;
+let userCommunityLocationPromise = null;
 
 function normalizeCommunityLocation(rawLocation) {
   const raw = String(rawLocation || '').trim();
@@ -40,15 +70,69 @@ function normalizeCommunityLocation(rawLocation) {
 function normalizeCountryCode(value) {
   const cleaned = String(value || '')
     .trim()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
     .replace(/[().]/g, '')
-    .replace(/\s+/g, '_')
+    .replace(/[^A-Z0-9]+/gi, '_')
+    .replace(/^_+|_+$/g, '')
     .toUpperCase();
 
   if (!cleaned) return '';
   if (COUNTRY_CODE_ALIASES[cleaned]) return COUNTRY_CODE_ALIASES[cleaned];
+  if (/^[A-Z]{3}$/.test(cleaned)) return cleaned;
   if (/^[A-Z]{2}$/.test(cleaned)) return cleaned;
-  if (/^[A-Z]{3}$/.test(cleaned)) return COUNTRY_CODE_ALIASES[cleaned] || cleaned.slice(0, 2);
   return '';
+}
+
+function locationFromTimezone(){
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  return normalizeCommunityLocation(TIMEZONE_LOCATION_FALLBACKS[timezone] || 'Unknown City, XXX');
+}
+
+function getBrowserCoordinates(){
+  if (!navigator.geolocation) return Promise.resolve(null);
+  return new Promise(resolve => {
+    let settled = false;
+    const done = value => { if (!settled) { settled = true; resolve(value); } };
+    navigator.geolocation.getCurrentPosition(
+      pos => done({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
+      () => done(null),
+      { enableHighAccuracy: false, timeout: 3500, maximumAge: 86400000 }
+    );
+    setTimeout(() => done(null), 4200);
+  });
+}
+
+function cityFromAddress(address){
+  return address?.city || address?.town || address?.village || address?.municipality || address?.county || address?.state_district || address?.state || '';
+}
+
+async function reverseGeocodeCoordinates(coords){
+  if (!coords) return '';
+  try{
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(coords.latitude)}&lon=${encodeURIComponent(coords.longitude)}&zoom=10&addressdetails=1`;
+    const response = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (!response.ok) return '';
+    const data = await response.json();
+    const city = cityFromAddress(data?.address);
+    const country = normalizeCountryCode(data?.address?.country_code || data?.address?.country);
+    return city && country ? normalizeCommunityLocation(`${city}, ${country}`) : '';
+  }catch(err){
+    console.warn('Could not reverse geocode user location:', err);
+    return '';
+  }
+}
+
+async function detectUserCommunityLocation(){
+  if (cachedUserCommunityLocation) return cachedUserCommunityLocation;
+  if (userCommunityLocationPromise) return userCommunityLocationPromise;
+
+  userCommunityLocationPromise = (async()=>{
+    const preciseLocation = await reverseGeocodeCoordinates(await getBrowserCoordinates());
+    cachedUserCommunityLocation = preciseLocation || locationFromTimezone();
+    return cachedUserCommunityLocation;
+  })();
+
+  return userCommunityLocationPromise;
 }
 
 function communityQueenPayload(queen) {

@@ -148,7 +148,9 @@ function renderQueenCreator(){
    try{
      if(startBtn){startBtn.disabled=true; startBtn.textContent='Preparing cast...';}
      if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
-     const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes});
+     const userLocation = typeof detectUserCommunityLocation === 'function' ? await detectUserCommunityLocation() : 'Unknown City, XXX';
+     window.currentUserCommunityLocation = userLocation;
+     const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes,location:userLocation});
 if(typeof saveCommunityQueen === 'function'){
   saveCommunityQueen(queen).catch(console.warn);
 }
