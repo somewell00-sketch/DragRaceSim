@@ -166,7 +166,7 @@ window.GAME_DATA.talentPerformances = [
 
   // NEW EXPANDED ACTS - VOCALS
   {
-    "name": "Yodeling competition with yourself",
+    "name": "Yodeling competition with herself",
     "type": "vocals"
   },
   {
@@ -362,7 +362,7 @@ window.GAME_DATA.talentPerformances = [
     "type": "performance"
   },
   {
-    "name": "Crystal ball reading but it's just about yourself",
+    "name": "Crystal ball reading",
     "type": "variety"
   },
   {
@@ -378,7 +378,7 @@ window.GAME_DATA.talentPerformances = [
     "type": "comedy"
   },
   {
-    "name": "Fanning yourself with a giant feather while crying",
+    "name": "Fanning herself with a giant feather while crying",
     "type": "performance"
   },
   {
