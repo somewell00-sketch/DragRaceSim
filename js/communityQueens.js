@@ -83,6 +83,7 @@ function normalizeCountryCode(value) {
   return '';
 }
 
+/* deprecated fallback kept for future use */
 function locationFromTimezone(){
   const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   return normalizeCommunityLocation(TIMEZONE_LOCATION_FALLBACKS[timezone] || 'Unknown City, XXX');
@@ -128,7 +129,7 @@ async function detectUserCommunityLocation(){
 
   userCommunityLocationPromise = (async()=>{
     const preciseLocation = await reverseGeocodeCoordinates(await getBrowserCoordinates());
-    cachedUserCommunityLocation = preciseLocation || locationFromTimezone();
+    cachedUserCommunityLocation = preciseLocation || "A Fan's Fantasy";
     return cachedUserCommunityLocation;
   })();
 
