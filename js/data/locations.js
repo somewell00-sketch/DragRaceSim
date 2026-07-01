@@ -1096,6 +1096,12 @@ window.GAME_DATA.locations = [
   "Manaus, BRA",
   "Sorocaba, BRA",
   "Sorocaba, BRA",
+  "XiqueXique, BRA",
+  
+  "Ratanabá, BRA",
+  
+  "Floripa, BRA",
+  "Timon, BRA",
   "Santiago, CHL",
   "Santiago, CHL",
   "Bogotá, COL",
@@ -1214,8 +1220,6 @@ window.GAME_DATA.locations = [
   "Cape Town, ZAF",
   "Dubai, ARE",
   "Dubai, ARE",
-  "Tel Aviv, ISR",
-  "Tel Aviv, ISR",
 
   "Nairobi, KEN",
   "Lagos, NGA",
