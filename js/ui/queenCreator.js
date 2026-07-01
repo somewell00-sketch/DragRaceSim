@@ -136,13 +136,16 @@ async function setupLocalCommunityQueenSelect(){
     creatorPlayerLocation = creatorPlayerLocation || inferCreatorPlayerLocation();
     creatorLocalCommunityQueens = await loadLocalCommunityQueens(creatorPlayerLocation, 100);
     if(!creatorLocalCommunityQueens.length){
+      block.style.display='none';
       block.remove();
       return;
     }
     select.innerHTML='<option value="">Create a new one</option>'+creatorLocalCommunityQueens.map(row=>`<option value="${escapeHtml(row.id)}">${escapeHtml(row.name)}</option>`).join('');
+    block.style.display='grid';
     block.hidden=false;
   }catch(err){
     console.warn('Could not load local community queens:',err);
+    if(block)block.style.display='none';
     block?.remove();
   }
 }
@@ -203,7 +206,7 @@ function renderQueenCreator(){
             <span class="creator-portrait-crown">👑</span>
           </div>
           <div class="creator-fields">
-            <label id="communityQueenPickerBlock" class="home-field" hidden><span>Select a local queen</span><select id="communityQueenSelect"><option value="">Create a new one</option></select></label>
+            <label id="communityQueenPickerBlock" class="home-field" style="display:none"><span>Select a local queen</span><select id="communityQueenSelect"><option value="">Create a new one</option></select></label>
             <label class="home-field home-name-field"><span>Drag name</span><div class="creator-name-row"><input id="qName" value="Your Queen"> <button id="rerollQueenName" class="creator-dice-btn" type="button" title="Random name" aria-label="Random name">🎲</button></div></label>
             <div class="creator-select-row">
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
@@ -248,7 +251,11 @@ function renderQueenCreator(){
      const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes,location:creatorPlayerLocation});
      const shouldSaveCommunityQueen=!creatorSelectedCommunityQueen || selectedCommunityQueenWasEdited();
      if(typeof saveCommunityQueen === 'function' && shouldSaveCommunityQueen){
-       saveCommunityQueen(queen).catch(console.warn);
+       try{
+         await saveCommunityQueen(queen);
+       }catch(saveErr){
+         console.warn('Could not save community queen before season start:',saveErr);
+       }
      }
      await startSeason(
   queen,
