@@ -620,6 +620,8 @@ function applyAssassinPlacements(scored, ep){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
   if(scored[1])scored[1].placement='HIGH';
+  if(scored[2]) scored[2].placement='HIGH';
+
   const bottomCount=Math.min(3, Math.max(0, scored.length-1));
   scored.slice(-bottomCount).forEach(s=>s.placement='BTM');
   ep.topQueenId=scored[0]?.queenId||null;
