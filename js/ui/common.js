@@ -87,6 +87,42 @@ function skipToFinaleStart(){
 }
 
 
+
+function finishCurrentEpisodeSilently(){
+  const ep=gameState.currentEpisode;
+  if(!ep)return;
+  if(ep.special==='lalaparuza'){
+    if(typeof resolveLalaparuza==='function' && !ep.lalaparuzaResult)resolveLalaparuza();
+    return;
+  }
+  if(ep.special==='return_smackdown'){
+    if(typeof resolveReturnSmackdown==='function' && !ep.returnSmackdownResult)resolveReturnSmackdown();
+    return;
+  }
+  ep.workroomComplete=true;
+  if(!ep.playerChallengeRisk)ep.playerChallengeRisk='safe';
+  if(!ep.placements?.length && typeof calculateEpisodeResults==='function')calculateEpisodeResults({risk:'safe'});
+  if(!ep.lipSyncResult && typeof resolveLipSync==='function')resolveLipSync();
+  if(!ep.statsApplied && typeof applyEpisodeStats==='function')applyEpisodeStats();
+}
+function advanceAfterSilentEpisode(){
+  if(typeof shouldShowTournamentBracketResults==='function' && shouldShowTournamentBracketResults()){ renderTournamentBracketResults(); return; }
+  if(typeof isWaitingForTournamentEntrance==='function' && isWaitingForTournamentEntrance()){ renderEntrance(); return; }
+  if(typeof isWaitingForPremiereEntrance==='function' && isWaitingForPremiereEntrance()){ renderEntrance(); return; }
+  if(typeof isFinaleReady==='function' && isFinaleReady()){
+    if(typeof shouldOfferReunionSmackdown==='function' && shouldOfferReunionSmackdown()) { renderReunionSmackdown(); return; }
+    renderFinale();
+    return;
+  }
+  if(typeof generateEpisode==='function')generateEpisode();
+  renderWorkroom();
+}
+function skipCurrentEpisodeToNext(){
+  finishCurrentEpisodeSilently();
+  if(typeof saveGame==='function')saveGame();
+  advanceAfterSilentEpisode();
+}
+
 function bigMomentHeader(kicker, title, variant='default', desc=''){
   const cls=`moment-header moment-${String(variant||'default').replace(/[^a-z0-9_-]/gi,'')}`;
   return `<div class="${cls}">

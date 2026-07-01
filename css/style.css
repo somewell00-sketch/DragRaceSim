@@ -4050,3 +4050,6 @@ tr.tournament-track-bracket-C td:first-child{ box-shadow: inset 4px 0 0 rgba(158
 
 .lipsync-finale-left,.lipsync-finale-left *{text-align:left !important;}
 .lipsync-finale-left .music-cue{text-align:left !important;}
+
+.observer-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px;}
+.observer-actions button{margin-top:0;}

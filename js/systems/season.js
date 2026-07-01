@@ -722,7 +722,8 @@ function chooseAllStarsReturningQueens(player){
   return pool.slice(0,count);
 }
 
-function startAllStarsSeasonFromCurrent(format){
+async function startAllStarsSeasonFromCurrent(format){
+  if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
   const data=gameState.data;
   const previousRelationships=JSON.parse(JSON.stringify(gameState.relationships||{}));
   const previousQueens=gameState.queens||[];

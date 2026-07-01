@@ -177,9 +177,17 @@ function renderAllStarsFormatSelection(){
       <div class="options">${formats.map(f=>choiceButtonHtml({id:f.id,attr:'data-allstars-format',label:f.label,desc:f.desc})).join('')}</div>
     </section>
   </main>`);
-  document.querySelectorAll('[data-allstars-format]').forEach(btn=>btn.addEventListener('click',()=>{
-    startAllStarsSeasonFromCurrent(btn.dataset.allstarsFormat);
-    renderEntrance();
+  document.querySelectorAll('[data-allstars-format]').forEach(btn=>btn.addEventListener('click',async()=>{
+    try{
+      btn.disabled=true;
+      btn.textContent='Preparing All Stars cast...';
+      await startAllStarsSeasonFromCurrent(btn.dataset.allstarsFormat);
+      renderEntrance();
+    }catch(err){
+      console.error(err);
+      alert('Could not start the All Stars season. Check the browser console for details.');
+      btn.disabled=false;
+    }
   }));
 }
 

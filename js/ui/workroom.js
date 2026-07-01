@@ -304,9 +304,10 @@ setHTML(`<main class="layout"><section class="screen">
     ${challengeContentBlock(ep)}
     ${talent}
     <div class="card subtle"><p>You will observe the episode and rejoin the competition when your group is called.</p></div>
-    <button id="continue">Watch the Main Stage</button>
+    <div class="observer-actions"><button id="skipEpisode" class="secondary">Skip to next episode</button><button id="continue">Watch the Main Stage</button></div>
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderPremiereObserverWorkroom));
+  document.querySelector('#skipEpisode')?.addEventListener('click',()=>skipCurrentEpisodeToNext());
   document.querySelector('#continue').addEventListener('click',()=>renderRunway());
 }
 
@@ -331,9 +332,10 @@ setHTML(`<main class="layout"><section class="screen">
     <div class="card"><h3>Competing queens</h3><p>${names}</p></div>
     ${challengeContentBlock(ep)}
     ${talentContentBlock(ep)}
-    <button id="continue">Watch the Main Stage</button>
+    <div class="observer-actions"><button id="skipEpisode" class="secondary">Skip to next episode</button><button id="continue">Watch the Main Stage</button></div>
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderTournamentObserverWorkroom));
+  document.querySelector('#skipEpisode')?.addEventListener('click',()=>skipCurrentEpisodeToNext());
   document.querySelector('#continue').addEventListener('click',()=>renderRunway());
 }
 
