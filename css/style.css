@@ -260,7 +260,7 @@ button:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.2)}
   background:#fff;
 }
 .talent-card strong{display:block;font-size:1rem;line-height:1.2;}
-.talent-card .talent-name{display:block;color:var(--ink);line-height:1.35;}
+.talent-card .talent-name{display:block;color:var(--ink);line-height:1.35;text-align:center;}
 .talent-card .badge.arc{width:max-content;max-width:max-content;margin-top:2px;}
 .card.decision-card .options{display:grid;gap:10px;margin-top:12px;}
 .card.decision-card .option{margin:0;}
