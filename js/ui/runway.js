@@ -508,6 +508,178 @@ function finalStretchCritiqueBucket(p){
   if(p.placement==='HIGH' || p.placement==='LOW' || p.placement==='BTM')return 'high';
   return 'safe';
 }
+function attributeCritiqueLine(q, bucket){
+  const attrs = q?.attributes || {};
+  const positive = bucket === 'win' || bucket === 'high';
+  const negative = bucket === 'low' || bucket === 'bottom';
+
+ const pools = {
+  "lipSync": {
+    "positive": [
+      "Your performance instinct is undeniable. You command the stage.",
+      "There is a beautiful musicality in your drag.",
+      "You are a born performer. It is impossible to look away.",
+      "Your stage presence is electric. You live inside the song.",
+      "You know exactly how to weaponize your body on stage.",
+      "Your timing and rhythm are absolutely flawless.",
+      "You don't just perform; you captivate the entire room.",
+      "The energy you bring to the stage is unmatched.",
+      "You have an innate ability to connect with the music.",
+      "Your star power as a performer is blinding."
+    ],
+    "negative": [
+      "We know you can perform, but tonight lacked fire.",
+      "You have the skill, but it needed more focus.",
+      "The performance ability is there, but you held back.",
+      "We know your power, but tonight felt a bit flat.",
+      "You are a great performer, but the connection was missing.",
+      "The movement was there, but the passion was not.",
+      "We needed that signature explosive energy, but it didn't arrive.",
+      "You have the choreography down, but it lacked soul tonight.",
+      "The performance ability is unquestionable, but you looked tired.",
+      "We know you can dominate a stage, but you coasted tonight."
+    ]
+  },
+  "makeup": {
+    "positive": [
+      "Your makeup is exceptional. That face is polished and yours.",
+      "The mug is telling the story before you even speak.",
+      "Your paint is exquisite. A total masterclass.",
+      "That face is art. You paint perfectly for your features.",
+      "Your makeup skills are flawless. The blending is perfection.",
+      "The symmetry and precision on your face are stunning.",
+      "You know exactly how to draw the eye to your face.",
+      "Your paint is clean, sharp, and incredibly high-end.",
+      "That face is completely stamped. Beautiful work.",
+      "Your makeup always honors your features beautifully."
+    ],
+    "negative": [
+      "The makeup is strong, but it's carrying the whole look.",
+      "Your face is polished, but the rest didn't rise to it.",
+      "Beautiful makeup, but it needs to match the scale of your drag.",
+      "We know you can paint, but tonight felt rushed.",
+      "The mug is stunning, but it cannot do all the work.",
+      "The paint is good, but the harsh lighting lost the details.",
+      "We know your skill, but tonight the colors felt muddy.",
+      "The face is gorgeous, but the neck and hands didn't match.",
+      "Your makeup is technically sound, but it lacks dimension tonight.",
+      "We know you can stamp a face, but this felt repetitive."
+    ]
+  },
+  "sewing": {
+    "positive": [
+      "The construction is clean, controlled, and beautifully made.",
+      "Your technical skill shows in the finish and the fit.",
+      "This garment is beautifully constructed. Great craftsmanship.",
+      "Brilliant understanding of structure. It looks custom-made.",
+      "You understand fabric and how to make it work for you.",
+      "The seams are straight and the darts are perfect.",
+      "Your garment construction is better than what we see retail.",
+      "You know how to engineer a garment to look flawless.",
+      "The technical execution here is absolutely top-tier.",
+      "You have the hands of a master dressmaker."
+    ],
+    "negative": [
+      "You have construction skills, but the finish wasn't there.",
+      "We see the ability, but this needed more editing.",
+      "The technical skill is there, but the execution felt incomplete.",
+      "You know how to sew, but this needed a tighter edit.",
+      "The construction is good, but the tailoring fell short.",
+      "We know you can sew, but the hems are messy tonight.",
+      "The structural skill is there, but the fabric choices fought you.",
+      "You have the technical knowledge, but you rushed the execution.",
+      "The garment is put together well, but the fit is off.",
+      "We know your ability, but this garment looks overworked."
+    ]
+  },
+  "runway": {
+    "positive": [
+      "Your runway point of view is crystal clear. Great impact.",
+      "You know exactly how to sell a look from head to toe.",
+      "Your fashion instinct is brilliant. Every choice feels deliberate.",
+      "You present a complete story. The styling is impeccable.",
+      "You have a stellar runway walk and you understand your silhouette.",
+      "Your fashion point of view is elevated and sophisticated.",
+      "You know how to move in clothes to create drama.",
+      "The presentation is flawless. You look like a moving editorial.",
+      "Your styling instincts are incredibly sharp and current.",
+      "You command the runway with absolute poise and grace."
+    ],
+    "negative": [
+      "You have taste, but the styling choices didn't support the concept.",
+      "The fashion instinct is there, but it needed refinement.",
+      "We know you understand silhouette, but the proportions were off.",
+      "The presentation is good, but the concept needed more push.",
+      "You walk well, but the styling choices held you back.",
+      "The fashion sense is clear, but the accessories are distracting.",
+      "We know you have taste, but tonight looked a bit dated.",
+      "The look has potential, but the runway walk was stiff.",
+      "You know fashion, but this presentation lacked your usual signature.",
+      "The concept is high-fashion, but the execution fell flat on the runway."
+    ]
+  },
+  "acting": {
+    "positive": [
+      "You understand character, timing, and how to make a scene live.",
+      "Your acting choices were specific, confident, and clear.",
+      "Brilliant comedic timing. You know how to hold an audience.",
+      "Your ability to disappear into a character is wonderful.",
+      "You have great comedic instincts and you react beautifully.",
+      "Your delivery is sharp and you never drop character.",
+      "You know exactly how to command attention in a scene.",
+      "Your performance choices are intelligent and well-paced.",
+      "You have a natural charm that makes you highly watchable.",
+      "Your characterization is consistently distinct and grounded."
+    ],
+    "negative": [
+      "You have acting ability, but the character never fully settled.",
+      "We know you can act, but this needed clearer choices.",
+      "The talent is there, but your timing was slightly off.",
+      "You are a great actor, but you let the scene get away.",
+      "We know you are funny, but the characterization felt forced.",
+      "The acting skills are present, but you are overthinking the lines.",
+      "We know your capability, but you got lost in the ensemble.",
+      "You have the talent, but tonight you lacked vocal projection.",
+      "The dramatic instinct is there, but the performance felt one-note.",
+      "We know you can deliver, but you pushed way too hard tonight."
+    ]
+  },
+  "cunt": {
+    "positive": [
+      "Your charisma and star quality are impossible to ignore.",
+      "There is a natural confidence in you. You command attention.",
+      "You have that rare, unteachable star quality. It radiates.",
+      "Your presence alone is enough to own this entire stage.",
+      "You possess genuine nerve. That star power is magnetic.",
+      "You carry yourself like an absolute superstar.",
+      "Your charisma fills the room the second you walk in.",
+      "You have that special 'it' factor that cannot be bought.",
+      "Your confidence is infectious and completely justified.",
+      "You are a magnetic force up there on that stage."
+    ],
+    "negative": [
+      "You have star quality, but you didn't use it with intention.",
+      "The presence is there, but the choices weren't strong enough.",
+      "We know you have charisma, but tonight it felt clouded.",
+      "The star quality is undeniable, but it needs sharper choices.",
+      "You have the 'it' factor, but you are hiding behind it.",
+      "The star power is inside you, but you look scared tonight.",
+      "We know you have nerve, but you played it too safe.",
+      "Your natural charisma is great, but it's not replacing effort.",
+      "The presence is massive, but the execution didn't match it.",
+      "We know you are a star, but tonight you dimmed your own light."
+    ]
+  }
+};
+
+  const eligible = Object.keys(pools).filter(attr => (attrs[attr] || 0) >= 9);
+  if (!eligible.length) return '';
+
+  const attr = sample(eligible);
+  if (positive) return sample(pools[attr].positive);
+  if (negative) return sample(pools[attr].negative);
+  return '';
+}
 function composedJudgeCritique(p, placements, ep){
   const finalStretchPraise=isFinalStretchPraiseEpisodeForCritiques(ep);
   const tournamentPraise=ep?.special==='tournament_bracket';
@@ -524,8 +696,12 @@ function composedJudgeCritique(p, placements, ep){
   const ruLine=typeof ruNarrativeComment==='function' ? ruNarrativeComment(q,ruPlacement) : sample(JUDGE_CRITIQUE_BANK.close[bucket]||JUDGE_CRITIQUE_BANK.close.safe);
   const rotatingJudge=(ep.number||0)%2===0?'Ross':'Carson';
   const middleLine=rotatingJudge==='Ross' ? sample(JUDGE_CRITIQUE_BANK.close[bucket]||JUDGE_CRITIQUE_BANK.close.safe) : runwayLine;
+const attrLine = attributeCritiqueLine(q, bucket);
+const michelleLine = attrLine || (Math.random()<0.35
+  ? sample((externalJudge.michelle||{})[bucket==='win'||bucket==='high'?'positive':bucket==='safe'?'safe':'negative']||[challengeLine])
+  : challengeLine);
   return [
-    `<div class="judge-line judge-michelle"><span>Michelle</span><p>${escapeHtml(Math.random()<0.35 ? sample((externalJudge.michelle||{})[bucket==='win'||bucket==='high'?'positive':bucket==='safe'?'safe':'negative']||[challengeLine]) : challengeLine)}</p></div>`,
+`<div class="judge-line judge-michelle"><span>Michelle</span><p>${escapeHtml(michelleLine)}</p></div>`,
     `<div class="judge-line judge-rotating"><span>${rotatingJudge}</span><p>${escapeHtml(Math.random()<0.25 ? sample((externalJudge[rotatingJudge.toLowerCase()]||{})[bucket==='win'||bucket==='high'?'positive':bucket==='safe'?'safe':'negative']||[middleLine]) : middleLine)}</p></div>`,
     `<div class="judge-line judge-guest"><span>${escapeHtml(guestName)}</span><p>${escapeHtml(guestLine)}</p></div>`,
     `<div class="judge-line judge-ru"><span>RuPaul</span><p>${escapeHtml(ruLine)}</p></div>`
