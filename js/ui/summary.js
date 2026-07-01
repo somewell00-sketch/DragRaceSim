@@ -104,6 +104,244 @@ function seasonArcTags(q){
   return [...new Set(tags)];
 }
 function mainSeasonArc(q){return seasonArcTags(q)[0]||'steady competitor';}
+function summaryPick(lines){
+  const pool=(lines||[]).filter(Boolean);
+  return pool.length ? sample(pool) : '';
+}
+function summaryUniquePush(lines,line){
+  if(line && !lines.includes(line)) lines.push(line);
+}
+
+function summaryShuffle(lines){
+  const pool=[...(lines||[])];
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [pool[i],pool[j]]=[pool[j],pool[i]];
+  }
+  return pool;
+}
+function summaryTakeRandom(lines,count){
+  const unique=[...new Set((lines||[]).filter(Boolean))];
+  return summaryShuffle(unique).slice(0,Math.max(0,count));
+}
+function summaryRelationshipStats(q){
+  const rels=Object.values(gameState.relationships?.[q?.id]||{});
+  if(!rels.length)return {avgAffinity:q?.publicScores?.queens||0,avgRespect:q?.publicScores?.queens||0,strong:0,tense:0};
+  const avgAffinity=rels.reduce((sum,r)=>sum+(Number(r.affinity)||0),0)/rels.length;
+  const avgRespect=rels.reduce((sum,r)=>sum+(Number(r.respect)||0),0)/rels.length;
+  return {
+    avgAffinity,
+    avgRespect,
+    strong:rels.filter(r=>(Number(r.affinity)||0)>=25 || (Number(r.respect)||0)>=25).length,
+    tense:rels.filter(r=>(Number(r.affinity)||0)<=-20 || (Number(r.respect)||0)<=-20).length
+  };
+}
+function summarySignals(q){
+  const st=q?.statistics||{};
+  const fans=Number(q?.publicScores?.fans)||0;
+  const production=Number(q?.publicScores?.production)||0;
+  const queens=Number(q?.publicScores?.queens)||0;
+  const rel=summaryRelationshipStats(q);
+  const tags=seasonArcTags(q);
+  const totalEpisodes=(gameState.season?.history||[]).filter(h=>h?.placements).length || Math.max(1,(st.wins||0)+(st.highs||0)+(st.safes||0)+(st.lows||0)+(st.bottoms||0));
+  const competitive=(st.wins||0)+(st.highs||0);
+  const vulnerable=(st.lows||0)+(st.bottoms||0);
+  return {st,fans,production,queens,rel,tags,totalEpisodes,competitive,vulnerable,
+    won:q?.id===gameState.season?.winnerId,
+    finalist:!(q?.isEliminated),
+    eliminated:q?.isEliminated,
+    earlyOut:q?.isEliminated && (st.episodes||totalEpisodes)<=Math.ceil(totalEpisodes*0.55),
+    consistent:competitive>=3 && vulnerable<=1,
+    improved:competitive>=2 && vulnerable>=1,
+    trackThreat:(st.wins||0)>=2 || competitive>=4,
+    lipsyncLegend:(st.lipSyncWins||0)>=2,
+    runwayIcon:(st.runwayWins||0)>=2 || (Number(st.runwayAvg)||0)>=75,
+    challengeBeast:(st.wins||0)>=2 || (Number(st.challengeAvg)||0)>=75,
+    underdog:vulnerable>=2 && competitive>=1,
+    robbed:tags.includes('robbed queen') || (!q?.isEliminated && gameState.season?.winnerId!==q?.id && competitive>=3),
+    villain:tags.includes('villain') || tags.includes('villain edit') || queens<=-20,
+    lovedByCast:rel.avgAffinity>=20 || rel.avgRespect>=25 || queens>=25,
+    tenseCast:rel.tense>=2 || rel.avgAffinity<=-15 || queens<=-20
+  };
+}
+function buildFansSummary(q,tier){
+  const s=summarySignals(q), lines=[];
+  const opening={
+    high:['Fans treated your run like required viewing.','The fandom found plenty to talk about whenever you appeared on screen.','Online, your name kept coming up long after the episodes ended.'],
+    mid:['Viewers found a clear story in your season, even when the edit moved elsewhere.','Fans may not have agreed on every choice, but they remembered you.','Your reception had layers: praise, debate, and a few very loud opinions.'],
+    low:['The audience had a complicated relationship with your run.','Viewers did not always know what to make of you this season.','Your season sparked more debate than universal applause.']
+  };
+  summaryUniquePush(lines,summaryPick(s.fans>=35?opening.high:s.fans>=-7?opening.mid:opening.low));
+  if(s.tags.includes('fan favorite')) summaryUniquePush(lines,summaryPick(['You had the kind of fan support that turns confessionals into quotes and exits into campaigns.','A loyal chunk of the fandom was ready to defend you no matter what happened.','By the end, people were talking about you like a queen they wanted to see again.']));
+  if(s.runwayIcon) summaryUniquePush(lines,summaryPick(['Your runway package became one of the biggest parts of your fan reputation.','Even viewers rooting for other queens had to admit your looks were memorable.','Fashion fans kept screenshots of your runways ready for every debate.']));
+  if(s.lipsyncLegend) summaryUniquePush(lines,summaryPick(['Your lip syncs gave the fandom exactly the kind of drama they log on for.','Every time you landed in danger, fans expected a performance worth replaying.','You turned survival into part of your brand.']));
+  if(s.consistent) summaryUniquePush(lines,summaryPick(['Fans clocked how rarely you truly stumbled.','Your consistency became a quiet argument in your favor.','Week after week, viewers saw you as one of the safest bets in the room.']));
+  if(s.underdog) summaryUniquePush(lines,summaryPick(['Your weaker weeks only made some fans root harder for the comeback.','The fandom loves a survivor, and you gave them one.','Your run had enough close calls to make people emotionally invested.']));
+  if(s.villain && s.fans>=10) summaryUniquePush(lines,summaryPick(['You were messy in a way many viewers found entertaining rather than unforgivable.','Some fans loved you because you were willing to cause a little chaos.','You became the kind of polarizing queen people could not stop discussing.']));
+  if(s.villain && s.fans<0) summaryUniquePush(lines,summaryPick(['For some viewers, the drama overshadowed the drag.','The fandom was not always ready to forgive the messier parts of your season.','Your louder moments created backlash that followed the rest of your run.']));
+  if((s.robbed || s.eliminated) && s.competitive>=3) summaryUniquePush(lines,summaryPick(['Your elimination immediately entered the “was she robbed?” conversation.','A lot of viewers felt your track record deserved a longer runway.','The exit felt abrupt enough to keep fans debating it.']));
+  if(s.earlyOut && s.fans>=15) summaryUniquePush(lines,summaryPick(['Even with limited time, you left enough of an impression to become a cult favorite.','Your run was short, but fans still found a reason to remember you.']));
+  if(lines.length<2) summaryUniquePush(lines,tier.tone);
+  return lines.slice(0,Math.min(3,Math.max(1,lines.length))).join(' ');
+}
+function buildProductionSummary(q,tier){
+  const s=summarySignals(q), lines=[];
+  summaryUniquePush(lines,summaryPick(s.production>=35?['Production quickly realized you were useful television.','The story team clearly knew where to place you in the season.','The cameras had plenty of reasons to stay near you.']:s.production>=-5?['Production could use you when the episode needed texture.','Your edit gave the season a steady presence without taking over completely.','Behind the scenes, you were reliable material.']:['Production struggled to find the cleanest version of your story.','The edit did not always know where to put you.','You were not always the easiest queen to shape into a simple storyline.']));
+  if(s.tags.includes('production darling')) summaryUniquePush(lines,summaryPick(['You gave confessionals, stakes, and enough personality to keep the edit moving.','Whenever the season needed a point of view, you were an easy cutaway.','You had the kind of presence producers can build episodes around.']));
+  if(s.villain && s.production>=15) summaryUniquePush(lines,summaryPick(['The tension around you gave production a storyline with teeth.','Your conflicts were easy to edit into episode momentum.','You knew how to make a scene feel bigger than the challenge itself.']));
+  if(s.underdog) summaryUniquePush(lines,summaryPick(['Your close calls gave the editors a natural underdog arc.','Production could frame your season as a fight to stay in the room.','The vulnerable weeks gave your story real stakes.']));
+  if(s.improved) summaryUniquePush(lines,summaryPick(['The arc was clear: struggle, adjustment, and a stronger finish.','Your season gave production a usable redemption shape.','The improvement made your story easier to root for.']));
+  if(s.consistent) summaryUniquePush(lines,summaryPick(['You were dependable, which made you easy to build around without forcing drama.','The producers could trust you to deliver clean competition beats.','Your track record gave the edit a professional backbone.']));
+  if(s.lipsyncLegend) summaryUniquePush(lines,summaryPick(['Every lip sync gave production a built-in climax.','Your survival moments were exactly the kind of footage producers can sell in a recap.','Danger around you rarely felt boring.']));
+  if(s.fans>=35 && s.production<20) summaryUniquePush(lines,summaryPick(['Even when production did not center you, the audience found you anyway.','Your fan response did some of the work the edit did not.']));
+  if(s.finalist && !s.won) summaryUniquePush(lines,summaryPick(['By the finale, you looked like credible endgame material.','Production had enough footage to make your finalist story make sense.']));
+  if(lines.length<2) summaryUniquePush(lines,tier.tone);
+  return lines.slice(0,Math.min(3,Math.max(1,lines.length))).join(' ');
+}
+function buildQueensSummary(q,tier){
+  const s=summarySignals(q), openingPool=[], detailPool=[], closingPool=[];
+
+  if(s.lovedByCast){
+    openingPool.push(
+      'The workroom largely understood what you brought to the competition.',
+      'Most of the cast had real respect for your drag.',
+      'The other queens could see your talent, even when pressure was high.',
+      'Inside the workroom, your drag earned attention even before the judges weighed in.',
+      'The cast may not have agreed on everything, but they knew you were a serious competitor.',
+      'You became one of those queens the room had to take seriously.'
+    );
+  }else if(s.tenseCast){
+    openingPool.push(
+      'Your place in the workroom was not always comfortable.',
+      'The cast had complicated feelings about competing beside you.',
+      'Some queens respected the drag more than the workroom energy.',
+      'You were not always easy for the other queens to read.',
+      'The workroom energy around you could shift from admiration to tension very quickly.',
+      'Some competitors kept one eye on your talent and the other on the drama around you.'
+    );
+  }else{
+    openingPool.push(
+      'Among the queens, your reputation landed somewhere between respected and hard to read.',
+      'The cast saw your strengths, even if not every relationship became close.',
+      'Your workroom story had warmth in some corners and distance in others.',
+      'The other queens had a mixed but memorable read on your season.',
+      'You were not invisible in the workroom, but you were not always fully understood either.',
+      'Your relationships with the cast had enough nuance to avoid one simple label.'
+    );
+  }
+
+  if(s.rel.strong>=3) detailPool.push(
+    'You built a real inner circle, and several queens seemed to trust you beyond the competition.',
+    'Your closest bonds made you feel like part ally, part emotional anchor.',
+    'A few competitors clearly treated you like someone they could lean on.'
+  );
+  else if(s.rel.strong>=1) detailPool.push(
+    'You had at least a few queens who genuinely seemed to value your presence.',
+    'Your strongest connections gave the workroom a softer read on you.',
+    'Not every bond was deep, but the ones that worked felt real.'
+  );
+
+  if(s.rel.tense>=3) detailPool.push(
+    'Still, more than one queen seemed drained by the tension around you.',
+    'Your conflicts left marks, and the room did not always move past them quickly.',
+    'A few relationships clearly ended the season colder than they began.'
+  );
+  else if(s.rel.tense>=1) detailPool.push(
+    'There were a few tense corners of the workroom, even when things stayed civil.',
+    'Some queens kept their distance, especially once the pressure got higher.',
+    'A little friction followed you, but it never became the whole story.'
+  );
+
+  if(s.trackThreat) detailPool.push(
+    'Your track record made you hard to ignore as a threat.',
+    'Nobody could pretend your competitive résumé was accidental.',
+    'The stronger your record became, the more the room had to measure itself against you.',
+    'By the back half of the season, you were someone queens had to plan around.',
+    'Your wins and highs made the cast treat you less like a friend and more like a problem.'
+  );
+  if(s.consistent) detailPool.push(
+    'Queens may debate taste, but consistency earns respect.',
+    'Your professionalism made it difficult for the cast to dismiss you.',
+    'Even rivals had to acknowledge how often you delivered.',
+    'You were the kind of competitor who made other queens check their own work twice.'
+  );
+  if(s.challengeBeast) detailPool.push(
+    'In challenges, the cast knew you were not someone to underestimate.',
+    'When a challenge played to your strengths, the room could feel it immediately.',
+    'Other queens had to admit you knew how to perform under pressure.'
+  );
+  if(s.runwayIcon) detailPool.push(
+    'Your runways gave the cast something to envy, study, or quietly fear.',
+    'Even backstage, your looks could shift the energy in the room.',
+    'The fashion side of your drag made a clear impression on the other queens.'
+  );
+  if(s.lipsyncLegend) detailPool.push(
+    'Nobody wanted to meet you in a lip sync once your survival streak became clear.',
+    'Your lip sync record made you dangerous even on a bad week.',
+    'The cast learned that putting you in the bottom did not mean getting rid of you.'
+  );
+  if(s.underdog && s.lovedByCast) detailPool.push(
+    'Your vulnerable weeks made some queens protective of you rather than dismissive.',
+    'The room watched you fight, and that earned a particular kind of respect.',
+    'Your comeback energy made the cast root for you more than they expected.'
+  );
+  if(s.villain) detailPool.push(
+    'Some competitors found your presence intimidating, exhausting, or both.',
+    'You were not afraid of friction, and the room felt that.',
+    'The tension around you became part of how the cast remembered the season.',
+    'You could turn a normal workroom day into a very careful conversation.',
+    'Some queens admired your nerve; others simply braced themselves.'
+  );
+  if(s.production>=35 && s.queens<0) detailPool.push(
+    'Some queens could tell production loved you, which did not always make you more popular backstage.',
+    'Being great TV helped your edit more than your workroom relationships.',
+    'The cast noticed when the cameras seemed especially interested in you.'
+  );
+  if(s.rel.avgRespect>=30 && s.rel.avgAffinity<5) detailPool.push(
+    'You were respected more than you were cuddled.',
+    'The cast admired the craft, even when the friendships stayed guarded.',
+    'You earned professional respect without necessarily becoming everyone\'s comfort person.'
+  );
+  if(s.rel.avgAffinity>=25 && s.rel.avgRespect<15) detailPool.push(
+    'The room liked your energy, even when they were not always scared of your track record.',
+    'You had a social warmth that sometimes mattered more than placements.',
+    'Some queens remembered your kindness before they remembered your scores.'
+  );
+  if(s.finalist && !s.won) detailPool.push(
+    'By the finale, several competitors saw you as someone who had earned the right to stand there.',
+    'Making it that far changed how the room looked at your run.',
+    'Your finalist placement forced even skeptical queens to acknowledge the full arc.'
+  );
+  if(s.won) detailPool.push(
+    'By crowning night, the cast could argue about details, but not about your impact.',
+    'Winning made the workroom read of your season impossible to ignore.',
+    'The crown turned your strongest relationships and rivalries into part of your legacy.'
+  );
+
+  if(s.lovedByCast) closingPool.push(
+    'By the end, you left with more admiration than resentment.',
+    'Your cast reputation felt like one of your strongest assets.',
+    'Even the shade came with a level of respect.'
+  );
+  else if(s.tenseCast) closingPool.push(
+    'By the end, the cast remembered you as talent, tension, and very little neutrality.',
+    'You did not leave the workroom untouched, and the workroom did not leave you untouched either.',
+    'Your cast reception was messy, but it was not forgettable.'
+  );
+  else closingPool.push(
+    'By the end, you were remembered as a layered presence in the room.',
+    'The cast may not have fully solved you, but they did not overlook you.',
+    'Your workroom reputation stayed complicated in a way that suited the season.'
+  );
+
+  const opening=summaryPick(openingPool)||tier.tone;
+  const target=1+Math.floor(Math.random()*3);
+  const middle=summaryTakeRandom(detailPool,Math.max(0,target-1));
+  let lines=[opening,...middle];
+  if(lines.length<2 && closingPool.length) lines.push(summaryPick(closingPool));
+  else if(lines.length<3 && Math.random()<0.45) lines.push(summaryPick(closingPool));
+  return [...new Set(lines)].slice(0,3).join(' ');
+}
 function postSeasonReception(q){
   if(!q)return '';
   const fans=q.publicScores?.fans||0, prod=q.publicScores?.production||0, cast=castReceptionScore(q);
@@ -117,23 +355,22 @@ function postSeasonReception(q){
   if(tags.includes('villain edit') || tags.includes('villain')) closing='Not every queen is loved, but some queens make television. You made television.';
   if(tags.includes('filler queen')) closing='You competed, but the season often moved around you instead of through you.';
   if(tags.includes('front-runner')) closing='Your track record made you one of the queens the others had to measure themselves against.';
-  const receptionBlock=(icon,title,tier)=>`<article class="reception-item">
+  const receptionBlock=(icon,title,tier,body)=>`<article class="reception-item">
       <div class="reception-kicker">${icon} ${escapeHtml(title)}</div>
       <h3 class="reception-label">${escapeHtml(tier.label)}</h3>
-      <p>${escapeHtml(tier.tone)}</p>
+      <p>${escapeHtml(body||tier.tone)}</p>
     </article>`;
   return `<section class="card reception-card"><h2>Your Post-Season Reception</h2>
     <p><strong>${escapeHtml(q.name)}</strong> leaves the season as a <strong>${escapeHtml(mainSeasonArc(q))}</strong>.</p>
     <div class="chips">${tagHtml}</div>
     <div class="reception-grid">
-      ${receptionBlock('❤️','Fans',fan)}
-      ${receptionBlock('🎬','Production',production)}
-      ${receptionBlock('👑','Cast',castTier)}
+      ${receptionBlock('❤️','Fans',fan,buildFansSummary(q,fan))}
+      ${receptionBlock('🎬','Production',production,buildProductionSummary(q,production))}
+      ${receptionBlock('👑','Fellow Queens',castTier,buildQueensSummary(q,castTier))}
     </div>
     <p>${escapeHtml(closing)}</p>
   </section>`;
 }
-
 
 function allStarsInvitationEligible(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
