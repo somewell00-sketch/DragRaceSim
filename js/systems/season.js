@@ -669,8 +669,74 @@ function finishTournamentGroupIfNeeded(){
   gameState.season.status='tournament_final_entrance';
 }
 
-function startSeason(playerQueen, castSize='random', seasonFormat='regular'){const data=gameState.data; resetState(); gameState.data=data; const format=normalizeSeasonFormat(seasonFormat); const resolvedCastSize=resolveCastSizeForFormat(castSize,format); gameState.settings.castSize=resolvedCastSize; gameState.settings.seasonFormat=format; gameState.playerQueenId=playerQueen.id; const cast=buildNpcCast(gameState.settings.castSize); gameState.queens=shuffle([playerQueen,...cast]); const finaleSize=pickFinaleSize(gameState.queens.length); gameState.season={number:1,status:isTournamentFormat(format)?'tournament_entrance':'entrance',format,finaleSize,originalCastSize:gameState.queens.length,returnTwist:initializeReturnTwist(format),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]}; if(isTournamentFormat(format))gameState.season.brackets=initializeTournamentBrackets(); setupPremiereStructure(); gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize); initializePerformanceArcs(); initializeRelationships(); if(typeof ensureAllSocialStats==='function')ensureAllSocialStats(); saveGame();}
+async function startSeason(playerQueen, castSize='random', seasonFormat='regular'){
+  const data=gameState.data;
 
+  resetState();
+  gameState.data=data;
+
+  const format=normalizeSeasonFormat(seasonFormat);
+  const resolvedCastSize=resolveCastSizeForFormat(castSize,format);
+
+  gameState.settings.castSize=resolvedCastSize;
+  gameState.settings.seasonFormat=format;
+  gameState.playerQueenId=playerQueen.id;
+
+  let communityQueens=[];
+
+  try{
+    if(typeof loadCommunityQueens==='function' && typeof convertCommunityQueenToGameQueen==='function'){
+      const wanted=Math.random()<0.5?1:2;
+      const savedQueens=await loadCommunityQueens(100);
+      communityQueens=savedQueens
+        .filter(q=>q.name && q.name!==playerQueen.name)
+        .sort(()=>Math.random()-0.5)
+        .slice(0,wanted)
+        .map((q,i)=>convertCommunityQueenToGameQueen(q,i));
+    }
+  }catch(err){
+    console.warn('Could not load community queens for cast:',err);
+    communityQueens=[];
+  }
+
+  const neededNpc=Math.max(0,resolvedCastSize-1-communityQueens.length);
+  const cast=buildNpcCastExact(neededNpc);
+
+  gameState.queens=shuffle([playerQueen,...communityQueens,...cast]);
+
+  const finaleSize=pickFinaleSize(gameState.queens.length);
+
+  gameState.season={
+    number:1,
+    status:isTournamentFormat(format)?'tournament_entrance':'entrance',
+    format,
+    finaleSize,
+    originalCastSize:gameState.queens.length,
+    returnTwist:initializeReturnTwist(format),
+    returnAnnouncement:null,
+    doubleShantayUsed:false,
+    doubleSashayUsed:false,
+    challengePlan:{},
+    finale:null,
+    iconicLipSyncs:[],
+    lalaparuzaDone:false,
+    lalaparuzaChecked:false,
+    reunionDone:false,
+    reunionChecked:false,
+    usedRunwayActions:[]
+  };
+
+  if(isTournamentFormat(format))gameState.season.brackets=initializeTournamentBrackets();
+
+  setupPremiereStructure();
+  gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize);
+  initializePerformanceArcs();
+  initializeRelationships();
+
+  if(typeof ensureAllSocialStats==='function')ensureAllSocialStats();
+
+  saveGame();
+}
 function resetQueenForNewSeason(q, isPlayer=false){
   const clean=JSON.parse(JSON.stringify(q||{}));
   clean.isPlayer=!!isPlayer;
