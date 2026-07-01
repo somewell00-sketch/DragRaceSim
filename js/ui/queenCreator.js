@@ -56,6 +56,70 @@ function updateCastSizeOptionsForFormat(){
   const select=document.querySelector('#castSize');
   if(select)select.innerHTML=castOptionsForFormat(format);
 }
+
+const LOCAL_COMMUNITY_QUEEN_FILTERS = { days: null, location: null }; // Ready for future 30-day/location filtering.
+let creatorCommunityQueens = [];
+
+function communityQueenAttrValue(row, attr){
+  const map={lipSync:'lip_sync',runway:'runway'};
+  const key=map[attr]||attr;
+  const fallback=attr==='runway' ? row?.design : undefined;
+  return Number(row?.[key] ?? fallback ?? 7) || 7;
+}
+
+function prefillCreatorFromCommunityQueen(row){
+  if(!row)return;
+  const name=document.querySelector('#qName');
+  const type=document.querySelector('#qType');
+  const personality=document.querySelector('#qPersonality');
+  if(name)name.value=String(row.name||'').trim();
+  if(type){
+    const rowType=row.drag_type || row.type || 'Jack of All Trades';
+    if([...type.options].some(option=>option.value===rowType))type.value=rowType;
+  }
+  if(personality){
+    const rowPersonality=row.personality || row.personalityId || 'confident';
+    if([...personality.options].some(option=>option.value===rowPersonality))personality.value=rowPersonality;
+  }
+  document.querySelectorAll('[data-attr]').forEach(input=>{
+    input.value=Math.max(Number(input.min)||1,Math.min(Number(input.max)||10,communityQueenAttrValue(row,input.dataset.attr)));
+  });
+  updateCreatorPreview();
+  updateTotal();
+}
+
+function localCommunityQueenOptionLabel(row,index){
+  const name=String(row?.name||`Community Queen ${index+1}`).trim()||`Community Queen ${index+1}`;
+  return typeof escapeHtml==='function' ? escapeHtml(name) : name.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+async function initLocalCommunityQueenSelect(){
+  const section=document.querySelector('#localCommunityQueenSection');
+  const select=document.querySelector('#localCommunityQueenSelect');
+  if(!section||!select)return;
+  section.hidden=true;
+  if(typeof loadEligibleCommunityQueens!=='function')return;
+  try{
+    let location=null;
+    const userLocationPromise=typeof detectUserCommunityLocation==='function'
+      ? detectUserCommunityLocation().then(value=>{window.currentUserCommunityLocation=value;return value;}).catch(()=>null)
+      : Promise.resolve(null);
+    if(LOCAL_COMMUNITY_QUEEN_FILTERS.location===true){
+      location=await userLocationPromise;
+    }
+    creatorCommunityQueens=await loadEligibleCommunityQueens({
+      limit:100,
+      days:LOCAL_COMMUNITY_QUEEN_FILTERS.days,
+      location:location || LOCAL_COMMUNITY_QUEEN_FILTERS.location
+    });
+    if(!creatorCommunityQueens.length)return;
+    select.innerHTML=`<option value="">Create a new one</option>${creatorCommunityQueens.map((row,index)=>`<option value="${index}">${localCommunityQueenOptionLabel(row,index)}</option>`).join('')}`;
+    section.hidden=false;
+  }catch(err){
+    console.warn('Could not initialize local community queen selection:',err);
+    section.hidden=true;
+  }
+}
 function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
   const defaultPersonality=p[Math.floor(Math.random()*p.length)].id;
@@ -102,6 +166,10 @@ function renderQueenCreator(){
       </aside>
 
       <div class="home-main-panel">
+        <section id="localCommunityQueenSection" class="local-community-queen-panel card" hidden>
+          <label class="home-field">Select a local queen<select id="localCommunityQueenSelect"><option value="">Create a new one</option></select></label>
+        </section>
+
         <section class="home-queen-panel card">
           <div class="creator-portrait-wrap">
             <span id="creatorPortrait" class="queen-portrait portrait-xl creator-portrait player-portrait" style="${creatorPreviewStyle(randomType,defaultPersonality)}"></span>
@@ -138,6 +206,11 @@ function renderQueenCreator(){
  document.querySelector('#qPersonality').addEventListener('change',updateCreatorPreview);
  document.querySelector('#qName').addEventListener('input',updateCreatorPreview);
  document.querySelector('#rerollQueenName')?.addEventListener('click',rollCreatorQueenName);
+ document.querySelector('#localCommunityQueenSelect')?.addEventListener('change',(event)=>{
+   const index=event.target.value;
+   if(index==='')return;
+   prefillCreatorFromCommunityQueen(creatorCommunityQueens[Number(index)]);
+ });
  document.querySelectorAll('[data-attr]').forEach(input=>input.addEventListener('input',(e)=>updateTotal(e.target)));
  document.querySelector('#startSeason').addEventListener('click',async()=>{
    const startBtn=document.querySelector('#startSeason');
@@ -172,6 +245,7 @@ if(typeof saveCommunityQueen === 'function'){
  updateCreatorPreview();
  updateTotal();
  rollCreatorQueenName();
+ initLocalCommunityQueenSelect();
 }
 function applyTypePreset(){const preset=getTypePreset(document.querySelector('#qType').value); document.querySelectorAll('[data-attr]').forEach(i=>{i.value=preset[i.dataset.attr]||7;}); updateTotal();}
 function updateTotal(changedInput=null){let total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);}); if(total>45 && changedInput){const overflow=total-45; changedInput.value=Math.max(Number(changedInput.min),Number(changedInput.value)-overflow); total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);});}

@@ -205,6 +205,30 @@ async function loadCommunityQueens(limit = 100) {
   return data || [];
 }
 
+
+function communityQueenCreatedWithinDays(row, days) {
+  if (!days) return true;
+  const createdAt = row?.created_at ? new Date(row.created_at).getTime() : 0;
+  if (!createdAt) return false;
+  const maxAgeMs = Number(days) * 24 * 60 * 60 * 1000;
+  return Date.now() - createdAt <= maxAgeMs;
+}
+
+function communityQueenMatchesLocation(row, location) {
+  if (!location) return true;
+  const queenLocation = normalizeCommunityLocation(row?.location || row?.country || '');
+  return queenLocation && queenLocation === normalizeCommunityLocation(location);
+}
+
+async function loadEligibleCommunityQueens(options = {}) {
+  const { limit = 100, days = null, location = null } = options || {};
+  const rows = await loadCommunityQueens(limit);
+  return rows.filter(row => (
+    communityQueenCreatedWithinDays(row, days) &&
+    communityQueenMatchesLocation(row, location)
+  ));
+}
+
 function convertCommunityQueenToGameQueen(row, index = 0) {
   const safeName = String(row?.name || `Community Queen ${index + 1}`).trim() || `Community Queen ${index + 1}`;
   const safeType = row?.drag_type || row?.type || 'Jack of All Trades';
@@ -231,3 +255,5 @@ function convertCommunityQueenToGameQueen(row, index = 0) {
 window.saveCommunityQueen = saveCommunityQueen;
 window.loadCommunityQueens = loadCommunityQueens;
 window.convertCommunityQueenToGameQueen = convertCommunityQueenToGameQueen;
+window.loadEligibleCommunityQueens = loadEligibleCommunityQueens;
+window.normalizeCommunityLocation = normalizeCommunityLocation;
