@@ -150,7 +150,11 @@ function renderQueenCreator(){
      if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
      const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes});
     saveCommunityQueen(queen).catch(console.warn);
-     startSeason(queen, document.querySelector('#castSize').value, document.querySelector('#seasonFormat')?.value || 'regular');
+await startSeason(
+  queen,
+  document.querySelector('#castSize').value,
+  document.querySelector('#seasonFormat')?.value || 'regular'
+);
      renderEntrance();
    }catch(err){
      console.error(err);
