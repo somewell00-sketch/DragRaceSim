@@ -32,3 +32,32 @@ function applyChallengeWinRelationshipPenalty(winner, ep){
   ep.winRelationshipPenalties.push(...changes);
   return changes;
 }
+function applyHighQueensWinnerJealousy(winner, ep){
+  if(!winner || !ep || !gameState.relationships)return [];
+  if(ep.highWinnerJealousyApplied)return [];
+
+  const highPlacements=(ep.placements||[]).filter(p=>p.placement==='HIGH');
+
+  const changes=highPlacements.map(p=>{
+    const highQueen=gameState.queens.find(q=>q.id===p.queenId);
+    if(!highQueen || highQueen.id===winner.id || highQueen.isEliminated)return null;
+
+    const roll=Math.random();
+    if(roll<0.40){
+      changeRelationship(highQueen.id,winner.id,rand(-8,-4),rand(-2,0));
+      return {fromId:highQueen.id,toId:winner.id,type:'small'};
+    }
+
+    if(roll<0.70){
+      changeRelationship(highQueen.id,winner.id,rand(-16,-9),rand(-5,-2));
+      return {fromId:highQueen.id,toId:winner.id,type:'large'};
+    }
+
+    return null;
+  }).filter(Boolean);
+
+  ep.highWinnerJealousyApplied=true;
+  ep.highWinnerJealousyChanges=changes;
+
+  return changes;
+}
