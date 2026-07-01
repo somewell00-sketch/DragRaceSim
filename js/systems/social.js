@@ -140,6 +140,13 @@ const UNTUCKED_ACTIONS = {
     needsTarget:true,
     dynamicEffect:'buildAlliance',
     text:'You start talking future weeks. The game is getting strategic.'
+  },
+  rumor: {
+    label:'Spread a rumor',
+    description:'Make three queens turn on someone. 30% chance it backfires on you.',
+    needsTarget:true,
+    dynamicEffect:'spreadRumor',
+    text:'You plant a rumor in the lounge and wait to see who believes it.'
   }
 };
 
@@ -524,6 +531,35 @@ function applyUntuckedAction(actionId,targetId=null){
   const target=targetId?gameState.queens.find(q=>q.id===targetId):null;
   let note=target?`${action.text} Target: ${target.name}.`:action.text;
   gameState.currentEpisode.untuckedChoice={action:action.label,targetId:target?.id||null,targetName:target?.name||null};
+
+  if(action.dynamicEffect==='spreadRumor' && target){
+    const witnesses=randomLiveQueens(3,[player?.id,target.id]);
+    const names=witnesses.map(q=>q.name).join(', ') || 'the room';
+    const backfires=Math.random()<0.30;
+    if(backfires){
+      witnesses.forEach(q=>{
+        changeRelationship(q.id,player.id,-30,-8);
+        changeRelationship(player.id,q.id,-8,-3);
+      });
+      note=`Your rumor about ${target.name} backfires. ${names} trace it back to you and lose a lot of trust in you.`;
+      applyPlayerEffects({production:10,fans:-2.5,stress:9,queens:-4,momentum:-1},note);
+      addStoryFlag(player.id,'rumor_backfire',`A rumor about ${target.name} backfired in Untucked.`,1);
+      maybeVillainEdit(player,0.28,`spread a rumor about ${target.name} and got caught`);
+    }else{
+      witnesses.forEach(q=>{
+        changeRelationship(q.id,target.id,-32,-9);
+        changeRelationship(target.id,q.id,-8,-3);
+      });
+      note=`You spread a rumor about ${target.name}. ${names} believe enough of it to pull away from her.`;
+      applyPlayerEffects({production:11.5,fans:0.5,stress:4,queens:-1.25},note);
+      addStoryFlag(player.id,'strategic_rumor',`Spread a rumor about ${target.name} in Untucked.`,1);
+      addStoryFlag(target.id,'rumor_target',`${target.name} became the target of an Untucked rumor.`,1);
+      maybeVillainEdit(player,0.18,`spread a rumor about ${target.name}`);
+    }
+    ensureEpisodeEffects().untuckedNotes.push(note);
+    saveGame();
+    return;
+  }
 
   if(action.dynamicEffect){
     const built=buildDynamicPlayerEffects(action.dynamicEffect,target);
