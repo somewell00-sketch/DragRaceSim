@@ -16,8 +16,14 @@ function communityQueenPayload(queen) {
     sewing: Number(attrs.sewing ?? queen.sewing ?? 0) || 0,
     runway: Number(attrs.runway ?? queen.runway ?? queen.design ?? 0) || 0,
     acting: Number(attrs.acting ?? queen.acting ?? 0) || 0,
-    country: queen.country || '',
-    game_version: window.GAME_VERSION || ''
+    country:
+  queen.country ||
+  Intl.DateTimeFormat().resolvedOptions().timeZone ||
+  '',
+
+game_version:
+  window.GAME_VERSION ||
+  'dragracesim-v1'
   };
 }
 
