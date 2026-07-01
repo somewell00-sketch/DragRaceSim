@@ -167,7 +167,7 @@ function renderQueenCreator(){
 
       <div class="home-main-panel">
         <section id="localCommunityQueenSection" class="local-community-queen-panel card" hidden>
-          <label class="home-field">Select a local queen<select id="localCommunityQueenSelect"><option value="">Create a new one</option></select></label>
+          <label class="home-field">Select a queen or create a new one<select id="localCommunityQueenSelect"><option value="">Create a new one</option></select></label>
         </section>
 
         <section class="home-queen-panel card">
