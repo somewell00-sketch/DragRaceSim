@@ -108,7 +108,7 @@ function renderUntucked(){
   document.querySelector('#continueSpectator')?.addEventListener('click',()=>{gameState.season.spectatorMode=true; saveGame(); continueAfterEpisode();});
   document.querySelector('#seeFinalResult')?.addEventListener('click',()=>{skipToFinaleStart();});
 }
-function untuckedEmoji(id){return {comfort:'💞',provoke:'🧨',apologize:'🕊️',quiet:'🤫',drama:'📺',alliance:'🤝',rumor:'🗣️'}[id]||'•';}
+function untuckedEmoji(id){return {comfort:'💞',provoke:'🧨',apologize:'🕊️',quiet:'🤫',drama:'📺',alliance:'🤝'}[id]||'•';}
 function renderUntuckedChoice(){
   const buttons=Object.entries(UNTUCKED_ACTIONS).map(([id,o])=>`<button class="option" data-untucked="${id}"><span class="choice-emoji" aria-hidden="true">${untuckedEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(o.label)}</strong><span class="small">${escapeHtml(o.description)}</span></span></button>`).join('');
   document.querySelector('#untuckedChoice').innerHTML=`<div class="card decision-card"><h3>Your Untucked move</h3><p>This is social gameplay. Choose who you are becoming in the lounge.</p><div class="options">${buttons}</div><div id="untuckedTarget"></div></div>`;

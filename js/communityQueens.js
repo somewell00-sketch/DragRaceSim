@@ -3,17 +3,56 @@ const SUPABASE_KEY = 'sb_publishable_ZWRCRg4bhvPrkld0pkTcyg__dWY0VVb';
 
 const communityDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-function communityCountryFromLocation(location = '') {
-  const text = String(location || '').trim();
-  const countryMatch = text.match(/\(([^)]+)\)/);
-  if (countryMatch) return countryMatch[1].trim();
+const COUNTRY_CODE_ALIASES = {
+  USA: 'US',
+  PRT: 'PT',
+  POR: 'PT',
+  UK: 'GB',
+  BRA: 'BR',
+  BRASIL: 'BR',
+  BRAZIL: 'BR',
+  PORTUGAL: 'PT',
+  UNITED_STATES: 'US',
+  UNITED_STATES_OF_AMERICA: 'US'
+};
+
+function normalizeCommunityLocation(rawLocation) {
+  const raw = String(rawLocation || '').trim();
+  if (!raw) return '';
+
+  const parenthesizedCountry = raw.match(/^(.*?),\s*([A-Z]{2})\s*\(([^)]+)\)$/i);
+  if (parenthesizedCountry) {
+    const city = parenthesizedCountry[1].trim();
+    const country = normalizeCountryCode(parenthesizedCountry[3]);
+    return country ? `${city}, ${country}` : city;
+  }
+
+  const cityAndCountry = raw.match(/^(.*?),\s*([^,]+)$/);
+  if (cityAndCountry) {
+    const city = cityAndCountry[1].trim();
+    const country = normalizeCountryCode(cityAndCountry[2]);
+    return country ? `${city}, ${country}` : raw;
+  }
+
+  return raw;
+}
+
+function normalizeCountryCode(value) {
+  const cleaned = String(value || '')
+    .trim()
+    .replace(/[().]/g, '')
+    .replace(/\s+/g, '_')
+    .toUpperCase();
+
+  if (!cleaned) return '';
+  if (COUNTRY_CODE_ALIASES[cleaned]) return COUNTRY_CODE_ALIASES[cleaned];
+  if (/^[A-Z]{2}$/.test(cleaned)) return cleaned;
+  if (/^[A-Z]{3}$/.test(cleaned)) return COUNTRY_CODE_ALIASES[cleaned] || cleaned.slice(0, 2);
   return '';
 }
 
 function communityQueenPayload(queen) {
   const attrs = queen.attributes || {};
-  const location = queen.location || queen.country || '';
-  const country = queen.country || communityCountryFromLocation(location);
 
   return {
     name: queen.name || '',
@@ -25,19 +64,37 @@ function communityQueenPayload(queen) {
     sewing: Number(attrs.sewing ?? queen.sewing ?? 0) || 0,
     runway: Number(attrs.runway ?? queen.runway ?? queen.design ?? 0) || 0,
     acting: Number(attrs.acting ?? queen.acting ?? 0) || 0,
-    location,
-    country,
+    location: normalizeCommunityLocation(queen.location || queen.country || ''),
     game_version: window.GAME_VERSION || 'dragracesim-v1'
   };
+}
+
+function legacyCommunityQueenPayload(queen) {
+  const payload = communityQueenPayload(queen);
+  delete payload.game_version;
+  return payload;
+}
+
+async function insertCommunityQueenPayload(payload) {
+  return communityDb
+    .from('community_queens')
+    .insert(payload)
+    .select();
+}
+
+function isMissingSchemaColumnError(error) {
+  return error?.code === 'PGRST204' || /schema cache|column/i.test(error?.message || '');
 }
 
 async function saveCommunityQueen(queen) {
   if (!communityDb || !queen?.name) return null;
 
-  const { data, error } = await communityDb
-    .from('community_queens')
-    .insert(communityQueenPayload(queen))
-    .select();
+  let { data, error } = await insertCommunityQueenPayload(communityQueenPayload(queen));
+
+  if (error && isMissingSchemaColumnError(error)) {
+    console.warn('Community queen schema is missing optional columns; retrying with legacy payload:', error);
+    ({ data, error } = await insertCommunityQueenPayload(legacyCommunityQueenPayload(queen)));
+  }
 
   if (error) {
     console.warn('Could not save community queen:', error);
@@ -87,67 +144,6 @@ function convertCommunityQueenToGameQueen(row, index = 0) {
   });
 }
 
-function communityLocationMatchKey(location = '') {
-  const text = String(location || '').toLowerCase().trim();
-  const countryMatch = text.match(/\(([^)]+)\)/);
-  if (countryMatch) return countryMatch[1].trim();
-  return text
-    .replace(/[^a-z\s]/g, ' ')
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(-1)[0] || '';
-}
-
-function isRecentCommunityQueen(row, days = 30) {
-  const created = new Date(row?.created_at || 0).getTime();
-  if (!created || Number.isNaN(created)) return false;
-  return created >= Date.now() - days * 24 * 60 * 60 * 1000;
-}
-
-async function loadLocalCommunityQueens(playerLocation, limit = 100) {
-  const localKey = communityLocationMatchKey(playerLocation);
-  if (!localKey) return [];
-  const rows = await loadCommunityQueens(limit);
-  return rows.filter(row => {
-    const rowKey = communityLocationMatchKey(row?.location || row?.country || '');
-    return row?.name && rowKey && rowKey === localKey && isRecentCommunityQueen(row, 30);
-  });
-}
-
-function communityQueenSignatureFromForm() {
-  const attrs = {};
-  document.querySelectorAll('[data-attr]').forEach(input => {
-    attrs[input.dataset.attr] = Number(input.value) || 0;
-  });
-  return JSON.stringify({
-    name: document.querySelector('#qName')?.value.trim() || '',
-    type: document.querySelector('#qType')?.value || '',
-    personalityId: document.querySelector('#qPersonality')?.value || '',
-    attributes: attrs
-  });
-}
-
-function communityQueenSignatureFromRow(row) {
-  return JSON.stringify({
-    name: String(row?.name || '').trim(),
-    type: row?.drag_type || row?.type || '',
-    personalityId: row?.personality || row?.personalityId || '',
-    attributes: {
-      cunt: Number(row?.cunt) || 7,
-      lipSync: Number(row?.lip_sync) || 7,
-      makeup: Number(row?.makeup) || 7,
-      sewing: Number(row?.sewing) || 7,
-      runway: Number(row?.runway ?? row?.design) || 7,
-      acting: Number(row?.acting) || 7
-    }
-  });
-}
-
 window.saveCommunityQueen = saveCommunityQueen;
 window.loadCommunityQueens = loadCommunityQueens;
 window.convertCommunityQueenToGameQueen = convertCommunityQueenToGameQueen;
-window.loadLocalCommunityQueens = loadLocalCommunityQueens;
-window.communityQueenSignatureFromForm = communityQueenSignatureFromForm;
-window.communityQueenSignatureFromRow = communityQueenSignatureFromRow;
-window.communityLocationMatchKey = communityLocationMatchKey;
-window.communityCountryFromLocation = communityCountryFromLocation;

@@ -275,21 +275,8 @@ function assignIndividualPlacements(scored){
   if(scored.length>=13 && scored[3])scored[3].placement='HIGH';
   if(scored.length>5 && scored[scored.length-3])scored[scored.length-3].placement='LOW';
   if(scored.length>=13 && scored[scored.length-4])scored[scored.length-4].placement='LOW';
-  const tripleBottom =
-  scored.length >= 6 &&
-  !gameState.season.tripleBottomLipSyncUsed &&
-  Math.random() < 0.02;
-
-if (tripleBottom) {
-  gameState.season.tripleBottomLipSyncUsed = true;
-  gameState.currentEpisode.tripleBottomLipSync = true;
-}
-
-const bottomCount = tripleBottom ? 3 : 2;
-
-scored.slice(-bottomCount).forEach(s => {
-  s.placement = 'BTM';
-});
+  if(scored[scored.length-2])scored[scored.length-2].placement='BTM';
+  if(scored[scored.length-1])scored[scored.length-1].placement='BTM';
   normalizeCritiqueSpread(scored, scored.length);
 }
 function assignTeamPlacements(scored, ep){
@@ -633,8 +620,6 @@ function applyAssassinPlacements(scored, ep){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
   if(scored[1])scored[1].placement='HIGH';
-  if(scored[2]) scored[2].placement='HIGH';
-
   const bottomCount=Math.min(3, Math.max(0, scored.length-1));
   scored.slice(-bottomCount).forEach(s=>s.placement='BTM');
   ep.topQueenId=scored[0]?.queenId||null;

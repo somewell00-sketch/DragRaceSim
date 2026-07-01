@@ -19,22 +19,15 @@ function relationshipMood(queenId){
 function applyChallengeWinRelationshipPenalty(winner, ep){
   if(!winner || !ep || !gameState.relationships)return [];
   if(ep.winRelationshipPenalties?.some(x=>x.winnerId===winner.id))return [];
-  const highPlacements=(ep.placements||[]).filter(p=>p && (p.placement==='HIGH'||p.placement==='TOP2') && p.queenId!==winner.id);
-  const targets=highPlacements.map(p=>gameState.queens.find(q=>q.id===p.queenId && !q.isEliminated)).filter(Boolean);
+  const pool=(gameState.queens||[]).filter(q=>q && q.id!==winner.id && !q.isEliminated);
+  const targets=shuffle(pool).slice(0,3);
   if(!targets.length)return [];
   ep.winRelationshipPenalties=ep.winRelationshipPenalties||[];
-  const changes=[];
-  targets.forEach(target=>{
-    const roll=Math.random();
-    if(roll<0.30){
-      changeRelationship(target.id,winner.id,-22,-6);
-      changes.push({winnerId:winner.id,targetId:target.id,affinity:-22,respect:-6,intensity:'major'});
-    }else if(roll<0.70){
-      changeRelationship(target.id,winner.id,-7,-2);
-      changes.push({winnerId:winner.id,targetId:target.id,affinity:-7,respect:-2,intensity:'minor'});
-    }else{
-      changes.push({winnerId:winner.id,targetId:target.id,affinity:0,respect:0,intensity:'none'});
-    }
+  const changes=targets.map(target=>{
+    const affinityLoss=rand(-14,-8);
+    const respectShift=rand(-3,1);
+    changeRelationship(target.id,winner.id,affinityLoss,respectShift);
+    return {winnerId:winner.id,targetId:target.id,affinity:affinityLoss,respect:respectShift};
   });
   ep.winRelationshipPenalties.push(...changes);
   return changes;
