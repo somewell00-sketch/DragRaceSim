@@ -1,4 +1,8 @@
 const attrDefs=[['cunt','✨ C.U.N.T'],['lipSync','🎤 Lip Sync'],['makeup','💄 Beauty'],['sewing','🪡 Sewing'],['runway','👠 Runway'],['acting','🎭 Performance']];
+let creatorPlayerLocation='';
+let creatorLocalCommunityQueens=[];
+let creatorSelectedCommunityQueen=null;
+let creatorSelectedCommunitySignature='';
 function getTypePreset(typeName){
   const type=gameState.data.queenTypes.find(t=>t.name===typeName);
   return type?.attributes || gameState.data.queenTypes.find(t=>t.name==='Jack of All Trades')?.attributes || {cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7};
@@ -56,6 +60,97 @@ function updateCastSizeOptionsForFormat(){
   const select=document.querySelector('#castSize');
   if(select)select.innerHTML=castOptionsForFormat(format);
 }
+
+function setSelectValueIfExists(selector, value){
+  const select=document.querySelector(selector);
+  if(!select)return;
+  const wanted=String(value||'');
+  const found=[...select.options].find(opt=>String(opt.value)===wanted || opt.textContent===wanted);
+  if(found)select.value=found.value;
+}
+function fillCreatorFromCommunityQueen(row){
+  if(!row)return;
+  const attrs={
+    cunt:Number(row.cunt)||7,
+    lipSync:Number(row.lip_sync)||7,
+    makeup:Number(row.makeup)||7,
+    sewing:Number(row.sewing)||7,
+    runway:Number(row.runway ?? row.design)||7,
+    acting:Number(row.acting)||7
+  };
+  const nameInput=document.querySelector('#qName');
+  if(nameInput)nameInput.value=String(row.name||'Your Queen');
+  setSelectValueIfExists('#qType', row.drag_type || row.type || 'Jack of All Trades');
+  setSelectValueIfExists('#qPersonality', row.personality || row.personalityId || 'confident');
+  document.querySelectorAll('[data-attr]').forEach(input=>{
+    input.value=attrs[input.dataset.attr] || 7;
+  });
+  updateTotal();
+  updateCreatorPreview();
+}
+function resetCommunityQueenSelection(){
+  creatorSelectedCommunityQueen=null;
+  creatorSelectedCommunitySignature='';
+}
+function bindCommunityQueenSelect(){
+  const select=document.querySelector('#communityQueenSelect');
+  if(!select)return;
+  select.addEventListener('change',()=>{
+    const selectedId=select.value;
+    if(!selectedId){
+      resetCommunityQueenSelection();
+      return;
+    }
+    const row=creatorLocalCommunityQueens.find(q=>String(q.id)===String(selectedId));
+    if(!row)return;
+    creatorSelectedCommunityQueen=row;
+    creatorSelectedCommunitySignature=typeof communityQueenSignatureFromRow==='function' ? communityQueenSignatureFromRow(row) : '';
+    fillCreatorFromCommunityQueen(row);
+  });
+}
+
+function normalizeCreatorLocationText(text=''){
+  return String(text||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+}
+function inferCreatorPlayerLocation(){
+  try{
+    const timezone=Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+    const city=timezone.split('/').pop()?.replace(/_/g,' ') || '';
+    const normalizedCity=normalizeCreatorLocationText(city);
+    const locations=gameState.data?.locations || window.GAME_DATA?.locations || [];
+    const exactCity=locations.find(loc=>normalizeCreatorLocationText(loc).startsWith(normalizedCity+','));
+    if(exactCity)return exactCity;
+    const containsCity=locations.find(loc=>normalizeCreatorLocationText(loc).includes(normalizedCity));
+    if(containsCity)return containsCity;
+  }catch(err){
+    console.warn('Could not infer player location from browser timezone.',err);
+  }
+  return typeof randomQueenLocation==='function' ? randomQueenLocation() : 'New York City, NY (USA)';
+}
+
+async function setupLocalCommunityQueenSelect(){
+  const block=document.querySelector('#communityQueenPickerBlock');
+  const select=document.querySelector('#communityQueenSelect');
+  if(!block || !select || typeof loadLocalCommunityQueens!=='function')return;
+  try{
+    creatorPlayerLocation = creatorPlayerLocation || inferCreatorPlayerLocation();
+    creatorLocalCommunityQueens = await loadLocalCommunityQueens(creatorPlayerLocation, 100);
+    if(!creatorLocalCommunityQueens.length){
+      block.remove();
+      return;
+    }
+    select.innerHTML='<option value="">Create a new one</option>'+creatorLocalCommunityQueens.map(row=>`<option value="${escapeHtml(row.id)}">${escapeHtml(row.name)}</option>`).join('');
+    block.hidden=false;
+  }catch(err){
+    console.warn('Could not load local community queens:',err);
+    block?.remove();
+  }
+}
+function selectedCommunityQueenWasEdited(){
+  if(!creatorSelectedCommunityQueen || !creatorSelectedCommunitySignature || typeof communityQueenSignatureFromForm!=='function')return false;
+  return communityQueenSignatureFromForm()!==creatorSelectedCommunitySignature;
+}
+
 function renderQueenCreator(){
   const p=sortedPersonalities(), t=sortedQueenTypes();
   const defaultPersonality=p[Math.floor(Math.random()*p.length)].id;
@@ -108,6 +203,7 @@ function renderQueenCreator(){
             <span class="creator-portrait-crown">👑</span>
           </div>
           <div class="creator-fields">
+            <label id="communityQueenPickerBlock" class="home-field" hidden><span>Select a local queen</span><select id="communityQueenSelect"><option value="">Create a new one</option></select></label>
             <label class="home-field home-name-field"><span>Drag name</span><div class="creator-name-row"><input id="qName" value="Your Queen"> <button id="rerollQueenName" class="creator-dice-btn" type="button" title="Random name" aria-label="Random name">🎲</button></div></label>
             <div class="creator-select-row">
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
@@ -137,6 +233,7 @@ function renderQueenCreator(){
  document.querySelector('#seasonFormat')?.addEventListener('change',updateCastSizeOptionsForFormat);
  document.querySelector('#qPersonality').addEventListener('change',updateCreatorPreview);
  document.querySelector('#qName').addEventListener('input',updateCreatorPreview);
+ bindCommunityQueenSelect();
  document.querySelector('#rerollQueenName')?.addEventListener('click',rollCreatorQueenName);
  document.querySelectorAll('[data-attr]').forEach(input=>input.addEventListener('input',(e)=>updateTotal(e.target)));
  document.querySelector('#startSeason').addEventListener('click',async()=>{
@@ -148,10 +245,11 @@ function renderQueenCreator(){
    try{
      if(startBtn){startBtn.disabled=true; startBtn.textContent='Preparing cast...';}
      if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
-     const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes});
-if(typeof saveCommunityQueen === 'function'){
-  saveCommunityQueen(queen).catch(console.warn);
-}
+     const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes,location:creatorPlayerLocation});
+     const shouldSaveCommunityQueen=!creatorSelectedCommunityQueen || selectedCommunityQueenWasEdited();
+     if(typeof saveCommunityQueen === 'function' && shouldSaveCommunityQueen){
+       saveCommunityQueen(queen).catch(console.warn);
+     }
      await startSeason(
   queen,
   document.querySelector('#castSize').value,
@@ -170,6 +268,7 @@ if(typeof saveCommunityQueen === 'function'){
  updateCreatorPreview();
  updateTotal();
  rollCreatorQueenName();
+ setupLocalCommunityQueenSelect();
 }
 function applyTypePreset(){const preset=getTypePreset(document.querySelector('#qType').value); document.querySelectorAll('[data-attr]').forEach(i=>{i.value=preset[i.dataset.attr]||7;}); updateTotal();}
 function updateTotal(changedInput=null){let total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);}); if(total>45 && changedInput){const overflow=total-45; changedInput.value=Math.max(Number(changedInput.min),Number(changedInput.value)-overflow); total=0; document.querySelectorAll('[data-attr]').forEach(i=>{total+=Number(i.value);});}
