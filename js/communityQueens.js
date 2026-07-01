@@ -3,8 +3,17 @@ const SUPABASE_KEY = 'sb_publishable_ZWRCRg4bhvPrkld0pkTcyg__dWY0VVb';
 
 const communityDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+function communityCountryFromLocation(location = '') {
+  const text = String(location || '').trim();
+  const countryMatch = text.match(/\(([^)]+)\)/);
+  if (countryMatch) return countryMatch[1].trim();
+  return '';
+}
+
 function communityQueenPayload(queen) {
   const attrs = queen.attributes || {};
+  const location = queen.location || queen.country || '';
+  const country = queen.country || communityCountryFromLocation(location);
 
   return {
     name: queen.name || '',
@@ -16,8 +25,8 @@ function communityQueenPayload(queen) {
     sewing: Number(attrs.sewing ?? queen.sewing ?? 0) || 0,
     runway: Number(attrs.runway ?? queen.runway ?? queen.design ?? 0) || 0,
     acting: Number(attrs.acting ?? queen.acting ?? 0) || 0,
-    location: queen.location || queen.country || '',
-    country: queen.country || '',
+    location,
+    country,
     game_version: window.GAME_VERSION || 'dragracesim-v1'
   };
 }
@@ -141,3 +150,4 @@ window.loadLocalCommunityQueens = loadLocalCommunityQueens;
 window.communityQueenSignatureFromForm = communityQueenSignatureFromForm;
 window.communityQueenSignatureFromRow = communityQueenSignatureFromRow;
 window.communityLocationMatchKey = communityLocationMatchKey;
+window.communityCountryFromLocation = communityCountryFromLocation;
