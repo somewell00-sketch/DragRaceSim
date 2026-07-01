@@ -78,6 +78,66 @@ function convertCommunityQueenToGameQueen(row, index = 0) {
   });
 }
 
+function communityLocationMatchKey(location = '') {
+  const text = String(location || '').toLowerCase().trim();
+  const countryMatch = text.match(/\(([^)]+)\)/);
+  if (countryMatch) return countryMatch[1].trim();
+  return text
+    .replace(/[^a-z\s]/g, ' ')
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(-1)[0] || '';
+}
+
+function isRecentCommunityQueen(row, days = 30) {
+  const created = new Date(row?.created_at || 0).getTime();
+  if (!created || Number.isNaN(created)) return false;
+  return created >= Date.now() - days * 24 * 60 * 60 * 1000;
+}
+
+async function loadLocalCommunityQueens(playerLocation, limit = 100) {
+  const localKey = communityLocationMatchKey(playerLocation);
+  if (!localKey) return [];
+  const rows = await loadCommunityQueens(limit);
+  return rows.filter(row => {
+    const rowKey = communityLocationMatchKey(row?.location || row?.country || '');
+    return row?.name && rowKey && rowKey === localKey && isRecentCommunityQueen(row, 30);
+  });
+}
+
+function communityQueenSignatureFromForm() {
+  const attrs = {};
+  document.querySelectorAll('[data-attr]').forEach(input => {
+    attrs[input.dataset.attr] = Number(input.value) || 0;
+  });
+  return JSON.stringify({
+    name: document.querySelector('#qName')?.value.trim() || '',
+    type: document.querySelector('#qType')?.value || '',
+    personalityId: document.querySelector('#qPersonality')?.value || '',
+    attributes: attrs
+  });
+}
+
+function communityQueenSignatureFromRow(row) {
+  return JSON.stringify({
+    name: String(row?.name || '').trim(),
+    type: row?.drag_type || row?.type || '',
+    personalityId: row?.personality || row?.personalityId || '',
+    attributes: {
+      cunt: Number(row?.cunt) || 7,
+      lipSync: Number(row?.lip_sync) || 7,
+      makeup: Number(row?.makeup) || 7,
+      sewing: Number(row?.sewing) || 7,
+      runway: Number(row?.runway ?? row?.design) || 7,
+      acting: Number(row?.acting) || 7
+    }
+  });
+}
+
 window.saveCommunityQueen = saveCommunityQueen;
 window.loadCommunityQueens = loadCommunityQueens;
 window.convertCommunityQueenToGameQueen = convertCommunityQueenToGameQueen;
+window.loadLocalCommunityQueens = loadLocalCommunityQueens;
+window.communityQueenSignatureFromForm = communityQueenSignatureFromForm;
+window.communityQueenSignatureFromRow = communityQueenSignatureFromRow;
+window.communityLocationMatchKey = communityLocationMatchKey;
