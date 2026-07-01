@@ -4053,3 +4053,70 @@ tr.tournament-track-bracket-C td:first-child{ box-shadow: inset 4px 0 0 rgba(158
 
 .observer-actions{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:16px;}
 .observer-actions button{margin-top:0;}
+
+
+/* Final Track Record image export */
+.track-record-export-card{
+  position:relative;
+}
+.track-record-download{
+  position:absolute;
+  top:14px;
+  right:14px;
+  width:34px;
+  height:34px;
+  display:inline-grid;
+  place-items:center;
+  padding:0;
+  border-radius:999px;
+  background:#fff;
+  color:var(--ink);
+  border:1px solid var(--line);
+  box-shadow:0 8px 20px rgba(74,20,48,.10);
+  font-size:15px;
+  line-height:1;
+  z-index:2;
+}
+.track-record-download:hover{
+  filter:none;
+  transform:translateY(-1px);
+}
+.track-record-download:disabled{
+  opacity:.55;
+  cursor:wait;
+  transform:none;
+}
+.track-record-export-card > h2{
+  padding-right:44px;
+}
+
+/* Dark export treatment for the downloaded final Track Record. */
+.track-record-exporting{
+  background:#140d17 !important;
+  color:#fff !important;
+  border-color:rgba(255,255,255,.14) !important;
+  box-shadow:none !important;
+}
+.track-record-exporting h2,
+.track-record-exporting th,
+.track-record-exporting td,
+.track-record-exporting strong{
+  color:#fff !important;
+}
+.track-record-exporting .table-wrap{
+  background:#140d17 !important;
+  border-color:rgba(255,255,255,.14) !important;
+}
+.track-record-exporting table{
+  background:#140d17 !important;
+}
+.track-record-exporting th{
+  background:#241728 !important;
+}
+.track-record-exporting td{
+  background:#140d17 !important;
+  border-color:rgba(255,255,255,.12) !important;
+}
+.track-record-exporting .small{
+  color:rgba(255,255,255,.72) !important;
+}
