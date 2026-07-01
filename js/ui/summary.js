@@ -724,11 +724,129 @@ function renderSummary(){
     <section class="hero finale-results-hero">${finalePageBadge(4,'Season Results')}<div class="finale-winner-kicker">${finaleRoleBadge('WINNER')}</div>${bigMomentHeader('The winner is...',(winner?.name||'Winner'),'crown')}${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="winner-copy"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}.</strong> You are the winner, baby.</p>${winner?`${finaleDivider()}<p class="finale-winner-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}</section>
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
     ${postSeasonReception(player)}
-    <section class="card"><h2>Track Record</h2>${historyTable()}</section>
+    <section class="card track-record-export-card" id="finalTrackRecordCard"><button type="button" class="track-record-download" id="downloadTrackRecord" title="Download Track Record" aria-label="Download Track Record" data-html2canvas-ignore="true">⬇️ Download</button><h2>Track Record</h2>${historyTable()}</section>
     ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}
     ${iconicLipSyncsTable()}
     <div class="button-row"><button id="newGame">New season</button>${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
   </main>`);
   document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
   document.querySelector('#allStarsInvite')?.addEventListener('click',renderAllStarsInvite);
+  document.querySelector('#downloadTrackRecord')?.addEventListener('click',downloadFinalTrackRecord);
+}
+
+function trackRecordExportFileName(){
+  const winner=gameState.queens.find(q=>q.id===gameState.season?.winnerId);
+  const safeName=(winner?.name||'Winner').replace(/[\\/:*?"<>|]+/g,'').replace(/\s+/g,' ').trim()||'Winner';
+  return `Track Record - ${safeName}.png`;
+}
+
+function ensureHtml2Canvas(){
+  if(window.html2canvas)return Promise.resolve(window.html2canvas);
+  return new Promise((resolve,reject)=>{
+    const existing=document.querySelector('script[data-html2canvas-loader]');
+    if(existing){
+      existing.addEventListener('load',()=>resolve(window.html2canvas),{once:true});
+      existing.addEventListener('error',reject,{once:true});
+      return;
+    }
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js';
+    script.async=true;
+    script.dataset.html2canvasLoader='true';
+    script.onload=()=>resolve(window.html2canvas);
+    script.onerror=()=>reject(new Error('html2canvas failed to load'));
+    document.head.appendChild(script);
+  });
+}
+
+async function downloadFinalTrackRecord(){
+  const card=document.querySelector('#finalTrackRecordCard');
+  const button=document.querySelector('#downloadTrackRecord');
+  if(!card)return;
+  let exportNode=null;
+  try{
+    button?.setAttribute('disabled','disabled');
+    const html2canvas=await ensureHtml2Canvas();
+    const wrap=card.querySelector('.table-wrap');
+    const table=card.querySelector('table');
+    const cardStyles=window.getComputedStyle(card);
+    const horizontalPadding=(parseFloat(cardStyles.paddingLeft)||0)+(parseFloat(cardStyles.paddingRight)||0);
+    const verticalPadding=(parseFloat(cardStyles.paddingTop)||0)+(parseFloat(cardStyles.paddingBottom)||0);
+    const borderX=(parseFloat(cardStyles.borderLeftWidth)||0)+(parseFloat(cardStyles.borderRightWidth)||0);
+    const borderY=(parseFloat(cardStyles.borderTopWidth)||0)+(parseFloat(cardStyles.borderBottomWidth)||0);
+    const fullTableWidth=Math.ceil(Math.max(
+      table?.scrollWidth||0,
+      wrap?.scrollWidth||0,
+      table?.getBoundingClientRect().width||0,
+      wrap?.getBoundingClientRect().width||0
+    ));
+    const exportWidth=Math.ceil(Math.max(card.getBoundingClientRect().width,fullTableWidth+horizontalPadding+borderX));
+
+    exportNode=card.cloneNode(true);
+    exportNode.id='finalTrackRecordExportClone';
+    exportNode.classList.add('track-record-exporting');
+    exportNode.querySelectorAll('[data-html2canvas-ignore="true"],#downloadTrackRecord').forEach(el=>el.remove());
+    Object.assign(exportNode.style,{
+      position:'fixed',
+      left:'0',
+      top:'0',
+      zIndex:'999999',
+      width:`${exportWidth}px`,
+      maxWidth:'none',
+      height:'auto',
+      maxHeight:'none',
+      overflow:'visible',
+      pointerEvents:'none'
+    });
+    document.body.appendChild(exportNode);
+
+    const clonedWrap=exportNode.querySelector('.table-wrap');
+    if(clonedWrap){
+      Object.assign(clonedWrap.style,{
+        overflow:'visible',
+        width:`${fullTableWidth}px`,
+        maxWidth:'none',
+        height:'auto',
+        maxHeight:'none'
+      });
+    }
+    const clonedTable=exportNode.querySelector('table');
+    if(clonedTable){
+      Object.assign(clonedTable.style,{
+        width:`${fullTableWidth}px`,
+        minWidth:`${fullTableWidth}px`,
+        maxWidth:'none'
+      });
+    }
+
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    const exportHeight=Math.ceil(Math.max(
+      exportNode.scrollHeight,
+      exportNode.getBoundingClientRect().height,
+      (clonedWrap?.scrollHeight||0)+verticalPadding+borderY+(exportNode.querySelector('h2')?.getBoundingClientRect().height||0)+24
+    ));
+    const canvas=await html2canvas(exportNode,{
+      scale:1,
+      width:exportWidth,
+      height:exportHeight,
+      windowWidth:exportWidth,
+      windowHeight:exportHeight,
+      scrollX:0,
+      scrollY:0,
+      backgroundColor:'#140d17',
+      useCORS:true,
+      allowTaint:true,
+      ignoreElements:(el)=>el?.dataset?.html2canvasIgnore==='true'
+    });
+    const link=document.createElement('a');
+    link.download=trackRecordExportFileName();
+    link.href=canvas.toDataURL('image/png');
+    link.click();
+  }catch(err){
+    console.error(err);
+    alert('Could not download the Track Record image. Please check your connection and try again.');
+  }finally{
+    exportNode?.remove();
+    button?.removeAttribute('disabled');
+  }
 }
