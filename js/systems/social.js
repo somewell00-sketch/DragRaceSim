@@ -140,6 +140,12 @@ const UNTUCKED_ACTIONS = {
     needsTarget:true,
     dynamicEffect:'buildAlliance',
     text:'You start talking future weeks. The game is getting strategic.'
+  },
+  rumor: {
+    label:'Spread a Rumor',
+    description:'Plant a story about one queen. It can travel, or it can come back to you.',
+    needsTarget:true,
+    text:'You lower your voice and give the lounge something to repeat.'
   }
 };
 
@@ -524,6 +530,23 @@ function applyUntuckedAction(actionId,targetId=null){
   const target=targetId?gameState.queens.find(q=>q.id===targetId):null;
   let note=target?`${action.text} Target: ${target.name}.`:action.text;
   gameState.currentEpisode.untuckedChoice={action:action.label,targetId:target?.id||null,targetName:target?.name||null};
+
+  if(actionId==='rumor' && target){
+    const active=episodeScopedQueens(true).filter(q=>q.id!==player.id);
+    const success=Math.random()<0.70;
+    if(success){
+      const witnesses=shuffle(active.filter(q=>q.id!==target.id)).slice(0,3);
+      witnesses.forEach(q=>changeRelationship(q.id,target.id,-18,-5));
+      note=`The rumor spreads. ${witnesses.map(q=>q.name).join(', ') || 'The lounge'} look at ${target.name} differently now.`;
+    }else{
+      const witnesses=shuffle(active).slice(0,3);
+      witnesses.forEach(q=>changeRelationship(q.id,player.id,-30,-10));
+      note=`The rumor backfires. ${witnesses.map(q=>q.name).join(', ') || 'The lounge'} clock the move and lose trust in you.`;
+    }
+    ensureEpisodeEffects().untuckedNotes.push(note);
+    saveGame();
+    return;
+  }
 
   if(action.dynamicEffect){
     const built=buildDynamicPlayerEffects(action.dynamicEffect,target);

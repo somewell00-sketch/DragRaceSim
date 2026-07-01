@@ -632,6 +632,45 @@ function applyAssassinPlacements(scored, ep){
   });
   ep.lipSyncAssassin=typeof createLipSyncAssassin==='function'?createLipSyncAssassin():{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,attributes:{lipSync:8,cunt:8},statistics:{},publicScores:{production:20},momentum:0,inventory:{reveals:1}};
 }
+
+function applyHighQueenWinnerReaction(ep){
+  if(!ep || ep.highWinnerReactionDone)return;
+  const winner=ep.placements?.find(p=>p.placement==='WIN');
+  if(!winner)return;
+  const notes=[];
+  (ep.placements||[]).filter(p=>p.placement==='HIGH').forEach(high=>{
+    if(high.queenId===winner.queenId)return;
+    const roll=Math.random();
+    if(roll<0.40){
+      changeRelationship(high.queenId,winner.queenId,-8,-2);
+      notes.push(`${high.name} smiles through ${winner.name}'s win, but the edge is there.`);
+    }else if(roll<0.70){
+      changeRelationship(high.queenId,winner.queenId,-18,-6);
+      notes.push(`${high.name} takes ${winner.name}'s win personally after being so close.`);
+    }
+  });
+  ep.highWinnerReactionDone=true;
+  if(notes.length){
+    ep.relationshipDriftNotes=Array.isArray(ep.relationshipDriftNotes)?ep.relationshipDriftNotes:[];
+    ep.relationshipDriftNotes.push(...notes);
+  }
+}
+
+function maybeApplyTripleBottomLipSync(ep,scored){
+  if(!ep || getSeasonFormat()!=='regular')return false;
+  if(['premiere_no_elim','lalaparuza','tournament_bracket'].includes(ep.special))return false;
+  const activeCount=gameState.queens.filter(q=>!q.isEliminated && (!ep.participantIds || ep.participantIds.includes(q.id))).length;
+  if(activeCount<6 || gameState.season?.tripleBottomLipSyncUsed)return false;
+  if(Math.random()>=0.02)return false;
+  const bottomThree=[...scored].sort((a,b)=>a.score-b.score).slice(0,3);
+  if(bottomThree.length<3)return false;
+  bottomThree.forEach(s=>s.placement='BTM');
+  ep.tripleBottomLipSync=true;
+  gameState.season.tripleBottomLipSyncUsed=true;
+  ep.rupaulAnnouncement='RuPaul announces a Triple Bottom Lip Sync.';
+  return true;
+}
+
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -759,8 +798,10 @@ function calculateEpisodeResults(playerChoices={}){
     }
   });
   ep.placements=scored;
+  applyHighQueenWinnerReaction(ep);
+  const tripleBottom=maybeApplyTripleBottomLipSync(ep,scored);
   if(ep.special==='tournament_bracket')ep.bottomQueens=[];
-  else ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,['legacy','assassin'].includes(getSeasonFormat())?3:2).map(s=>s.queenId);
+  else ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,(tripleBottom||ep.tripleBottomLipSync)?3:((['legacy','assassin'].includes(getSeasonFormat()))?3:2)).map(s=>s.queenId);
   saveGame();
   return scored;
 }
@@ -1021,20 +1062,20 @@ function resolveLipSync(playerMoves=null){
     return ep.lipSyncResult;
   }
 
-  const survivor=results[0], eliminated=results[1];
-  const diff=Math.abs(results[0].score10-results[1].score10);
-  let outcome='normal';
+  const survivor=results[0], eliminated=results[results.length-1];
+  const diff=Math.abs(results[0].score10-eliminated.score10);
+  let outcome=results.length===3?'tripleBottom':'normal';
   let survivorId=survivor.queenId;
   let eliminatedQueenId=eliminated.queenId;
   let eliminatedQueenIds=[eliminated.queenId];
 
-  if(results[0].score10<6 && results[1].score10<6 && !gameState.season.doubleSashayUsed){
+  if(results.length===2 && results[0].score10<6 && results[1].score10<6 && !gameState.season.doubleSashayUsed){
     outcome='doubleSashay';
     gameState.season.doubleSashayUsed=true;
     survivorId=null;
     eliminatedQueenId=null;
     eliminatedQueenIds=results.map(r=>r.queenId);
-  } else if(diff<1 && results[0].score10>=7 && results[1].score10>=7 && !gameState.season.doubleShantayUsed){
+  } else if(results.length===2 && diff<1 && results[0].score10>=7 && results[1].score10>=7 && !gameState.season.doubleShantayUsed){
     outcome='doubleShantay';
     gameState.season.doubleShantayUsed=true;
     survivorId=null;
