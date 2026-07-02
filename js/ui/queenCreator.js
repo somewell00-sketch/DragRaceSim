@@ -157,7 +157,29 @@ async function initSeasonInvitationQueens(){
     creatorCommunityQueens=await loadEligibleCommunityQueens({limit:250,days:LOCAL_COMMUNITY_QUEEN_FILTERS.days,location:LOCAL_COMMUNITY_QUEEN_FILTERS.location});
     creatorCommunityQueens.sort((a,b)=>String(a?.name||'').localeCompare(String(b?.name||''),undefined,{sensitivity:'base'}));
     if(!creatorCommunityQueens.length)return;
-    datalist.innerHTML=creatorCommunityQueens.map((row,index)=>`<option value="${communityQueenInviteLabel(row,index)}"></option>`).join('');
+    const updateSearchResults = () => {
+  const query = input.value.trim().toLowerCase();
+
+  if (query.length < 2) {
+    datalist.innerHTML = '';
+    input.dataset.selectedIndex = '';
+    startBtn.hidden = true;
+    return;
+  }
+
+  const matches = creatorCommunityQueens
+    .map((row,index)=>({row,index}))
+    .filter(item =>
+      item.row.name.toLowerCase().includes(query)
+    )
+    .slice(0,20);
+
+  datalist.innerHTML = matches
+    .map(item =>
+      `<option value="${communityQueenInviteLabel(item.row,item.index)}"></option>`
+    )
+    .join('');
+};
     panel.hidden=false;
     const syncSelection=()=>{
       const typed=input.value.trim();
@@ -166,7 +188,10 @@ async function initSeasonInvitationQueens(){
       startBtn.hidden=selectedIndex<0;
       panel.classList.toggle('has-selection',selectedIndex>=0);
     };
-    input.addEventListener('input',syncSelection);
+input.addEventListener('input',()=>{
+  updateSearchResults();
+  syncSelection();
+});
     input.addEventListener('change',syncSelection);
   }catch(err){
     console.warn('Could not load community queens for the invitation screen:',err);
