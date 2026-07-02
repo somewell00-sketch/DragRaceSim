@@ -122,14 +122,14 @@ async function initLocalCommunityQueenSelect(){
 }
 
 function seasonInviteHeaderCopy(){
-  return `<section class="home-topbar invitation-topbar">
-      <div class="home-logo-block">
-        <span class="home-crown">👑</span>
-        <div>
-          <h1>Drag Race <span>Simulator</span></h1>
-          <p>RuPaul has sent the call. Choose a community queen or create a brand new legend.</p>
-        </div>
+  return `<section class="invite-hero-logo" aria-label="Drag Race Simulator">
+      <div class="invite-logo-mark">👑</div>
+      <div class="invite-logo-type">
+        <h1>Drag Race</h1>
+        <span>Simulator</span>
       </div>
+      <i class="invite-sparkle left">✦</i>
+      <i class="invite-sparkle right">✦</i>
     </section>`;
 }
 
@@ -137,7 +137,7 @@ function communityQueenInviteLabel(row,index){
   const name=String(row?.name||`Community Queen ${index+1}`).trim()||`Community Queen ${index+1}`;
   const location=String(row?.location||row?.country||'').trim();
   const label=location ? `${name} — ${location}` : name;
-  return typeof escapeHtml==='function' ? escapeHtml(label) : label.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  return typeof escapeHtml==='function' ? escapeHtml(label) : label.replace(/[&<>\"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 }
 function communityQueenSearchValue(row,index){
   const name=String(row?.name||`Community Queen ${index+1}`).trim()||`Community Queen ${index+1}`;
@@ -164,6 +164,7 @@ async function initSeasonInvitationQueens(){
       const selectedIndex=creatorCommunityQueens.findIndex((row,index)=>communityQueenSearchValue(row,index)===typed);
       input.dataset.selectedIndex=selectedIndex>=0?String(selectedIndex):'';
       startBtn.hidden=selectedIndex<0;
+      panel.classList.toggle('has-selection',selectedIndex>=0);
     };
     input.addEventListener('input',syncSelection);
     input.addEventListener('change',syncSelection);
@@ -182,43 +183,43 @@ function renderSeasonInvitation(){
   ];
   const formatOptions=seasonFormats.map(format=>`<option value="${format.id}" ${format.id==='regular'?'selected':''}>${format.name}</option>`).join('');
   const castOptions=castOptionsForFormat('regular');
-  setHTML(`<main class="screen home-screen home-stage invitation-screen">
+  setHTML(`<main class="screen home-screen invitation-screen-v2">
     ${seasonInviteHeaderCopy()}
-    <section class="home-console invitation-console">
-      <aside class="home-steps invitation-letter">
-        <article class="home-step-card active">
-          <span class="step-number">💌</span>
-          <div><h2>RuPaul's Invitation</h2><p>Pack your heels. Production is ready to meet your queen.</p></div>
-        </article>
-        <article class="home-step-card">
-          <span class="step-number">01</span>
-          <div><h2>Season Setup</h2><p>Choose the format and cast size before entering the werkroom.</p></div>
-          <label class="home-field">Season format<select id="inviteSeasonFormat">${formatOptions}</select></label>
-          <label class="home-field">Cast size<select id="inviteCastSize">${castOptions}</select></label>
-        </article>
+
+    <section class="invite-letter-card">
+      <div class="invite-letter-rule"><span>✦</span></div>
+      <h2>You’re invited.</h2>
+      <p>A new season is about to begin.<br>Create your queen from scratch,<br>or enter the werkroom with one who’s already ready to compete.</p>
+      <div class="invite-letter-rule"><span>✦</span></div>
+    </section>
+
+    <section class="invite-dashboard">
+      <aside class="invite-action-card invite-setup-card">
+        <div class="invite-card-icon">🗓️</div>
+        <h2>Season Setup</h2>
+        <div class="invite-mini-rule"><span>✦</span></div>
+        <label class="home-field">Season format<select id="inviteSeasonFormat">${formatOptions}</select></label>
+        <label class="home-field">Cast size<select id="inviteCastSize">${castOptions}</select></label>
       </aside>
-      <div class="home-main-panel invitation-options">
-        <section class="home-queen-panel card invitation-option-card invitation-create-card">
-          <div>
-            <span class="home-card-kicker">New Queen</span>
-            <h2>Create a new queen</h2>
-            <p>Build your drag name, personality, type and attributes from scratch.</p>
-          </div>
-          <button id="inviteCreateQueen" class="invitation-secondary-btn">Create a New Queen</button>
-        </section>
-        <section id="inviteExistingQueenPanel" class="home-queen-panel card invitation-option-card" hidden>
-          <div>
-            <span class="home-card-kicker">Community Queens</span>
-            <h2>Use an existing queen</h2>
-            <p>Search the community pool, select your queen, and start the season.</p>
-          </div>
-          <label class="home-field invite-search-field">Queen search
-            <input id="inviteCommunityQueenSearch" list="inviteCommunityQueenList" placeholder="Type a queen name..." autocomplete="off">
-            <datalist id="inviteCommunityQueenList"></datalist>
-          </label>
-          <button id="inviteStartSeason" class="invitation-primary-btn" hidden>👑 Start Season 👑</button>
-        </section>
-      </div>
+
+      <section class="invite-action-card invite-create-card-v2">
+        <div class="invite-card-icon">♕</div>
+        <h2>Create a<br>new queen</h2>
+        <div class="invite-mini-rule"><span>✦</span></div>
+        <button id="inviteCreateQueen" class="invite-arrow-btn" aria-label="Create a new queen">→</button>
+      </section>
+
+      <section id="inviteExistingQueenPanel" class="invite-action-card invite-existing-card-v2" hidden>
+        <div class="invite-card-icon">♙</div>
+        <h2>Use an<br>existing queen</h2>
+        <div class="invite-mini-rule"><span>✦</span></div>
+        <label class="invite-search-box" aria-label="Queen search">
+          <input id="inviteCommunityQueenSearch" list="inviteCommunityQueenList" placeholder="Type a queen name..." autocomplete="off">
+          <span>⌕</span>
+          <datalist id="inviteCommunityQueenList"></datalist>
+        </label>
+        <button id="inviteStartSeason" class="invite-arrow-btn invite-start-btn" aria-label="Start season" hidden>→</button>
+      </section>
     </section>
   </main>`);
   document.querySelector('#inviteSeasonFormat')?.addEventListener('change',()=>{
@@ -240,7 +241,7 @@ function renderSeasonInvitation(){
     if(!row)return;
     try{
       startBtn.disabled=true;
-      startBtn.textContent='Preparing cast...';
+      startBtn.textContent='…';
       if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
       const queen=convertCommunityQueenToGameQueen(row,index);
       await startSeason(queen,document.querySelector('#inviteCastSize')?.value||'random',document.querySelector('#inviteSeasonFormat')?.value||'regular');
@@ -249,7 +250,7 @@ function renderSeasonInvitation(){
       console.error(err);
       alert('Could not start the season. Check the browser console for details.');
       startBtn.disabled=false;
-      startBtn.textContent='👑 Start Season 👑';
+      startBtn.textContent='→';
     }
   });
   initSeasonInvitationQueens();
