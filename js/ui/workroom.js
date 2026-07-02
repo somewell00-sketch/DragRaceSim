@@ -158,18 +158,25 @@ function lalaparuzaIntroContext(){
   const npcEvents=ep.npcSocialEvents||[];
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('workroom'):null;
   const visibleDriftNotes=selectVisibleRelationshipShiftNotes(ep.relationshipDriftNotes||[]);
-  const productionEvent=(ep.event&&ep.event.text)?[{text:ep.event.text,type:'production'}]:[];
-  
-  // Usando o helper buildWorkroomPulse
-  const workroomPulse = buildWorkroomPulse(
-    [
-      ...productionEvent,
-      ...(ep.socialEvents || []),
-      ...npcEvents,
-      ...(narrativeEvent ? [narrativeEvent] : [])
-    ],
-    visibleDriftNotes
-  );
+const productionEvent = (ep.event && ep.event.text) ? [{ ...ep.event }] : [];
+
+const mainEvent = productionEvent.length
+  ? productionEvent.map(e => formatPlayerNameInSocialText(e.text))
+  : [];
+
+const otherPulse = buildWorkroomPulse(
+  [
+    ...(ep.socialEvents || []),
+    ...npcEvents,
+    ...(narrativeEvent ? [narrativeEvent] : [])
+  ],
+  visibleDriftNotes
+);
+
+const workroomPulse = [
+  ...mainEvent.map(item => `<li>${item}</li>`),
+  otherPulse
+].join('');
   
   const activeNames=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean).map(escapeHtml).join(', ');
   return `<div class="card"><h3>Workroom</h3><p>The queens enter knowing tonight is not a normal challenge. Every lipstick, heel, and hair flip could become survival.</p><h4>Interactions</h4><p><em>What you're picking up from the room...</em></p><ul>${workroomPulse}</ul>${activeNames?`<h4>Competing queens</h4><p>${activeNames}</p>`:''}</div>`;
@@ -405,18 +412,25 @@ function renderWorkroom(){
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('workroom'):null;
   const driftNotes = evolveRelationshipsDuringEpisode();
   const visibleDriftNotes = selectVisibleRelationshipShiftNotes(driftNotes);
-  const productionEvent=(ep.event&&ep.event.text)?[{text:ep.event.text,type:'production'}]:[];
-  
-  // Usando o helper buildWorkroomPulse
-  const workroomPulse = buildWorkroomPulse(
-    [
-      ...productionEvent,
-      ...(ep.socialEvents || []),
-      ...npcEvents,
-      ...(narrativeEvent ? [narrativeEvent] : [])
-    ],
-    visibleDriftNotes
-  );
+  const productionEvent = (ep.event && ep.event.text) ? [{ ...ep.event }] : [];
+
+const mainEvent = productionEvent.length
+  ? productionEvent.map(e => formatPlayerNameInSocialText(e.text))
+  : [];
+
+const otherPulse = buildWorkroomPulse(
+  [
+    ...(ep.socialEvents || []),
+    ...npcEvents,
+    ...(narrativeEvent ? [narrativeEvent] : [])
+  ],
+  visibleDriftNotes
+);
+
+const workroomPulse = [
+  ...mainEvent.map(item => `<li>${item}</li>`),
+  otherPulse
+].join('');
   
   const returnBlock=returnAnnouncementCard();
   const snatchBlock=(ep.challengeType==='snatchgame' && ep.snatchCharacters?.length)
