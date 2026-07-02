@@ -670,6 +670,11 @@ function finishTournamentGroupIfNeeded(){
 }
 
 async function startSeason(playerQueen, castSize='random', seasonFormat='regular'){
+  console.trace('[START SEASON]', {
+    castSize,
+    format
+  });
+
   const data=gameState.data;
 
   resetState();
