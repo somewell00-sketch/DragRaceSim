@@ -158,7 +158,8 @@ function lalaparuzaIntroContext(){
   const npcEvents=ep.npcSocialEvents||[];
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('workroom'):null;
   const visibleDriftNotes=selectVisibleRelationshipShiftNotes(ep.relationshipDriftNotes||[]);
-const productionEvent = (ep.event && ep.event.text) ? [{ ...ep.event }] : [];
+const productionEvent = (ep.events || [])
+  .filter(e => e && e.text);
 
 const mainEvent = productionEvent.length
   ? productionEvent.map(e => formatPlayerNameInSocialText(e.text))
@@ -412,7 +413,8 @@ function renderWorkroom(){
   const narrativeEvent=(typeof narrativeEventForEpisode==='function')?narrativeEventForEpisode('workroom'):null;
   const driftNotes = evolveRelationshipsDuringEpisode();
   const visibleDriftNotes = selectVisibleRelationshipShiftNotes(driftNotes);
-  const productionEvent = (ep.event && ep.event.text) ? [{ ...ep.event }] : [];
+  const productionEvent = (ep.events || [])
+  .filter(e => e && e.text);
 
 const mainEvent = productionEvent.length
   ? productionEvent.map(e => formatPlayerNameInSocialText(e.text))
