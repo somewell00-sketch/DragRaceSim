@@ -204,7 +204,7 @@ function renderSeasonInvitation(){
     {id:'regular',name:'Regular Season'},
     {id:'legacy',name:'Lip Sync for the Crown / Legacy'},
     {id:'assassin',name:'Lip Sync Assassin'},
-    {id:'brackets',name:'Lip Sync Tournament'},
+    {id:'brackets',name:'Bracket Tournament'},
     {id:'all_winners',name:'All Winners'}
   ];
   const formatOptions=seasonFormats.map(format=>`<option value="${format.id}" ${format.id==='regular'?'selected':''}>${format.name}</option>`).join('');
