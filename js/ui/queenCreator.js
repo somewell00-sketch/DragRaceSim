@@ -122,7 +122,7 @@ async function initLocalCommunityQueenSelect(){
 }
 
 function seasonInviteHeaderCopy(){
-  return `<section class="invite-hero-logo" aria-label="Drag Race Simulator">
+  return `<section class="invite-hero-logo" aria-label="Drag Race Full Fantasy">
       <div class="invite-logo-mark">👑</div>
       <div class="invite-logo-type">
         <h1>Drag Race</h1>
@@ -130,7 +130,7 @@ function seasonInviteHeaderCopy(){
       </div>
       <i class="invite-sparkle left">✦</i>
       <i class="invite-sparkle right">✦</i>
-    </section> Step into the werkroom and live your complete drag superstar fantasy.`;
+    </section> <p>Step into the werkroom and live your complete drag superstar fantasy.</>`;
 }
 
 function communityQueenInviteLabel(row,index){
@@ -293,7 +293,7 @@ function renderQueenCreator(){
       <div class="home-logo-block">
         <span class="home-crown">👑</span>
         <div>
-          <h1>Drag Race <span>Simulator</span></h1>
+          <h1>Drag Race <span>Full Fantasy</span></h1>
           <p>The crown is calling. Build your queen and enter the werkroom.</p>
         </div>
       </div>
