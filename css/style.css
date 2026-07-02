@@ -4577,7 +4577,6 @@ body.perf-mode .hero h2{
 }
 body.perf-mode .card h3{
   padding-bottom:10px;
-  border-bottom:1px solid rgba(234,216,228,.72);
 }
 body.perf-mode .decision-card h3,
 body.perf-mode .reception-item h3,
