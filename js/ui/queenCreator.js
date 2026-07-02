@@ -130,7 +130,7 @@ function seasonInviteHeaderCopy(){
       </div>
       <i class="invite-sparkle left">✦</i>
       <i class="invite-sparkle right">✦</i>
-    </section> <p>Step into the werkroom and live your complete drag superstar fantasy.</>`;
+    </section> <p>Step into the werkroom and live your complete drag superstar fantasy.</p>`;
 }
 
 function communityQueenInviteLabel(row,index){
