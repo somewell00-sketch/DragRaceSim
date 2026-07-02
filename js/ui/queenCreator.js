@@ -188,8 +188,8 @@ function renderSeasonInvitation(){
 
     <section class="invite-letter-card">
       <div class="invite-letter-rule"><span>✦</span></div>
-      <h2>You’re invited.</h2>
-      <p>A new season is about to begin.<br>Create your queen from scratch,<br>or enter the werkroom with one who’s already ready to compete.</p>
+      <h2>Hello, hello, hello! 👋✨</h2>
+      <p>A new season is about to begin. Create your queen from scratch or step into the werkroom ready to compete. <br>Racers, start your engines... 👇</p>
       <div class="invite-letter-rule"><span>✦</span></div>
     </section>
 
