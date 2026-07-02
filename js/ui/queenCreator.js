@@ -166,13 +166,13 @@ async function initSeasonInvitationQueens(){
     startBtn.hidden = true;
     return;
   }
+const matches = creatorCommunityQueens
+  .map((row,index)=>({row,index}))
+  .filter(item =>
+    String(item.row?.name || '').toLowerCase().includes(query)
+  )
+  .slice(0,20);
 
-  const matches = creatorCommunityQueens
-    .map((row,index)=>({row,index}))
-    .filter(item =>
-      item.row.name.toLowerCase().includes(query)
-    )
-    .slice(0,20);
 
   datalist.innerHTML = matches
     .map(item =>
