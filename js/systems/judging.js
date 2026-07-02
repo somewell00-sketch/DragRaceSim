@@ -233,6 +233,39 @@ function enforceWinBalance(scored, ep){
 function applyWinThrottles(scored, ep){
   enforceWinBalance(scored, ep);
 }
+function softenFrontrunnerHighsToSafe(scored, ep){
+  if(!ep || ep.frontrunnerHighSofteningDone)return;
+  if(['premiere_no_elim','tournament_bracket','lalaparuza'].includes(ep.special))return;
+
+  const byScore=[...scored].sort((a,b)=>b.score-a.score);
+  const rankMap={};
+  byScore.forEach((s,i)=>rankMap[s.queenId]=i+1);
+
+  scored.forEach(s=>{
+    if(s.placement!=='HIGH')return;
+    if(rankMap[s.queenId]<=2)return;
+
+    const q=gameState.queens.find(x=>x.id===s.queenId);
+    if(!q)return;
+
+    const wins=q.statistics?.wins||0;
+    const highs=q.statistics?.highs||0;
+
+    if(wins<2 && highs<3)return;
+
+    let chance=0.15;
+    if(wins>=3)chance+=0.10;
+    if(highs>=5)chance+=0.05;
+
+    if(Math.random()<chance){
+      s.placement='SAFE';
+      s.frontrunnerSoftenedToSafe=true;
+      ep.frontrunnerHighSofteningApplied=true;
+    }
+  });
+
+  ep.frontrunnerHighSofteningDone=true;
+}
 function getPassiveWorkroomCritique(placement, queenName){
   if(placement==='WIN' || placement==='HIGH'){
     return `${queenName} let the work speak for itself, and it almost paid off. But Drag Race rewards queens who seize every opportunity, not queens who disappear until the runway.`;
@@ -750,6 +783,7 @@ function calculateEpisodeResults(playerChoices={}){
   if(!['premiere_no_elim','tournament_bracket'].includes(ep.special) && !['legacy','assassin'].includes(getSeasonFormat())){
     applyPassiveWinCap(scored,ep);
     applyWinThrottles(scored,ep);
+    softenFrontrunnerHighsToSafe(scored,ep);
   }
   scored.sort((a,b)=>{
     const order={WIN:0,HIGH:1,CRITIQUE:2,SAFE:3,LOW:4,BTM:5};
