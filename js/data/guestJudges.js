@@ -487,15 +487,11 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Tyra Sanchez",
-    "note": "Text-alert chaos and structural nerve. Are you ready to bomb a convention or win?"
+    "note": "Text-alert chaos and structural nerve. Are you ready to bomb the runway or win?"
   },
   {
     "name": "Raja",
     "note": "Auntie energy, smelling of expensive weed, and checking if your look counts as fashion."
-  },
-  {
-    "name": "Sharon Needles",
-    "note": "Goth horror. Checking if your drag aged worse than your off-screen controversies."
   },
   {
     "name": "Jinkx Monsoon",
