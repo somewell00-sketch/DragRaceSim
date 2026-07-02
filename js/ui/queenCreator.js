@@ -126,11 +126,11 @@ function seasonInviteHeaderCopy(){
       <div class="invite-logo-mark">👑</div>
       <div class="invite-logo-type">
         <h1>Drag Race</h1>
-        <span>Simulator</span>
+        <span>Full Fantasy</span>
       </div>
       <i class="invite-sparkle left">✦</i>
       <i class="invite-sparkle right">✦</i>
-    </section>`;
+    </section> Step into the werkroom and live your complete drag superstar fantasy.`;
 }
 
 function communityQueenInviteLabel(row,index){
@@ -214,7 +214,7 @@ function renderSeasonInvitation(){
     <section class="invite-letter-card">
       <div class="invite-letter-rule"><span>✦</span></div>
       <h2>Hello, hello, hello! 👋✨</h2>
-      <p>A new season is about to begin. Create your queen from scratch or step into the werkroom ready to compete. <br>Racers, start your engines... 👇</p>
+      <p>A new season is about to begin. <br>Create your queen from scratch or step into the werkroom ready to compete. <br>Racers, start your engines... 👇</p>
       <div class="invite-letter-rule"><span>✦</span></div>
     </section>
 
