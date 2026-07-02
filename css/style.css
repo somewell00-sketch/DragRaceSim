@@ -4546,3 +4546,146 @@ tr.tournament-track-bracket-C td:first-child{ box-shadow: inset 4px 0 0 rgba(158
   .invite-letter-card p br{display:none;}
   .invite-action-card{padding:24px 20px;}
 }
+
+
+/* v33: lightweight season screen polish - no heavy filters */
+body.perf-mode .layout{
+  gap:28px;
+}
+body.perf-mode .layout > .screen{
+  padding-top:24px;
+}
+body.perf-mode .layout .hero,
+body.perf-mode .layout .card{
+  border-radius:26px;
+  border-color:rgba(234,216,228,.86);
+  box-shadow:0 14px 34px rgba(74,20,48,.10);
+}
+body.perf-mode .layout .card{
+  background:linear-gradient(180deg,rgba(255,255,255,.96),rgba(255,250,253,.96));
+}
+body.perf-mode .layout .hero{
+  background:radial-gradient(circle at 12% 0%,rgba(255,211,235,.8),transparent 34%),linear-gradient(135deg,#fff,#fff8fc 58%,#f8f2ff);
+}
+body.perf-mode .layout .card.subtle{
+  background:rgba(255,255,255,.74);
+}
+body.perf-mode .card h2,
+body.perf-mode .card h3,
+body.perf-mode .hero h2{
+  letter-spacing:-.025em;
+}
+body.perf-mode .card h3{
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(234,216,228,.72);
+}
+body.perf-mode .decision-card h3,
+body.perf-mode .reception-item h3,
+body.perf-mode .talent-card h3{
+  border-bottom:0;
+  padding-bottom:0;
+}
+.season-topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:18px;
+  margin:0 0 18px;
+  padding:13px 16px;
+  border:1px solid rgba(234,216,228,.88);
+  border-radius:20px;
+  background:rgba(255,255,255,.72);
+  box-shadow:0 10px 26px rgba(74,20,48,.07);
+}
+.season-topbar-main{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  gap:3px;
+}
+.season-topbar-main span,
+.season-topbar-meta span{
+  color:var(--muted);
+  font-size:.72rem;
+  font-weight:900;
+  letter-spacing:.12em;
+  text-transform:uppercase;
+}
+.season-topbar-main strong{
+  min-width:0;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  font-size:.98rem;
+}
+.season-topbar-meta{
+  display:flex;
+  align-items:center;
+  justify-content:flex-end;
+  gap:12px;
+  flex-wrap:wrap;
+}
+.season-progress{
+  display:flex;
+  align-items:center;
+  gap:5px;
+}
+.season-dot{
+  width:7px;
+  height:7px;
+  border-radius:999px;
+  background:#ead8e4;
+}
+.season-dot.is-done{background:#f3a0ca;}
+.season-dot.is-current{
+  width:18px;
+  background:var(--accent);
+}
+body.perf-mode button{
+  border-radius:18px;
+  box-shadow:0 10px 22px rgba(215,47,134,.18);
+  transition:transform .12s ease, filter .12s ease;
+}
+body.perf-mode button:hover{
+  transform:translateY(-1px);
+}
+body.perf-mode button.ghost{
+  background:rgba(255,255,255,.72);
+}
+body.perf-mode .badge,
+body.perf-mode .chip,
+body.perf-mode .status-card span{
+  border:1px solid rgba(234,216,228,.7);
+  box-shadow:none;
+}
+body.perf-mode .queen-item,
+body.perf-mode .runway-look,
+body.perf-mode .judge-line,
+body.perf-mode .snatch-card,
+body.perf-mode .talent-card,
+body.perf-mode .lala-duel{
+  border-color:rgba(234,216,228,.82);
+  background:rgba(255,255,255,.72);
+}
+body.perf-mode .sidebar .card{
+  padding:18px;
+}
+body.perf-mode .sidebar-title{
+  padding-bottom:10px;
+  margin-bottom:12px;
+  border-bottom:1px solid rgba(234,216,228,.72);
+}
+body.perf-mode .commentary-block{
+  border-top-color:rgba(234,216,228,.76);
+}
+body.perf-mode table{
+  box-shadow:0 12px 28px rgba(74,20,48,.08);
+}
+@media(max-width:850px){
+  .season-topbar{align-items:flex-start;flex-direction:column;}
+  .season-topbar-meta{justify-content:flex-start;}
+}
+@media(prefers-reduced-motion:reduce){
+  body.perf-mode button{transition:none;}
+  body.perf-mode button:hover{transform:none;}
+}

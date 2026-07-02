@@ -20,6 +20,7 @@ function setHTML(html){
   const template=document.createElement('template');
   template.innerHTML=html;
   root.replaceChildren(template.content);
+  enhanceSeasonChrome();
   if(preserveY !== null){
     window.__preserveScrollY = null;
     requestAnimationFrame(()=>{
@@ -54,6 +55,39 @@ async function ensureNamePartsLoaded(){
   }
 }
 
+
+function safeSeasonText(value){
+  return String(value ?? '').replace(/[&<>'"]/g, ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]));
+}
+function seasonProgressMarkup(){
+  const ep=gameState?.currentEpisode;
+  const current=Number(ep?.number)||null;
+  const target=Number(gameState?.settings?.episodeTarget)||Number(gameState?.season?.episodeTarget)||10;
+  if(!current || !target)return '';
+  const total=Math.max(current, Math.min(16, target));
+  const dots=Array.from({length:total},(_,i)=>`<span class="season-dot ${i+1<current?'is-done':i+1===current?'is-current':''}" aria-hidden="true"></span>`).join('');
+  return `<div class="season-progress" aria-label="Episode ${current} of ${total}">${dots}</div>`;
+}
+function enhanceSeasonChrome(){
+  try{
+    if(!gameState?.season)return;
+    const main=document.querySelector('#app > main.layout');
+    const screen=main?.querySelector(':scope > .screen');
+    if(!screen || screen.querySelector(':scope > .season-topbar'))return;
+    const ep=gameState.currentEpisode;
+    const status=String(gameState.season.status||'season').replace(/_/g,' ');
+    const left=ep?.number ? `Episode ${ep.number}` : (status==='finale'?'Finale':status);
+    const title=ep?.challengeName || ep?.themeName || (status==='finished'?'Season Summary':status);
+    const active=(gameState.queens||[]).filter(q=>!q.isEliminated).length;
+    const total=(gameState.queens||[]).length;
+    const bar=document.createElement('div');
+    bar.className='season-topbar';
+    bar.innerHTML=`<div class="season-topbar-main"><span>${safeSeasonText(left)}</span><strong>${safeSeasonText(title)}</strong></div><div class="season-topbar-meta">${active&&total?`<span>${active}/${total} queens</span>`:''}${seasonProgressMarkup()}</div>`;
+    screen.prepend(bar);
+  }catch(err){
+    console.warn('Season chrome skipped',err);
+  }
+}
 
 function playerCanSkipToFinale(){
   const player=(gameState.queens||[]).find(q=>q.id===gameState.playerQueenId);
