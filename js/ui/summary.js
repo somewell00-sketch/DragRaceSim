@@ -395,7 +395,7 @@ function renderAllStarsInvite(){
     </section>
   </main>`);
   document.querySelector('#acceptAllStars')?.addEventListener('click',renderAllStarsFormatSelection);
-  document.querySelector('#returnMainMenu')?.addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
+  document.querySelector('#returnMainMenu')?.addEventListener('click',()=>{clearSave(); resetState(); renderSeasonInvitation();});
 }
 function renderAllStarsFormatSelection(){
   const formats=[
@@ -966,7 +966,7 @@ function renderSummary(){
     ${iconicLipSyncsTable()}
     <div class="button-row"><button id="newGame">New season</button>${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
   </main>`);
-  document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderQueenCreator();});
+  document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderSeasonInvitation();});
   document.querySelector('#allStarsInvite')?.addEventListener('click',renderAllStarsInvite);
   document.querySelector('#downloadTrackRecord')?.addEventListener('click',downloadFinalTrackRecord);
 }

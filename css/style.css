@@ -4119,3 +4119,164 @@ tr.tournament-track-bracket-C td:first-child{ box-shadow: inset 4px 0 0 rgba(158
 .track-record-exporting .small{
   color:rgba(255,255,255,.72) !important;
 }
+
+
+/* invitation screen */
+.creator-topbar,
+.invitation-topbar{
+  grid-template-columns:1fr!important;
+}
+.invitation-console{
+  align-items:start;
+}
+.invitation-letter .home-step-card:first-child{
+  min-height:150px;
+}
+.invitation-options{
+  gap:22px;
+}
+.invitation-option-card{
+  grid-template-columns:1fr!important;
+  align-items:start!important;
+  min-height:auto!important;
+}
+.invitation-option-card h2{
+  margin:8px 0 10px;
+  color:#fff;
+  text-transform:uppercase;
+  letter-spacing:.12em;
+}
+.invitation-option-card p{
+  margin:0 0 18px;
+  color:rgba(255,255,255,.78);
+  line-height:1.5;
+}
+.home-stage .home-field input{
+  background:rgba(17,13,28,.92)!important;
+  border-color:rgba(255,255,255,.14)!important;
+  color:#fff!important;
+  padding:0 18px;
+}
+.home-stage .home-field input::placeholder{
+  color:rgba(255,255,255,.48);
+}
+.invitation-primary-btn,
+.invitation-secondary-btn{
+  min-height:64px;
+  border-radius:18px;
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  font-weight:950;
+}
+.invitation-primary-btn{
+  background:linear-gradient(90deg,#ffd65a 0%,#ec4899 52%,#7c3aed 100%);
+  box-shadow:0 18px 42px rgba(236,72,153,.26), inset 0 0 0 1px rgba(255,255,255,.42);
+}
+.invitation-secondary-btn{
+  background:rgba(255,255,255,.1);
+  color:#fff;
+  border:1px solid rgba(255,221,117,.35);
+}
+.invitation-primary-btn[hidden],
+#inviteExistingQueenPanel[hidden]{display:none!important;}
+
+/* v29.8: Queen creator after RuPaul invitation */
+.creator-only-console{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+.creator-only-panel{
+  max-width:980px;
+  width:100%;
+  margin:0 auto;
+}
+.points-card .points-min{
+  display:block!important;
+  width:100%;
+  margin-top:6px;
+  font-size:.72rem!important;
+  font-weight:800!important;
+  color:rgba(255,255,255,.72)!important;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+}
+@media (max-width:900px){
+  .creator-only-panel .home-queen-panel,
+  .creator-only-panel .home-attributes-panel{
+    grid-template-columns:1fr!important;
+  }
+  .creator-only-panel .creator-select-row{
+    grid-template-columns:1fr!important;
+  }
+  .creator-only-panel .home-stat-row{
+    grid-template-columns:1fr!important;
+    gap:8px;
+  }
+  .creator-only-panel .home-stat-row strong{
+    justify-self:start;
+  }
+  .creator-only-panel .points-card{
+    text-align:left!important;
+  }
+  .creator-only-panel .points-card strong,
+  .creator-only-panel .points-card .points-total{
+    justify-content:flex-start!important;
+  }
+}
+
+
+/* Creator points card cleanup */
+.creator-only-panel .points-card{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:flex-end!important;
+  justify-content:center!important;
+  gap:8px!important;
+  min-width:150px!important;
+  text-align:right!important;
+}
+.creator-only-panel .points-card > span{
+  margin:0!important;
+  font-size:.74rem!important;
+  letter-spacing:.18em!important;
+  color:rgba(255,255,255,.72)!important;
+}
+.creator-only-panel .points-card .points-total{
+  display:flex!important;
+  align-items:flex-end!important;
+  justify-content:flex-end!important;
+  gap:8px!important;
+  margin:0!important;
+}
+.creator-only-panel .points-card #total{
+  font-size:3.05rem!important;
+  line-height:.9!important;
+  letter-spacing:-.06em!important;
+}
+.creator-only-panel .points-card .points-max{
+  font-size:1.05rem!important;
+  line-height:1!important;
+  padding-bottom:5px!important;
+  color:rgba(255,255,255,.68)!important;
+}
+.creator-only-panel .points-card .points-min{
+  display:inline-flex!important;
+  width:auto!important;
+  margin:0!important;
+  padding:6px 10px!important;
+  border:1px solid rgba(255,255,255,.18)!important;
+  border-radius:999px!important;
+  background:rgba(255,255,255,.07)!important;
+  color:rgba(255,255,255,.76)!important;
+  font-size:.66rem!important;
+  line-height:1!important;
+  letter-spacing:.12em!important;
+}
+@media (max-width:900px){
+  .creator-only-panel .points-card{
+    align-items:flex-start!important;
+    text-align:left!important;
+  }
+  .creator-only-panel .points-card .points-total{
+    justify-content:flex-start!important;
+  }
+}
