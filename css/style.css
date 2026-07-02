@@ -4687,3 +4687,94 @@ body.perf-mode table{
   body.perf-mode button{transition:none;}
   body.perf-mode button:hover{transform:none;}
 }
+
+/* All Winners finale bracket compact cards + anti white repaint */
+html, body, #app{background:#09090d!important;}
+#app{min-height:100vh;}
+.finale-duel-card.compact{
+  padding:14px!important;
+  margin:12px 0!important;
+  border-radius:18px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  border:1px solid rgba(255,255,255,.105)!important;
+  box-shadow:none!important;
+}
+.finale-duel-title{
+  display:flex!important;
+  justify-content:space-between!important;
+  align-items:flex-end!important;
+  gap:12px!important;
+  margin-bottom:10px!important;
+}
+.finale-duel-title h3{
+  margin:0!important;
+  font-size:clamp(1.05rem,2vw,1.45rem)!important;
+  letter-spacing:-.02em!important;
+  color:#fff!important;
+}
+.finale-duel-title h3 span{
+  color:var(--muted)!important;
+  font-size:.82em!important;
+  font-weight:750!important;
+}
+.finale-duel-title .small{margin:0!important;text-align:right!important;text-transform:uppercase!important;letter-spacing:.08em!important;font-weight:900!important;}
+.finale-duel-horizontal{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto minmax(0,1fr)!important;
+  align-items:center!important;
+  gap:10px!important;
+}
+.finale-duel-horizontal .vs{
+  color:#ffe45c!important;
+  font-weight:950!important;
+  font-size:1.25rem!important;
+  opacity:.95!important;
+}
+.finale-duel-queen-chip{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:10px!important;
+  min-width:0!important;
+  padding:8px 10px!important;
+  border-radius:16px!important;
+  border:1px solid rgba(255,255,255,.10)!important;
+  background:rgba(255,255,255,.035)!important;
+}
+.finale-duel-queen-chip.is-winner{
+  border-color:rgba(34,211,238,.34)!important;
+  background:linear-gradient(135deg,rgba(14,165,233,.18),rgba(255,255,255,.035))!important;
+}
+.finale-duel-name{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  color:#fff!important;
+  font-weight:950!important;
+}
+.finale-duel-queen-chip .portrait,
+.finale-duel-queen-chip .queen-portrait,
+.finale-duel-queen-chip img{
+  flex:0 0 auto!important;
+}
+.finale-duel-decision-card{
+  margin-top:10px!important;
+  padding:10px 12px!important;
+  border-radius:14px!important;
+  border:1px solid rgba(255,255,255,.09)!important;
+  background:rgba(255,255,255,.04)!important;
+}
+.finale-duel-decision-card p{margin:.25rem 0!important;color:var(--muted)!important;}
+.finale-duel-decision-card p:first-child strong{color:#fff!important;}
+.finale-duel-hidden-result{margin-top:10px!important;}
+.all-winners-title-card{
+  margin-top:14px!important;
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025))!important;
+  border:1px solid rgba(255,255,255,.12)!important;
+}
+@media(max-width:720px){
+  .finale-duel-horizontal{grid-template-columns:1fr!important;}
+  .finale-duel-horizontal .vs{text-align:center!important;}
+  .finale-duel-title{display:block!important;}
+  .finale-duel-title .small{text-align:left!important;margin-top:4px!important;}
+}

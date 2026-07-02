@@ -10,8 +10,11 @@ function episodeResultTable(){
   const placements=[...(ep?.placements||[])].sort((a,b)=>episodePlacementSortValue(a)-episodePlacementSortValue(b)||(b.score||0)-(a.score||0)||String(a.name).localeCompare(String(b.name)));
   if(!placements.length)return '';
   const isTournament=ep?.special==='tournament_bracket';
+  const isAllWinners=typeof getSeasonFormat==='function' && getSeasonFormat()==='all_winners';
   const pointsFor=(id)=>Number(gameState.season?.brackets?.pointsByQueenId?.[id] ?? gameState.queens.find(q=>q.id===id)?.tournamentPoints ?? 0);
-  return `<div class="card"><h3>Episode Results</h3><div class="table-wrap"><table><thead><tr><th></th><th>Queen</th><th>Placement</th>${isTournament?'<th>Points</th>':'<th>Approach</th>'}</tr></thead><tbody>${placements.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return `<tr><td>${q?queenPortraitHtml(q,'xs'):''}</td><td><strong>${escapeHtml(p.name)}</strong></td><td>${placementBadge(p.placement)}</td>${isTournament?`<td><strong>${pointsFor(p.queenId)}</strong></td>`:`<td>${escapeHtml(p.riskLabel||'—')}</td>`}</tr>`;}).join('')}</tbody></table></div></div>`;
+  const starAwardFor=(id)=>ep?.allWinnersStarAwards?.find(a=>a.queenId===id);
+  const allWinnersNotes=isAllWinners?`<div class="commentary-block"><p>${escapeHtml(ep.lipSyncResult?.survivorId?queenNameById(ep.lipSyncResult.survivorId):'The winner')} is the Top All Star of the Week.${ep.blockedQueenId?` ${escapeHtml(queenNameById(ep.blockedQueenId))} is blocked for the next episode.`:''}</p>${(ep.allWinnersBlockedNoStar||[]).map(id=>`<p>Because ${escapeHtml(queenNameById(id))} was blocked, she does not receive a Legendary Legend Star.</p>`).join('')}<pre>${escapeHtml(ep.allWinnersScoreboard||'')}</pre></div>`:'';
+  return `<div class="card"><h3>Episode Results</h3>${allWinnersNotes}<div class="table-wrap"><table><thead><tr><th></th><th>Queen</th><th>Placement</th>${isTournament?'<th>Points</th>':(isAllWinners?'<th>Stars</th>':'<th>Approach</th>')}</tr></thead><tbody>${placements.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); const award=starAwardFor(p.queenId); return `<tr><td>${q?queenPortraitHtml(q,'xs'):''}</td><td><strong>${escapeHtml(p.name)}</strong></td><td>${placementBadge(p.placement)}</td>${isTournament?`<td><strong>${pointsFor(p.queenId)}</strong></td>`:(isAllWinners?`<td>${award?(award.blocked?'Blocked':`+${award.amount}`):'—'}</td>`:`<td>${escapeHtml(p.riskLabel||'—')}</td>`)}</tr>`;}).join('')}</tbody></table></div></div>`;
 }
 
 function tournamentPointVoteTable(){
@@ -40,7 +43,7 @@ function assassinLipstickTable(){
     const voter=gameState.queens.find(q=>q.id===voterId);
     if(voter)rows.push({voterId, voter:voter.name, vote:voteId, isTop:false});
   });
-  return `<div class="card"><h3>Lipstick Votes</h3><div class="table-wrap"><table><thead><tr><th>Queen</th><th>Lipstick</th></tr></thead><tbody>${rows.sort((a,b)=>a.voter.localeCompare(b.voter)).map(r=>`<tr><td><strong class="${r.isTop?'lipstick-vote-top':''}">${escapeHtml(r.voter)}</strong></td><td>${escapeHtml(r.voteLabel || qName(r.vote))}</td></tr>`).join('')}</tbody></table></div></div>`;
+  return `<div class="card"><h3>Lipstick Votes</h3><div class="table-wrap"><table><thead><tr><th>Queen</th><th>Lipstick</th></tr></thead><tbody>${rows.sort((a,b)=>a.voter.localeCompare(b.voter)).map(r=>`<tr><td><strong class="${r.isTop?'lipstick-vote-top':''}">${escapeHtml(r.voter)}</strong></td><td>${escapeHtml(r.voteLabel || queenNameById(r.vote))}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 
 function renderUntucked(){
@@ -168,13 +171,13 @@ function renderReunionStrategyChoice(){
 }
 function renderReunionSmackdownResult(result){
   const duelHtml=(d)=>`<div class="reunion-duel">
-    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[0]?'is-winner':'is-loser'}"><strong>${escapeHtml(qName(d.queenIds[0]))}</strong>${d.winnerId===d.queenIds[0]?'<em>advances</em>':''}</span>
+    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[0]?'is-winner':'is-loser'}"><strong>${escapeHtml(queenNameById(d.queenIds[0]))}</strong>${d.winnerId===d.queenIds[0]?'<em>advances</em>':''}</span>
     <span class="vs">VS</span>
-    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[1]?'is-winner':'is-loser'}"><strong>${escapeHtml(qName(d.queenIds[1]))}</strong>${d.winnerId===d.queenIds[1]?'<em>advances</em>':''}</span>
+    <span class="reunion-duel-queen ${d.winnerId===d.queenIds[1]?'is-winner':'is-loser'}"><strong>${escapeHtml(queenNameById(d.queenIds[1]))}</strong>${d.winnerId===d.queenIds[1]?'<em>advances</em>':''}</span>
   </div>`;
-  const rows=result.rounds.map(r=>`<div class="card reunion-round-card"><h3>Reunion Round ${r.round}</h3>${r.byeId?`<p class="reunion-bye"><strong>${escapeHtml(qName(r.byeId))}</strong> receives a bye.</p>`:''}<div class="reunion-duel-list">${r.duels.map(duelHtml).join('')}</div></div>`).join('');
+  const rows=result.rounds.map(r=>`<div class="card reunion-round-card"><h3>Reunion Round ${r.round}</h3>${r.byeId?`<p class="reunion-bye"><strong>${escapeHtml(queenNameById(r.byeId))}</strong> receives a bye.</p>`:''}<div class="reunion-duel-list">${r.duels.map(duelHtml).join('')}</div></div>`).join('');
   const reunionWinner=gameState.queens.find(q=>q.id===result.winnerId);
-  setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Queen of She Already Done Had Herses</h2><p>The eliminated queens return for a lip sync bracket before the finale.</p></div>${rows}<div class="card important reunion-winner-card"><h3>Queen of She Already Done Had Herses.</h3>${reunionWinner?`<div class="winner-portrait-wrap">${queenPortraitHtml(reunionWinner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong></p></div><button id="toFinale">Continue to the Finale</button></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Queen of She Already Done Had Herses</h2><p>The eliminated queens return for a lip sync bracket before the finale.</p></div>${rows}<div class="card important reunion-winner-card"><h3>Queen of She Already Done Had Herses.</h3>${reunionWinner?`<div class="winner-portrait-wrap">${queenPortraitHtml(reunionWinner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(queenNameById(result.winnerId))}</strong></p></div><button id="toFinale">Continue to the Finale</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReunionSmackdownResult(result)));
   document.querySelector('#toFinale').addEventListener('click',()=>{renderFinale();});
 }

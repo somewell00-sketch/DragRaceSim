@@ -48,12 +48,12 @@ function updateCreatorPreview(){
 
 function castOptionsForFormat(format='regular'){
   const allowed=(typeof getAllowedCastSizes==='function'?getAllowedCastSizes(format):[8,9,10,11,12,13,14,15,16]);
-  const randomAllowed=!['brackets','tournament'].includes(format);
+  const randomAllowed=!['brackets','tournament','all_winners'].includes(format);
   return `${randomAllowed?'<option value="random" selected>Random cast size</option>':''}${allowed.map((n,i)=>`<option value="${n}" ${!randomAllowed&&i===0?'selected':''}>${n} queens</option>`).join('')}`;
 }
 function updateCastSizeOptionsForFormat(){
-  const format=document.querySelector('#seasonFormat')?.value || 'regular';
-  const select=document.querySelector('#castSize');
+  const format=document.querySelector('#seasonFormat')?.value || document.querySelector('#inviteSeasonFormat')?.value || 'regular';
+  const select=document.querySelector('#castSize') || document.querySelector('#inviteCastSize');
   if(select)select.innerHTML=castOptionsForFormat(format);
 }
 
@@ -204,7 +204,8 @@ function renderSeasonInvitation(){
     {id:'regular',name:'Regular Season'},
     {id:'legacy',name:'Lip Sync for the Crown / Legacy'},
     {id:'assassin',name:'Lip Sync Assassin'},
-    {id:'brackets',name:'Lip Sync Tournament'}
+    {id:'brackets',name:'Lip Sync Tournament'},
+    {id:'all_winners',name:'All Winners'}
   ];
   const formatOptions=seasonFormats.map(format=>`<option value="${format.id}" ${format.id==='regular'?'selected':''}>${format.name}</option>`).join('');
   const castOptions=castOptionsForFormat('regular');

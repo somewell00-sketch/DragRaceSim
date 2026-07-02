@@ -1,6 +1,6 @@
 
 function qName(id){return gameState.queens.find(q=>q.id===id)?.name||'A queen';}
-function finaleFormatName(format){return format==='top4_lsfyc'?'Lip Sync for the Crown':format==='top3_cut'?'Top 3 Final Lip Sync':'Top 4 Final Two';}
+function finaleFormatName(format){return format==='all_winners'?'All Winners Lip Sync Tournaments':format==='top4_lsfyc'?'Lip Sync for the Crown':format==='top3_cut'?'Top 3 Final Lip Sync':'Top 4 Final Two';}
 const FINALE_GRAND='FINALE_GRAND';
 const FINALE_INTRO='FINALE_INTRO';
 const FINALE_LIPSYNC='FINALE_LIPSYNC';
@@ -770,7 +770,7 @@ function fanFavoriteAnnouncementHtml(){
   </section>`;
 }
 function renderFinaleGrandFinale(){
-  const finalists=gameState.queens.filter(q=>!q.isEliminated);
+  const finalists=(typeof getSeasonFormat==='function'&&getSeasonFormat()==='all_winners'&&gameState.season?.allWinnersTop4?.length?gameState.season.allWinnersTop4.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean):gameState.queens.filter(q=>!q.isEliminated));
   const returning=eliminatedQueensForFinaleReturn();
   const showMissCongeniality=typeof hasMissCongeniality==='function'?hasMissCongeniality():true;
   const existingVote=showMissCongeniality?gameState.season?.fanFavorite:{winnerId:null};
@@ -807,9 +807,9 @@ function renderFinaleGrandFinale(){
 }
 
 function renderFinalePart1(){
-  const activeFinalists=gameState.queens.filter(q=>!q.isEliminated);
+  const activeFinalists=(typeof getSeasonFormat==='function'&&getSeasonFormat()==='all_winners'&&gameState.season?.allWinnersTop4?.length?gameState.season.allWinnersTop4.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean):gameState.queens.filter(q=>!q.isEliminated));
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
-  const playerIsFinalist=player && !player.isEliminated;
+  const playerIsFinalist=player && (typeof getSeasonFormat==='function'&&getSeasonFormat()==='all_winners'?activeFinalists.some(q=>q.id===player.id):!player.isEliminated);
   const needsPlayerStrategy=playerIsFinalist && !gameState.season?.finale && !gameState.season?.playerFinaleStrategy;
 
   if(needsPlayerStrategy){
@@ -831,17 +831,22 @@ function renderFinalePart1(){
   const finalists=finale.finalistIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const crownFinalists=(finale.finalDuel?.queenIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const crownFinalistNames=crownFinalists.map(q=>q.name).join(' & ');
-  const semiRows=(finale.format==='top4_lsfyc')?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'';
-const sashays = (finale.thirdFourthIds || []).length
+  const isAllWinnersFinale=finale.format==='all_winners';
+  const semiRows=isAllWinnersFinale
+    ? `<section class="card"><h2>Lip Sync For The Crown Bracket</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d,'advances to the final lip sync',{reveal:true})).join('')}</section>`
+    : (finale.format==='top4_lsfyc'?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'');
+const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
   ? `<section class="card subtle">
       <h2>${finale.thirdFourthIds.map(id => escapeHtml(qName(id))).join(' & ')}</h2>
       <p>Your work this season helped define the competition. But this is not your moment.</p>
       <p>Now, sashay away.</p>
     </section>`
   : '';
+  const secondaryRows=isAllWinnersFinale?`<section class="card"><h2>She Done Already Done Had Herses Bracket</h2>${(finale.secondaryDuels||[]).map(d=>semiFinalDuelCard(d,'advances to the bracket final',{reveal:true})).join('')}${finale.secondaryFinalDuel?semiFinalDuelCard(finale.secondaryFinalDuel,'wins the bracket',{reveal:true}):''}${allWinnersTournamentWinnerCard(finale.secondaryWinnerId,'Queen of She Done Already Done Had Herses Bracket')}</section>`:'';
   if((typeof hasMissCongeniality!=='function' || hasMissCongeniality()) && !gameState.season?.fanFavorite) calculateFanFavorite(null);
   setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(2,'Final Cut')}<h1>The Grand Finale Continues</h1><p>${escapeHtml(format)}. Ru makes the final cut before the last lip sync.</p></section>
+    <section class="hero">${finalePageBadge(2,isAllWinnersFinale?'Brackets':'Final Cut')}<h1>${isAllWinnersFinale?'The Finale Brackets':'The Grand Finale Continues'}</h1><p>${isAllWinnersFinale?'The queens enter two lip sync tournaments before the final crown is decided.':`${escapeHtml(format)}. Ru makes the final cut before the last lip sync.`}</p></section>
+    ${secondaryRows}
     ${semiRows}
     ${sashays}
     ${fanFavoriteAnnouncementHtml()}
@@ -893,10 +898,32 @@ function finalLipSyncNarrative(finalDuel){
 function finalLipSyncDecision(finale){
   return `<p><strong>Condragulations, ${escapeHtml(qName(finale.winnerId))}. You are the winner, baby.</strong></p>`;
 }
-function semiFinalDuelCard(d){
-  const result=finalDuelToLipSyncResult(d);
-  const narrative=(typeof lipSyncNarrative==='function')?lipSyncNarrative(result):'';
-  return `<div class="critique"><h4>${escapeHtml(d.label)}</h4><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong></p><div class="commentary-block">${narrative}</div><p><strong>${escapeHtml(qName(d.winnerId))}</strong> advances to the final lip sync.</p></div>`;
+function finaleDuelQueenCard(id,winnerId,options={}){
+  const q=gameState.queens.find(x=>x.id===id);
+  const reveal=options.reveal!==false;
+  const won=reveal && id===winnerId;
+  const badgeText=reveal?(won?'Shantay':'Lip Sync'):'Lip Sync';
+  return `<article class="finale-duel-queen-chip ${won?'is-winner':''}"><span class="finale-duel-name">${escapeHtml(qName(id))}</span>${q?queenPortraitHtml(q,'md'):''}<span class="badge ${won?'winner':'subtle'}">${escapeHtml(badgeText)}</span></article>`;
+}
+function finaleDuelPortraitVs(d,options={}){
+  const ids=d.queenIds||[];
+  return `<div class="finale-duel-horizontal">${finaleDuelQueenCard(ids[0],d.winnerId,options)}<span class="vs">×</span>${finaleDuelQueenCard(ids[1],d.winnerId,options)}</div>`;
+}
+function allWinnersTournamentWinnerCard(winnerId,title){
+  const q=gameState.queens.find(x=>x.id===winnerId);
+  if(!q)return '';
+  return `<div class="card reunion-winner-card all-winners-title-card"><h3>${escapeHtml(title)}</h3><div class="winner-portrait-wrap">${queenPortraitHtml(q,'xl','winner-portrait')}</div><p><strong>${escapeHtml(q.name)}</strong></p></div>`;
+}
+function finaleDuelDecisionCard(d){
+  const winnerId=d.winnerId;
+  const loserId=d.loserId || (d.queenIds||[]).find(id=>id!==winnerId);
+  return `<div class="finale-duel-decision-card"><p><strong>${escapeHtml(qName(winnerId))}</strong>, shantay you stay.</p><p><strong>${escapeHtml(qName(loserId))}</strong>, I'm sorry my dear, but this is not your moment.</p></div>`;
+}
+function semiFinalDuelCard(d, advanceText='advances to the final lip sync', options={}){
+  const reveal=options.reveal!==false;
+  const song=d.song?`<h3>${escapeHtml(d.song.title)} <span>by ${escapeHtml(d.song.artist)}</span></h3>`:'<h3>Lip Sync</h3>';
+  const revealLine=reveal?finaleDuelDecisionCard(d):`<p class="small finale-duel-hidden-result">The result will be revealed after the lip sync.</p>`;
+  return `<div class="finale-duel-card compact"><div class="finale-duel-title">${song}<p class="small">${escapeHtml(d.label)}</p></div>${finaleDuelPortraitVs(d,{reveal})}${revealLine}</div>`;
 }
 
 function renderFinalePart2(){
@@ -904,9 +931,10 @@ function renderFinalePart2(){
   const finalDuel=finale.finalDuel;
   const songLine=finalDuel.song?`<p>Final song: <strong>${escapeHtml(finalDuel.song.title)}</strong> by ${escapeHtml(finalDuel.song.artist)}</p>`:'';
   const strategyRows=finalDuelScoreRows(finalDuel);
+  const isAllWinnersFinale=finale.format==='all_winners';
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(3,'Final Lip Sync')}${bigMomentHeader('One final performance...','THE FINAL LIP SYNC','crown')}<h1>${escapeHtml(qName(finalDuel.queenIds[0]))} vs ${escapeHtml(qName(finalDuel.queenIds[1]))}</h1><p>The crown comes down to one last performance.</p></section>
-    <section class="card"><h2>The Final Performance</h2>${songLine}<p class="music-cue">💡💡🎶🎵🎶💡💡</p><div class="commentary-block">${finalLipSyncNarrative(finalDuel)}</div></section>
+    <section class="card"><h2>The Final Performance</h2>${finaleDuelPortraitVs(finalDuel,{reveal:false})}${songLine}<p class="music-cue">💡💡🎶🎵🎶💡💡</p><div class="commentary-block">${finalLipSyncNarrative(finalDuel)}</div></section>
     <section class="card important winner-tease"><h2>The Winner Is...</h2><p>The crown is ready. The name comes next.</p></section>
     <button id="finishSeason">Reveal the Winner</button>
   </main>`);
@@ -948,6 +976,19 @@ function iconicLipSyncsTable(){
   </section>`;
 }
 
+
+function allWinnersSummaryBlock(){
+  if(typeof getSeasonFormat!=='function' || getSeasonFormat()!=='all_winners')return '';
+  const ranked=(typeof allWinnersRankedQueens==='function'?allWinnersRankedQueens():[...(gameState.queens||[])]);
+  const finale=gameState.season?.finale||{};
+  const winner=gameState.queens.find(q=>q.id===(finale.winnerId||gameState.season?.winnerId));
+  const secondary=gameState.queens.find(q=>q.id===(finale.secondaryWinnerId||gameState.season?.allWinnersSecondaryWinnerId));
+  const rows=ranked.map((q,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(q.name)}</td><td>${Number(q.legendStars)||0}</td><td>${Number(q.blocksReceived)||0}</td><td>${Number(q.blocksGiven)||0}</td></tr>`).join('');
+  const starText=winner?`${escapeHtml(winner.name)} was crowned Queen of All Queens after entering the finale with ${Number(winner.legendStars)||0} Legendary Legend Stars.`:'';
+  const secondaryText=secondary?`${escapeHtml(secondary.name)} won the Queen of She Done Already Done Had Herses Bracket.`:'';
+  return `<section class="card important"><h2>Legendary Legend Stars</h2><p>${starText}</p><p>${secondaryText}</p><table><thead><tr><th>#</th><th>Queen</th><th>Stars</th><th>Blocked</th><th>Blocks Given</th></tr></thead><tbody>${rows}</tbody></table></section>`;
+}
+
 function renderSummary(){
   const winner=gameState.queens.find(q=>q.id===gameState.season.winnerId);
   const finale=gameState.season.finale||{};
@@ -960,6 +1001,7 @@ function renderSummary(){
   setHTML(`<main class="screen">
     <section class="hero finale-results-hero">${finalePageBadge(4,'Season Results')}<div class="finale-winner-kicker">${finaleRoleBadge('WINNER')}</div>${bigMomentHeader('The winner is...',(winner?.name||'Winner'),'crown')}${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="winner-copy"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}.</strong> You are the winner, baby.</p>${winner?`${finaleDivider()}<p class="finale-winner-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}</section>
     <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
+    ${allWinnersSummaryBlock()}
     ${postSeasonReception(player)}
     <section class="card track-record-export-card" id="finalTrackRecordCard"><button type="button" class="track-record-download" id="downloadTrackRecord" title="Download Track Record" aria-label="Download Track Record" data-html2canvas-ignore="true">⬇️ Download</button><h2>Track Record</h2>${historyTable()}</section>
     ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}

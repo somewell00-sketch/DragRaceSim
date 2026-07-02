@@ -453,6 +453,153 @@ function winStreakFatigue(q){
   if(streak>=2)return -0.35;
   return 0;
 }
+
+function recentPositiveSpotlightStreak(q){
+  const history=[...(q?.episodeHistory||[])].reverse();
+  let count=0;
+  for(const h of history){
+    const p=String(h?.placement||'').toUpperCase();
+    if(['WIN','TOP2','HIGH'].includes(p))count++;
+    else break;
+  }
+  return count;
+}
+function recentSafeStreak(q){
+  const history=[...(q?.episodeHistory||[])].reverse();
+  let count=0;
+  for(const h of history){
+    const p=String(h?.placement||'').toUpperCase();
+    if(p==='SAFE')count++;
+    else break;
+  }
+  return count;
+}
+function allWinnersSpotlightBalanceModifier(q, ep){
+  if((typeof getSeasonFormat==='function'?getSeasonFormat():gameState.season?.format)!=='all_winners')return 0;
+  if(!q || !ep || ep.special)return 0;
+  const st=q.statistics||{};
+  const spotlight=recentPositiveSpotlightStreak(q);
+  const safe=recentSafeStreak(q);
+  let mod=0;
+
+  // All Winners still needs the regular anti-runaway feel. TOP2 counts as
+  // the same spotlight load as WIN here, because both queens receive the main
+  // challenge win credit in this format.
+  if(spotlight>=6)mod-=12.0;
+  else if(spotlight>=5)mod-=10.0;
+  else if(spotlight>=4)mod-=8.0;
+  else if(spotlight>=3)mod-=5.5;
+  else if(spotlight>=2)mod-=2.5;
+
+  if((st.wins||0)>=6)mod-=10.0;
+  else if((st.wins||0)>=5)mod-=8.5;
+  else if((st.wins||0)>=4)mod-=6.5;
+  else if((st.wins||0)>=3)mod-=4.25;
+  else if((st.wins||0)>=2)mod-=2.25;
+
+  if((st.highs||0)>=9)mod-=5.5;
+  else if((st.highs||0)>=7)mod-=4.0;
+  else if((st.highs||0)>=5)mod-=2.5;
+
+  if(q.id===gameState.playerQueenId && (ep.passiveWorkroom || ep.canPlayerWin===false)){
+    mod-=6.0;
+  }
+
+  if(safe>=4)mod+=5.0;
+  else if(safe>=3)mod+=3.75;
+  else if(safe>=2)mod+=2.2;
+
+  return Math.round(mod*10)/10;
+}
+function allWinnersCanRedirectSpotlight(q, slot){
+  if(!q)return false;
+  const st=q.statistics||{};
+  const spotlight=recentPositiveSpotlightStreak(q);
+  let chance=0;
+  if(slot==='top2'){
+    if(spotlight>=6)chance=0.995;
+    else if(spotlight>=5)chance=0.97;
+    else if(spotlight>=4)chance=0.90;
+    else if(spotlight>=3)chance=0.72;
+    else if(spotlight>=2)chance=0.38;
+    if((st.wins||0)>=5)chance=Math.max(chance,0.985);
+    else if((st.wins||0)>=4)chance=Math.max(chance,0.94);
+    else if((st.wins||0)>=3)chance=Math.max(chance,0.80);
+    else if((st.wins||0)>=2)chance=Math.max(chance,0.52);
+  }else{
+    if(spotlight>=5)chance=0.90;
+    else if(spotlight>=4)chance=0.78;
+    else if(spotlight>=3)chance=0.58;
+    else if(spotlight>=2)chance=0.30;
+  }
+  return chance>0 && Math.random()<chance;
+}
+function applyAllWinnersSpotlightSwaps(scored, ep){
+  if((typeof getSeasonFormat==='function'?getSeasonFormat():gameState.season?.format)!=='all_winners')return;
+  if(!ep || ep.allWinnersSpotlightSwapsDone)return;
+  const queenFor=s=>gameState.queens.find(q=>q.id===s?.queenId);
+  const swap=(i,j,reason)=>{
+    const tmp=scored[i]; scored[i]=scored[j]; scored[j]=tmp;
+    scored[j].allWinnersSoftened=reason;
+    scored[i].allWinnersPromotedByBalance=true;
+    ep.allWinnersBalanceApplied=true;
+  };
+  for(let i=0;i<Math.min(2,scored.length);i++){
+    const q=queenFor(scored[i]);
+    if(!allWinnersCanRedirectSpotlight(q,'top2'))continue;
+    let j=-1;
+    for(let k=2;k<scored.length;k++){
+      const cq=queenFor(scored[k]);
+      if(!cq)continue;
+      if(recentPositiveSpotlightStreak(cq)<=1 || recentSafeStreak(cq)>=2 || (cq.statistics?.wins||0)<(q.statistics?.wins||0)) { j=k; break; }
+    }
+    if(j>1)swap(i,j,'Top 2 spotlight softened');
+  }
+  for(let i=2;i<Math.min(4,scored.length);i++){
+    const q=queenFor(scored[i]);
+    if(!allWinnersCanRedirectSpotlight(q,'high'))continue;
+    let j=-1;
+    for(let k=4;k<scored.length;k++){
+      const cq=queenFor(scored[k]);
+      if(cq && (recentSafeStreak(cq)>=2 || recentPositiveSpotlightStreak(cq)<=1)){j=k; break;}
+    }
+    if(j>3)swap(i,j,'HIGH spotlight softened');
+  }
+  ep.allWinnersSpotlightSwapsDone=true;
+}
+function allWinnersTop2Eligible(scoreRow, ep){
+  if(!scoreRow)return false;
+  if(scoreRow.queenId===gameState.playerQueenId && (ep.passiveWorkroom || ep.canPlayerWin===false))return false;
+  return true;
+}
+function pickAllWinnersPlacementRows(scored, ep){
+  const ranked=[...scored].sort((a,b)=>b.score-a.score);
+  let top2=[];
+  for(const row of ranked){
+    if(top2.length>=2)break;
+    if(allWinnersTop2Eligible(row, ep))top2.push(row);
+  }
+  if(top2.length<2){
+    for(const row of ranked){
+      if(top2.length>=2)break;
+      if(!top2.includes(row))top2.push(row);
+    }
+  }
+  const high=[];
+  for(const row of ranked){
+    if(high.length>=2)break;
+    if(top2.includes(row))continue;
+    if(row.queenId===gameState.playerQueenId && (ep.passiveWorkroom || ep.canPlayerWin===false))continue;
+    high.push(row);
+  }
+  if(high.length<2){
+    for(const row of ranked){
+      if(high.length>=2)break;
+      if(!top2.includes(row) && !high.includes(row))high.push(row);
+    }
+  }
+  return {top2,high};
+}
 function vulnerabilityPressureModifier(q, ep){
   // Soft balance pass: queens who have stayed untouched for several episodes
   // become a little more exposed to a LOW if they have only an average week.
@@ -710,6 +857,7 @@ function calculateEpisodeResults(playerChoices={}){
   simulateNpcEpisodeChoices();
   const challenge=challengeDefinitionForEpisode(ep);
   const active=gameState.queens.filter(q=>!q.isEliminated && (!ep.participantIds || ep.participantIds.includes(q.id)));
+  const seasonFormat=getSeasonFormat();
   if(!ep.runwayRolls) ep.runwayRolls={};
   if(!ep.eventRolls) ep.eventRolls={};
   const scored=active.map(q=>{
@@ -728,6 +876,7 @@ function calculateEpisodeResults(playerChoices={}){
     const episodeForm=episodeFormModifier(q,ep);
     const fatigue=winStreakFatigue(q);
     const legacyPressure=legacyAllStarsPressure(q,ep);
+    const allWinnersBalance=allWinnersSpotlightBalanceModifier(q,ep);
     const vulnerabilityPressure=vulnerabilityPressureModifier(q,ep);
     const frontrunnerVolatility=frontrunnerVolatilityModifier(q,ep);
     const riskBonus=riskRoll(risk);
@@ -744,16 +893,15 @@ function calculateEpisodeResults(playerChoices={}){
     const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
-    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
 
-  const seasonFormat=getSeasonFormat();
   const useSnatchGameOfLove=isSnatchGameOfLoveEpisode(ep);
   if(seasonFormat==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
     if(useSnatchGameOfLove) applySnatchGameOfLoveLegacyPlacements(scored, ep);
@@ -766,6 +914,19 @@ function calculateEpisodeResults(playerChoices={}){
   if(isTournamentFormat(seasonFormat) && ep.special==='tournament_bracket'){
     applyTournamentPlacements(scored, ep);
   }
+
+  if(seasonFormat==='all_winners'){
+    applyAllWinnersSpotlightSwaps(scored, ep);
+    const allWinnersRows=pickAllWinnersPlacementRows(scored, ep);
+    scored.forEach(s=>s.placement='SAFE');
+    allWinnersRows.top2.forEach(s=>s.placement='TOP2');
+    allWinnersRows.high.forEach(s=>{ if(s.placement==='SAFE')s.placement='HIGH'; });
+    ep.top2Queens=allWinnersRows.top2.map(s=>s.queenId);
+    ep.topQueenId=ep.top2Queens[0]||null;
+    ep.bottomQueens=[];
+    if(ep.passiveWorkroom && ep.top2Queens.includes(gameState.playerQueenId))ep.allWinnersPassiveTop2Fallback=true;
+  }
+
 
   if(ep.special==='premiere_no_elim'){
     scored.forEach(s=>s.placement='SAFE');
@@ -780,13 +941,13 @@ function calculateEpisodeResults(playerChoices={}){
   // Do not run win redistribution here, because that would create a challenge WIN
   // before the lip sync has happened. The two best queens remain TOP2 until
   // resolveLipSync() promotes only the lip sync winner to WIN.
-  if(!['premiere_no_elim','tournament_bracket'].includes(ep.special) && !['legacy','assassin'].includes(getSeasonFormat())){
+  if(!['premiere_no_elim','tournament_bracket'].includes(ep.special) && !['legacy','assassin','all_winners'].includes(getSeasonFormat())){
     applyPassiveWinCap(scored,ep);
     applyWinThrottles(scored,ep);
     softenFrontrunnerHighsToSafe(scored,ep);
   }
   scored.sort((a,b)=>{
-    const order={WIN:0,HIGH:1,CRITIQUE:2,SAFE:3,LOW:4,BTM:5};
+    const order={WIN:0,TOP2:0,HIGH:1,CRITIQUE:2,SAFE:3,LOW:4,BTM:5};
     if(order[a.placement]!==order[b.placement])return order[a.placement]-order[b.placement];
     return b.score-a.score;
   });
@@ -802,7 +963,8 @@ function calculateEpisodeResults(playerChoices={}){
     const formText=s.episodeForm?` • ${s.episodeFormLabel||'Episode form'} ${s.episodeForm>=0?'+':''}${s.episodeForm}`:'';
     const fatigueText=s.fatigue?` • Fatigue ${s.fatigue}`:'';
     const legacyPressureText=s.legacyPressure?` • All Stars pressure ${s.legacyPressure}`:'';
-    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${extra}${teamText}${winThrottleText}`;
+    const allWinnersBalanceText=s.allWinnersBalance?` • Spotlight balance ${s.allWinnersBalance}`:'';
+    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${allWinnersBalanceText}${extra}${teamText}${winThrottleText}`;
     const finalStretchPraise=isLastCompetitiveEpisodeBeforeFinale(ep);
     const tournamentPraise=ep.special==='tournament_bracket';
     s.critique=(finalStretchPraise||tournamentPraise)?getFinalStretchPositiveCritique(s,ep):getCritiqueText(s.placement,ep.challengeType,s.risk,success);
@@ -834,7 +996,8 @@ function calculateEpisodeResults(playerChoices={}){
   ep.placements=scored;
   applyHighQueenWinnerReaction(ep);
   const tripleBottom=maybeApplyTripleBottomLipSync(ep,scored);
-  if(ep.special==='tournament_bracket')ep.bottomQueens=[];
+  if(getSeasonFormat()==='all_winners')ep.bottomQueens=[];
+  else if(ep.special==='tournament_bracket')ep.bottomQueens=[];
   else ep.bottomQueens=scored.filter(s=>s.placement==='BTM').slice(0,(tripleBottom||ep.tripleBottomLipSync)?3:((['legacy','assassin'].includes(getSeasonFormat()))?3:2)).map(s=>s.queenId);
   saveGame();
   return scored;
@@ -939,15 +1102,17 @@ function applyAssassinVoteRelationshipPenalty(topQueenId, eliminatedQueenId, ep)
   return changes;
 }
 
-function resolveLipSync(playerMoves=null){
+function resolveLipSync(playerMoves=null, options={}){
   const ep=gameState.currentEpisode;
   const song=ep.song;
   const format=getSeasonFormat();
   const isAssassinEpisode=format==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isTournamentEpisode=isTournamentFormat(format) && ep.special==='tournament_bracket';
-  const duelIds=((format==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)) || isTournamentEpisode)
+  const duelIds=(format==='all_winners')
     ? (ep.top2Queens||[])
-    : (isAssassinEpisode ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens));
+    : (((format==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)) || isTournamentEpisode)
+      ? (ep.top2Queens||[])
+      : (isAssassinEpisode ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)));
   const bottom=duelIds
     .map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||createLipSyncAssassin()) : gameState.queens.find(q=>q.id===id))
     .filter(Boolean);
@@ -1023,6 +1188,25 @@ function resolveLipSync(playerMoves=null){
   });
 
   const results=rawResults.sort((a,b)=>b.score10-a.score10);
+
+  if(format==='all_winners'){
+    const winner=results[0], loser=results[1];
+    ep.placements.forEach(p=>{
+      if((ep.top2Queens||[]).includes(p.queenId)){
+        p.placement=(p.queenId===winner.queenId?'WIN':'TOP2');
+        p.lipSyncWinner=(p.queenId===winner.queenId);
+      }
+    });
+    const shouldDeferPlayerBlock=!!options.deferAllWinnersPlayerBlock && winner.queenId===gameState.playerQueenId && !ep.playerAllWinnersBlockChosen;
+    const blockedId=shouldDeferPlayerBlock ? null : (typeof chooseAllWinnersBlockTarget==='function'?chooseAllWinnersBlockTarget(winner.queenId, ep.top2Queens||[]):null);
+    if(blockedId && typeof applyAllWinnersBlock==='function')applyAllWinnersBlock(winner.queenId, blockedId, ep);
+    ep.waitingForAllWinnersBlockChoice=!!shouldDeferPlayerBlock;
+    ep.lipSyncResult={song,results,outcome:'allWinnersTopAllStar',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],blockedQueenId:blockedId,difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10};
+    recordIconicLipSync(ep, ep.lipSyncResult);
+    ep.eliminatedQueenId=null;
+    saveGame();
+    return ep.lipSyncResult;
+  }
 
   if(ep.special==='premiere_no_elim'){
     const winner=results[0], loser=results[1];
@@ -1180,17 +1364,18 @@ function applyEpisodeStats(){
     if(!q)continue;
     q.statistics.episodesCompeted++;
     q.episodeHistory.push({episode:ep.number,challenge:ep.challengeName,placement:p.placement,score:p.score,lipSync:p.placement==='BTM' || !!p.lipSyncWinner,lipSyncWinner:!!p.lipSyncWinner});
-    if(p.placement==='WIN'){
+    const isAllWinnersTop2=(typeof getSeasonFormat==='function' && getSeasonFormat()==='all_winners' && p.placement==='TOP2');
+    if(p.placement==='WIN' || isAllWinnersTop2){
       q.statistics.wins++;
       if(typeof applyChallengeWinRelationshipPenalty==='function')applyChallengeWinRelationshipPenalty(q,ep);
-        if(typeof applyHighQueensWinnerJealousy==='function')applyHighQueensWinnerJealousy(q,ep);
+      if(typeof applyHighQueensWinnerJealousy==='function')applyHighQueensWinnerJealousy(q,ep);
     }
-    if(p.placement==='HIGH'||p.placement==='TOP2')q.statistics.highs++;
+    if(p.placement==='HIGH'||(p.placement==='TOP2' && !isAllWinnersTop2))q.statistics.highs++;
     if(p.placement==='SAFE')q.statistics.safes++;
     if(p.placement==='LOW')q.statistics.lows++;
     if(p.placement==='BTM')q.statistics.bottoms++;
     const trendMomentum=applyPlacementTrendMomentum(q,p.placement);
-    const effects=(isLegacyCompetitiveEpisode(ep) && p.placement==='WIN') ? legacyWinEffect(p) : (placementEffects[p.placement]||{});
+    const effects=((isLegacyCompetitiveEpisode(ep) && p.placement==='WIN') || isAllWinnersTop2) ? legacyWinEffect(p) : (placementEffects[p.placement]||{});
     applyChoiceEffects(effects,{queen:q,note:`Episode placement: ${p.placement}. Momentum now reflects week-to-week placement trend (${trendMomentum>=0?'+':''}${trendMomentum}).`,source:'episode-placement',save:false});
   }
   if(ep.lipSyncResult){
@@ -1221,6 +1406,14 @@ function applyEpisodeStats(){
         if(out && typeof applyAssassinVoteRelationshipPenalty==='function')applyAssassinVoteRelationshipPenalty(top.id,out.id,ep);
       }
       if(out){out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out); ep.eliminatedQueenId=out.id;}
+
+    } else if(ep.lipSyncResult.outcome==='allWinnersTopAllStar'){
+      const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+      const loser=gameState.queens.find(q=>q.id===ep.lipSyncResult.top2LoserId);
+      if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Top All Star lip sync win.',source:'lip-sync-result',save:false}); }
+      if(loser){ loser.statistics.lipSyncLosses++; }
+      if(typeof applyAllWinnersStarsForEpisode==='function')applyAllWinnersStarsForEpisode(ep);
+      ep.eliminatedQueenId=null;
     } else if(ep.lipSyncResult.outcome==='top2Win'){
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
       if(win){ win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Lip sync win.',source:'lip-sync-result',save:false}); }

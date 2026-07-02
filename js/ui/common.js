@@ -264,11 +264,17 @@ function sortEpisodeKeys(keys){
     return String(a).localeCompare(String(b));
   });
 }
+function historyWinsFor(q){
+  if(typeof getSeasonFormat==='function' && getSeasonFormat()==='all_winners'){
+    return (q.episodeHistory||[]).filter(h=>['WIN','TOP2'].includes(String(h.placement||'').toUpperCase())).length;
+  }
+  return q.statistics?.wins||0;
+}
 function historyTable(){
   const eps=sortEpisodeKeys([...new Set(gameState.queens.flatMap(q=>q.episodeHistory.map(h=>h.episode))) ]);
   const ordered=getQueenStandingOrder();
   const bracketClass=(q)=>{const b=gameState.season?.brackets; const g=q?.tournamentBracket || (b?.groups?Object.keys(b.groups).find(key=>(b.groups[key]||[]).includes(q.id)):null); return g?`tournament-track-bracket-${g}`:'';};
-  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr class="${bracketClass(q)}"><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement,h):''}</td>`;}).join('')}<td>${q.statistics.wins}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
+  return `<div class="table-wrap"><table><thead><tr><th>Rank</th><th></th><th>Queen</th>${eps.map(e=>episodeHeader(e)).join('')}<th>Wins</th><th>BTMs</th></tr></thead><tbody>${ordered.map(q=>{const tags=queenTrackTags(q); const tagHtml=tags.length?`<div class="chips track-tags">${tags.map(t=>`<span class="badge arc front-runner">${escapeHtml(t)}</span>`).join('')}</div>`:''; return `<tr class="${bracketClass(q)}"><td><strong>${queenPositionLabel(q,ordered)}</strong></td><td>${queenPortraitHtml(q,'xs')}</td><td><strong>${escapeHtml(q.name)}</strong><br><span class="small">${queenPersonaTypeHtml(q)}</span>${tagHtml}</td>${eps.map(e=>{const h=q.episodeHistory.find(x=>x.episode===e); return `<td>${h?placementBadge(h.placement,h):''}</td>`;}).join('')}<td>${historyWinsFor(q)}</td><td>${q.statistics.bottoms}</td></tr>`;}).join('')}</tbody></table></div>`;
 }
 
 function queenNameById(id){

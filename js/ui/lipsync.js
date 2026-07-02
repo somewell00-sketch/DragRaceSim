@@ -48,23 +48,26 @@ function renderLipSync(){
   const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isAssassin=getSeasonFormat()==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isTournament=ep.special==='tournament_bracket';
-  const duelIds=isTournament ? (ep.top2Queens||[]) : (isLegacy ? (ep.top2Queens||[]) : (isAssassin ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)));
+  const isAllWinners=getSeasonFormat()==='all_winners';
+  const duelIds=(isAllWinners||isTournament) ? (ep.top2Queens||[]) : (isLegacy ? (ep.top2Queens||[]) : (isAssassin ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)));
   const bottom=duelIds.map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
-  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
-  const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament)
+  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
+  const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)
     ? '<h3>Two top queens stand before me.</h3>'
     : ((ep.bottomQueens||[]).length===3 ? '<h3>Three queens stand before me.</h3><p>Tonight, all three of you will lip sync for your lives.</p>' : '<h3>Two queens stand before me.</h3>'));
   const prompt=isAssassin
     ? "This is your chance to beat the assassin and make your lipstick count. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : (isAllWinners
+    ? "Ladies, this is your chance to become the Top All Star of the week and block one queen. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isTournament
     ? "Ladies, this is your chance to win an extra tournament point. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isLegacy
     ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
-  const normalLipSyncCards=`<div class="hero" style="text-align:center;">${bigMomentHeader('The time has come, for you to', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2 style="text-align:center;">${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%; display:block;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."))));
+  const normalLipSyncCards=`<div class="hero" style="text-align:center;">${bigMomentHeader('The time has come, for you to', (isAllWinners||isTournament||isLegacy)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'win':'danger')}<h2 style="text-align:center;">${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%; display:block;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
 <div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${intro}</p><p>${escapeHtml(prompt)}</p></div>`;
 const assassinCards=assassinIntroCardsHtml(ep,bottom);
   const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
@@ -245,8 +248,11 @@ function renderLipSyncStrategyChoice(){
   }).join('')}</div>`;
   document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
     const moves=lipSyncMovesFromStrategy(btn.dataset.strategy, gameState.currentEpisode.song);
-    const result=resolveLipSync(moves);
-    applyEpisodeStats();
+    const isAllWinnersPlayerTop2=getSeasonFormat()==='all_winners' && (gameState.currentEpisode?.top2Queens||[]).includes(gameState.playerQueenId);
+    const result=resolveLipSync(moves, {deferAllWinnersPlayerBlock:isAllWinnersPlayerTop2});
+    if(!(result?.outcome==='allWinnersTopAllStar' && result.survivorId===gameState.playerQueenId && gameState.currentEpisode?.waitingForAllWinnersBlockChoice)){
+      applyEpisodeStats();
+    }
     renderLipSyncResult(result);
   }));
 }
@@ -363,7 +369,7 @@ const V20_LIPSYNC_TEXT={
 function resultTier(result){
   if(result.outcome==='doubleShantay') return 'doubleShantay';
   if(result.outcome==='doubleSashay') return 'doubleSashay';
-  if(result.outcome==='top2Win' || result.outcome==='tournamentPoints') return 'top2Win';
+  if(result.outcome==='top2Win' || result.outcome==='tournamentPoints' || result.outcome==='allWinnersTopAllStar') return 'top2Win';
   const diff=result.difference ?? Math.abs((result.results?.[0]?.score10||0)-(result.results?.[1]?.score10||0));
   const high=Math.max(...result.results.map(r=>r.score10));
   if(high<6.5) return 'weak';
@@ -1182,7 +1188,7 @@ function standardLsfylDecisionCards(result){
     ${impactQueenCard(eliminated,'SASHAY AWAY', 'Sashay away.', 'sashay', `<p>${escapeHtml(ruFarewellThanks(eliminated))}</p><blockquote>${escapeHtml(queenExitQuote(eliminated))}</blockquote>`)};`.replace(/;$/, '');
 }
 function lipSyncDecisionCards(result){
-  if(['legacyElimination','assassinElimination','tournamentPoints','top2Win'].includes(result.outcome)){
+  if(['legacyElimination','assassinElimination','tournamentPoints','top2Win','allWinnersTopAllStar'].includes(result.outcome)){
     return `<div class="card">${lipSyncDecisionText(result)}</div>`;
   }
   return standardLsfylDecisionCards(result);
@@ -1199,6 +1205,20 @@ function lipstickFarewellBlock(q){
 
 function lipSyncDecisionText(result){
   const ep=gameState.currentEpisode;
+  if(result?.outcome==='allWinnersTopAllStar'){
+    const winner=gameState.queens.find(q=>q.id===result.survivorId);
+    const loser=gameState.queens.find(q=>q.id===result.top2LoserId) || (result.results||[]).map(r=>gameState.queens.find(q=>q.id===r.queenId)).find(q=>q && q.id!==result.survivorId);
+    const blocked=gameState.queens.find(q=>q.id===result.blockedQueenId);
+    const starLines=(ep?.allWinnersStarAwards||[]).map(a=>{
+      const q=gameState.queens.find(x=>x.id===a.queenId);
+      if(!q)return '';
+      if(a.blocked)return `<p>Because <strong>${escapeHtml(q.name)}</strong> was blocked, she does not receive a Legendary Legend Star.</p>`;
+      const amount=Number((typeof a.amount!=='undefined'?a.amount:a.stars)||0);
+      return `<p><strong>${escapeHtml(q.name)}</strong> receives <strong>${amount}</strong> Legendary Legend Star${amount===1?'':'s'}.</p>`;
+    }).filter(Boolean).join('');
+    const blockLine=blocked ? `<p><strong>${escapeHtml(winner?.name||'The Top All Star')}</strong> uses the Secret Silver Plunger to block <strong>${escapeHtml(blocked.name)}</strong> next week.</p>` : '';
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are the Top All Star of the Week.</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p>${starLines}${blockLine}`;
+  }
   if(result.outcome==='legacyElimination'){
     const winner=gameState.queens.find(q=>q.id===result.survivorId);
     const loser=result.results.find(r=>r.queenId!==result.survivorId);
@@ -1246,14 +1266,59 @@ function lipSyncDecisionText(result){
   const survivor=gameState.queens.find(q=>q.id===result.survivorId);
   return `<p><strong>${escapeHtml(survivor.name)}, Shantay, you stay.</strong></p><p><strong>${escapeHtml(eliminated.name)}</strong>, sashay away.</p>`;
 }
+
+function renderAllWinnersBlockChoice(result){
+  const ep=gameState.currentEpisode;
+  if(getSeasonFormat()!=='all_winners' || !ep || !result || result.outcome!=='allWinnersTopAllStar')return '';
+  if(result.survivorId!==gameState.playerQueenId || ep.playerAllWinnersBlockChosen || !ep.waitingForAllWinnersBlockChoice)return '';
+  const top2Ids=ep.top2Queens||[];
+  const candidates=(typeof allWinnersBlockCandidates==='function'?allWinnersBlockCandidates(result.survivorId, top2Ids):[])
+    .filter(q=>q && q.id!==result.survivorId && !top2Ids.includes(q.id));
+  if(!candidates.length){
+    ep.playerAllWinnersBlockChosen=true;
+    ep.waitingForAllWinnersBlockChoice=false;
+    saveGame();
+    return '';
+  }
+  const buttons=candidates.map(q=>{
+    const st=q.statistics||{};
+    const stars=Number(q.legendStars)||0;
+    const starText=stars>0?'⭐'.repeat(Math.min(stars,10))+(stars>10?` (${stars})`:''):'No stars';
+    const desc=`${starText} • ${st.wins||0} win${(st.wins||0)===1?'':'s'}`;
+    return choiceButtonHtml({id:q.id,attr:'data-all-winners-block-choice',label:`🪠 ${q.name}`,desc});
+  }).join('');
+  return `<div class="card decision-card important" id="allWinnersBlockChoice"><h3>Use the Secret Silver Plunger</h3><p>You are the Top All Star of the Week. Choose one eligible queen to block from receiving a Legendary Legend Star next episode.</p><p class="small">The other Top 2 queen is immune from the block.</p><div class="options">${buttons}</div></div>`;
+}
+
+function bindAllWinnersBlockChoice(result){
+  const ep=gameState.currentEpisode;
+  if(!ep || !result || result.outcome!=='allWinnersTopAllStar')return;
+  document.querySelectorAll('[data-all-winners-block-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+    const blockedId=btn.dataset.allWinnersBlockChoice;
+    if(blockedId && typeof applyAllWinnersBlock==='function'){
+      applyAllWinnersBlock(result.survivorId, blockedId, ep);
+      result.blockedQueenId=blockedId;
+      ep.lipSyncResult=result;
+    }
+    ep.playerAllWinnersBlockChosen=true;
+    ep.waitingForAllWinnersBlockChoice=false;
+    saveGame();
+    if(!ep.statsApplied && typeof applyEpisodeStats==='function')applyEpisodeStats();
+    renderLipSyncResult(result);
+  }));
+}
+
 function renderLipSyncResult(result){
   const ep=gameState.currentEpisode;
   const isLegacy=getSeasonFormat()==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isAssassin=getSeasonFormat()==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isTournament=ep.special==='tournament_bracket';
-  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
-  const intro=(ep.special==='premiere_no_elim'||isLegacy||isTournament)?'Two top queens stand before me.':'Two queens stand before me.';
-  const prompt=isTournament
+  const isAllWinners=getSeasonFormat()==='all_winners';
+  const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
+  const intro=(ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'Two top queens stand before me.':'Two queens stand before me.';
+  const prompt=isAllWinners
+    ? "Ladies, this is your chance to become the Top All Star of the week and block one queen. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
+    : isTournament
     ? "Ladies, this is your chance to win an extra tournament point. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (isLegacy
     ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
@@ -1262,14 +1327,18 @@ function renderLipSyncResult(result){
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', isTournament?'LIP SYNC FOR YOUR LEGACY':(isLegacy?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE')), (ep.special==='premiere_no_elim'||isLegacy||isTournament)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue"  style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', (isAllWinners||isTournament||isLegacy)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue"  style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
 </div>`;
+  const pendingAllWinnersBlock=result?.outcome==='allWinnersTopAllStar' && result.survivorId===gameState.playerQueenId && ep?.waitingForAllWinnersBlockChoice && !ep?.playerAllWinnersBlockChosen;
   document.querySelector('.screen').innerHTML=`${resultHero}
   ${introBlock}
   <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
   ${lipSyncDecisionCards(result)}
-  ${finalAmenCard()}
-  <button id="continue">Continue</button>`;
+  ${renderAllWinnersBlockChoice(result)}
+  ${pendingAllWinnersBlock?'':finalAmenCard()}
+  ${pendingAllWinnersBlock?'':'<button id="continue">Continue</button>'}`;
   scrollToTop();
-  document.querySelector('#continue').addEventListener('click',renderUntucked);
+  bindAllWinnersBlockChoice(result);
+  const continueBtn=document.querySelector('#continue');
+  if(continueBtn)continueBtn.addEventListener('click',renderUntucked);
 }

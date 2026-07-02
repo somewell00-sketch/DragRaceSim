@@ -2,14 +2,107 @@ function randomAmbition(){return Math.max(1,Math.min(5,Math.ceil(Math.random()*5
 
 function getSeasonFormat(){return gameState.season?.format || gameState.settings?.seasonFormat || 'regular';}
 function isTournamentFormat(format=getSeasonFormat()){return format==='tournament' || format==='brackets';}
-function isAllStarsFormat(format=getSeasonFormat()){return ['legacy','assassin','no_elimination','tournament','brackets'].includes(format);}
-function usesLegacyLipSync(format=getSeasonFormat()){return ['legacy','no_elimination','tournament','brackets'].includes(format);}
+function isAllStarsFormat(format=getSeasonFormat()){return ['legacy','assassin','no_elimination','tournament','brackets','all_winners'].includes(format);}
+function usesLegacyLipSync(format=getSeasonFormat()){return ['legacy','no_elimination','tournament','brackets','all_winners'].includes(format);}
 function usesGroupVote(format=getSeasonFormat()){return format==='assassin' || isTournamentFormat(format);}
 function hasEliminationsDuringSeason(format=getSeasonFormat()){return format==='regular' || format==='legacy' || format==='assassin' || isTournamentFormat(format);}
 function hasMissCongeniality(format=getSeasonFormat()){return format==='regular';}
 
 function isLegacyCompetitiveEpisode(ep){
   return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
+}
+
+
+function ensureAllWinnersQueenState(q){
+  if(!q)return q;
+  if(typeof q.legendStars!=='number')q.legendStars=Number(q.legendStars)||0;
+  q.blocked=!!q.blocked;
+  if(typeof q.blockedBy==='undefined')q.blockedBy=null;
+  if(typeof q.blocksReceived!=='number')q.blocksReceived=Number(q.blocksReceived)||0;
+  if(typeof q.blocksGiven!=='number')q.blocksGiven=Number(q.blocksGiven)||0;
+  return q;
+}
+function ensureAllWinnersState(){
+  if(getSeasonFormat()!=='all_winners')return;
+  (gameState.queens||[]).forEach(ensureAllWinnersQueenState);
+  gameState.season.currentBlockedQueen=gameState.season.currentBlockedQueen||null;
+}
+function compareAllWinnersRanking(a,b){
+  const as=a.statistics||{}, bs=b.statistics||{};
+  return (Number(b.legendStars)||0)-(Number(a.legendStars)||0)
+    || ((bs.wins||0)+(bs.highs||0))-((as.wins||0)+(as.highs||0))
+    || trackRecordScore(b)-trackRecordScore(a)
+    || String(a.name||'').localeCompare(String(b.name||''));
+}
+function allWinnersRankedQueens(){ensureAllWinnersState(); return [...(gameState.queens||[])].sort(compareAllWinnersRanking);}
+function allWinnersStarLine(q){const n=Number(q?.legendStars)||0; return `${n>0?'⭐'.repeat(Math.min(n,10))+' ':''}${q?.name||'Queen'}${n>10?` (${n})`:''}`;}
+function allWinnersScoreboardText(){return ['Legendary Legend Stars', ...allWinnersRankedQueens().map(allWinnersStarLine)].join('\n');}
+function chooseAllWinnersBlockTarget(blockerId, immuneIds=[]){
+  ensureAllWinnersState();
+  const blocker=gameState.queens.find(q=>q.id===blockerId);
+  const immuneSet=new Set([blockerId, ...(immuneIds||[])]);
+  // In All Winners, both Top 2 queens are protected from the Secret Silver Plunger.
+  // The lip sync winner cannot block herself, and she cannot block the other Top 2 queen.
+  const candidates=(gameState.queens||[]).filter(q=>!immuneSet.has(q.id) && !q.isAssassin && !q.isEliminated);
+  if(!blocker || !candidates.length)return null;
+  const unblocked=candidates.filter(q=>!q.blocked);
+  const pool=unblocked.length?unblocked:candidates;
+  const scored=pool.map(q=>{
+    const rel=gameState.relationships?.[blockerId]?.[q.id]||{};
+    const affinity=Number(rel.affinity)||0;
+    const st=q.statistics||{};
+    const threat=(Number(q.legendStars)||0)*30 + (st.wins||0)*12 + (st.highs||0)*5;
+    const rivalry=affinity<0?Math.abs(affinity)*0.8:-(affinity*0.45);
+    return {id:q.id,score:threat+rivalry+rand(-8,8)};
+  }).sort((a,b)=>b.score-a.score);
+  return scored[0]?.id||pool[0]?.id||null;
+}
+function allWinnersBlockCandidates(blockerId, immuneIds=[]){
+  ensureAllWinnersState();
+  const immuneSet=new Set([blockerId, ...(immuneIds||[])]);
+  const candidates=(gameState.queens||[]).filter(q=>!immuneSet.has(q.id) && !q.isAssassin && !q.isEliminated);
+  const unblocked=candidates.filter(q=>!q.blocked);
+  return (unblocked.length?unblocked:candidates).sort((a,b)=>{
+    return (Number(b.legendStars)||0)-(Number(a.legendStars)||0)
+      || ((b.statistics?.wins||0)+(b.statistics?.highs||0))-((a.statistics?.wins||0)+(a.statistics?.highs||0))
+      || String(a.name||'').localeCompare(String(b.name||''));
+  });
+}
+
+function applyAllWinnersBlock(blockerId, blockedId, ep){
+  const blocker=gameState.queens.find(q=>q.id===blockerId);
+  const blocked=gameState.queens.find(q=>q.id===blockedId);
+  if(!blocker || !blocked || blocker.id===blocked.id)return null;
+  ensureAllWinnersQueenState(blocker); ensureAllWinnersQueenState(blocked);
+  (gameState.queens||[]).forEach(q=>{q.blocked=false;});
+  blocked.blocked=true; blocked.blockedBy=blocker.id; blocked.blocksReceived+=1; blocker.blocksGiven+=1;
+  gameState.season.currentBlockedQueen=blocked.id;
+  if(typeof changeRelationship==='function'){
+    changeRelationship(blocked.id, blocker.id, -35, -6);
+    changeRelationship(blocker.id, blocked.id, -20, -3);
+    Object.entries(gameState.relationships?.[blocked.id]||{}).forEach(([allyId,rel])=>{if(allyId!==blocker.id && allyId!==blocked.id && (Number(rel.affinity)||0)>=25)changeRelationship(allyId, blocker.id, -5, 0);});
+  }
+  if(ep){ep.blockedQueenId=blocked.id; ep.blockedByQueenId=blocker.id; ep.blockText=`${blocker.name} blocks ${blocked.name} from receiving a Legendary Legend Star next week.`;}
+  return blocked;
+}
+function applyAllWinnersStarsForEpisode(ep){
+  if(getSeasonFormat()!=='all_winners' || !ep || ep.allWinnersStarsApplied)return;
+  ensureAllWinnersState();
+  const blockedAtStart=ep.blockedQueenAtStart||null;
+  const lipWinnerId=ep.lipSyncResult?.survivorId||null;
+  const starAwards=[];
+  (ep.top2Queens||[]).forEach(id=>{
+    const q=gameState.queens.find(x=>x.id===id); if(!q)return;
+    const amount=(ep.number===11 && id===lipWinnerId)?3:1;
+    const blocked=id===blockedAtStart;
+    if(!blocked)q.legendStars=(Number(q.legendStars)||0)+amount;
+    starAwards.push({queenId:id,amount:blocked?0:amount,blocked});
+  });
+  ep.allWinnersStarAwards=starAwards;
+  ep.allWinnersBlockedNoStar=starAwards.filter(a=>a.blocked).map(a=>a.queenId);
+  ep.allWinnersScoreboard=allWinnersScoreboardText();
+  ep.allWinnersStarsApplied=true;
+  if(ep.number===11){const ranked=allWinnersRankedQueens(); gameState.season.allWinnersTop4=ranked.slice(0,4).map(q=>q.id); gameState.season.allWinnersSecondary4=ranked.slice(4,8).map(q=>q.id);}
 }
 
 function bottomPerformanceRankScore(bottomId, bottomIds){
@@ -70,6 +163,7 @@ function createLipSyncAssassin(){
 }
 function getDefaultRegularCastSizes(){return [8,9,10,11,12,13,14,15,16];}
 function getAllowedCastSizes(format='regular'){
+  if(format==='all_winners')return [8];
   if(isTournamentFormat(format))return [18];
   if(format==='assassin')return [8,9,10,11,12];
   if(['legacy','no_elimination'].includes(format))return [8,9,10];
@@ -77,7 +171,7 @@ function getAllowedCastSizes(format='regular'){
 }
 function normalizeSeasonFormat(format){
   if(format==='brackets')return 'tournament';
-  return ['regular','legacy','assassin','no_elimination','tournament'].includes(format)?format:'regular';
+  return ['regular','legacy','assassin','no_elimination','tournament','all_winners'].includes(format)?format:'regular';
 }
 function resolveCastSizeForFormat(castSize, format='regular'){
   const allowed=getAllowedCastSizes(format);
@@ -88,6 +182,7 @@ function resolveCastSizeForFormat(castSize, format='regular'){
 }
 function getEpisodeQueenIds(){
   const format=getSeasonFormat();
+  if(format==='all_winners')return (gameState.queens||[]).map(q=>q.id);
   if(isTournamentFormat(format) && gameState.season?.brackets && gameState.season.brackets.stage!=='final'){
     const group=gameState.season.brackets.currentGroup;
     return (gameState.season.brackets.groups?.[group]||[]).filter(id=>!gameState.queens.find(q=>q.id===id)?.isEliminated);
@@ -158,8 +253,8 @@ function resolveVoteResult(votesByQueenId, tieBreakerQueenId, bottomIds=[]){
   if(tieBreakerChoice && tiedIds.includes(tieBreakerChoice))return tieBreakerChoice;
   return tiedIds[0];
 }
-function createQueenFromForm(form){return {id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,location:form.location||window.currentUserCommunityLocation||'Unknown City, XXX',isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
-function hydrateQueen(q){return {...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
+function createQueenFromForm(form){return {legendStars:0,blocked:false,blockedBy:null,blocksReceived:0,blocksGiven:0,id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,location:form.location||window.currentUserCommunityLocation||'Unknown City, XXX',isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
+function hydrateQueen(q){return {legendStars:0,blocked:false,blockedBy:null,blocksReceived:0,blocksGiven:0,...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
 function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7}));}
 function randomizeAttributes(base){
   const randomized={};
@@ -670,18 +765,13 @@ function finishTournamentGroupIfNeeded(){
 }
 
 async function startSeason(playerQueen, castSize='random', seasonFormat='regular'){
-  console.trace('[START SEASON]', {
-    castSize,
-    format
-  });
-
   const data=gameState.data;
 
   resetState();
   gameState.data=data;
 
   const format=normalizeSeasonFormat(seasonFormat);
-  const resolvedCastSize=resolveCastSizeForFormat(castSize,format);
+  const resolvedCastSize=resolveCastSizeForFormat(format==='all_winners'?8:castSize,format);
 
   gameState.settings.castSize=resolvedCastSize;
   gameState.settings.seasonFormat=format;
@@ -709,7 +799,7 @@ async function startSeason(playerQueen, castSize='random', seasonFormat='regular
 
   gameState.queens=shuffle([playerQueen,...communityQueens,...cast]);
 
-  const finaleSize=pickFinaleSize(gameState.queens.length);
+  const finaleSize=format==='all_winners'?4:pickFinaleSize(gameState.queens.length);
 
   gameState.season={
     number:1,
@@ -717,6 +807,7 @@ async function startSeason(playerQueen, castSize='random', seasonFormat='regular
     format,
     finaleSize,
     originalCastSize:gameState.queens.length,
+    episodeCount:format==='all_winners'?12:null,
     returnTwist:initializeReturnTwist(format),
     returnAnnouncement:null,
     doubleShantayUsed:false,
@@ -728,9 +819,14 @@ async function startSeason(playerQueen, castSize='random', seasonFormat='regular
     lalaparuzaChecked:false,
     reunionDone:false,
     reunionChecked:false,
-    usedRunwayActions:[]
+    usedRunwayActions:[],
+    currentBlockedQueen:null,
+    allWinnersTop4:[],
+    allWinnersSecondary4:[],
+    allWinnersSecondaryWinnerId:null
   };
 
+  if(format==='all_winners')gameState.queens.forEach(ensureAllWinnersQueenState);
   if(isTournamentFormat(format))gameState.season.brackets=initializeTournamentBrackets();
 
   setupPremiereStructure();
@@ -757,6 +853,11 @@ function resetQueenForNewSeason(q, isPlayer=false){
   clean.confessionals=[];
   clean.performanceArc=null;
   clean.tournamentPoints=0;
+  clean.legendStars=0;
+  clean.blocked=false;
+  clean.blockedBy=null;
+  clean.blocksReceived=0;
+  clean.blocksGiven=0;
   delete clean.placement;
   delete clean.trackRecord;
   delete clean.finalPlacement;
@@ -806,15 +907,17 @@ async function startAllStarsSeasonFromCurrent(format){
   resetState();
   gameState.data=data;
   const normalized=normalizeSeasonFormat(format);
-  const resolvedCastSize=resolveCastSizeForFormat('random',normalized);
+  const resolvedCastSize=resolveCastSizeForFormat(normalized==='all_winners'?8:'random',normalized);
   gameState.settings.castSize=resolvedCastSize;
   gameState.settings.seasonFormat=normalized;
   gameState.playerQueenId=nextPlayer.id;
   const neededNpc=Math.max(0,resolvedCastSize-1-nextReturning.length);
   const cast=buildNpcCastExact(neededNpc);
   gameState.queens=shuffle([nextPlayer,...nextReturning,...cast]);
-  const finaleSize=pickFinaleSize(gameState.queens.length);
-  gameState.season={number:2,status:isTournamentFormat(normalized)?'tournament_entrance':'entrance',format:normalized,allStarsInvitation:true,finaleSize,originalCastSize:gameState.queens.length,returnTwist:initializeReturnTwist(normalized),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[]};
+  const finaleSize=normalized==='all_winners'?4:pickFinaleSize(gameState.queens.length);
+  gameState.season={number:2,status:isTournamentFormat(normalized)?'tournament_entrance':'entrance',format:normalized,allStarsInvitation:true,finaleSize,originalCastSize:gameState.queens.length,
+    episodeCount:normalized==='all_winners'?12:null,returnTwist:initializeReturnTwist(normalized),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[],currentBlockedQueen:null,allWinnersTop4:[],allWinnersSecondary4:[],allWinnersSecondaryWinnerId:null};
+  if(normalized==='all_winners')gameState.queens.forEach(ensureAllWinnersQueenState);
   if(isTournamentFormat(normalized))gameState.season.brackets=initializeTournamentBrackets();
   setupPremiereStructure();
   gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize);
@@ -905,6 +1008,7 @@ function requiredChallengeForActiveCount(activeCount){
 function pickChallengeByRules(activeCount){
   const challenges=gameState.data.challenges;
   const finaleSize=gameState.season?.finaleSize || 4;
+  const upcomingEpisodeNumber=(gameState.episodeHistory||[]).length+1;
   const requiredId=requiredChallengeForActiveCount(activeCount);
   if(requiredId){
     const required=challenges.find(c=>c.id===requiredId);
@@ -914,6 +1018,7 @@ function pickChallengeByRules(activeCount){
   const lastFamily=challengeFamily(last?.challengeType||last?.challengeName);
   let available=challenges.filter(c=>{
     if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
+    if(getSeasonFormat()==='all_winners' && c.id==='talent' && upcomingEpisodeNumber!==11)return false;
     if(c.id==='rumix' && activeCount!==finaleSize+1)return false;
     if(c.minQueens && activeCount<c.minQueens)return false;
     if(c.maxQueens && activeCount>c.maxQueens)return false;
@@ -1279,6 +1384,7 @@ function generateEpisode(){
   }
   const tournamentFinalFirstEpisode=isTournamentFormat(getSeasonFormat()) && gameState.season?.brackets?.stage==='final' && !(gameState.episodeHistory||[]).some(h=>h.special!=='tournament_bracket');
   let challenge=inTournamentGroups?pickTournamentBracketChallenge():(tournamentFinalFirstEpisode?makeTalentChallenge():pickChallengeByRules(fullActiveCount));
+  if(getSeasonFormat()==='all_winners' && number===11)challenge=makeTalentChallenge();
   let premiereSpecial=null;
   if(premiereIds){
     const prem=gameState.season.premiere;
@@ -1343,6 +1449,7 @@ function generateEpisode(){
     judgingMode,
     snatchCharacters,
     participantIds:active.map(q=>q.id),
+    blockedQueenAtStart:getSeasonFormat()==='all_winners'?(gameState.season.currentBlockedQueen||null):null,
     special:inTournamentGroups?'tournament_bracket':(premiereSpecial? (premiereSpecial.noElim?'premiere_no_elim':'premiere') : null),
     tournamentBracket:inTournamentGroups?{group:gameState.season.brackets.currentGroup,episodeNumber:gameState.season.brackets.groupEpisodeNumber}:null,
     premiereSpecial,
@@ -1358,7 +1465,7 @@ function generateEpisode(){
   saveGame();
   return gameState.currentEpisode;
 }
-function isFinaleReady(){return gameState.queens.filter(q=>!q.isEliminated).length<=gameState.season.finaleSize;}
+function isFinaleReady(){if(getSeasonFormat()==='all_winners')return (gameState.episodeHistory||[]).filter(e=>e?.placements?.length).length>=11; return gameState.queens.filter(q=>!q.isEliminated).length<=gameState.season.finaleSize;}
 
 function trackRecordScore(q){
   // Finale history should respect wins first. Highs support a record, but should not outrank a much stronger winner.
@@ -1511,8 +1618,30 @@ function makeFinalDuel(a,b,label='Final Lip Sync'){
     loserId:loser.id
   };
 }
+
+function prepareAllWinnersFinale(){
+  ensureAllWinnersState();
+  const ranked=allWinnersRankedQueens();
+  const top4=(gameState.season.allWinnersTop4?.length?gameState.season.allWinnersTop4:ranked.slice(0,4).map(q=>q.id));
+  const secondary=(gameState.season.allWinnersSecondary4?.length?gameState.season.allWinnersSecondary4:ranked.slice(4,8).map(q=>q.id));
+  const makeTournament=(ids,finalLabel)=>{
+    const qs=ids.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+    const d1=makeFinalDuel(qs[0],qs[1],'Semifinal 1');
+    const d2=makeFinalDuel(qs[2],qs[3],'Semifinal 2');
+    const f1=gameState.queens.find(q=>q.id===d1.winnerId), f2=gameState.queens.find(q=>q.id===d2.winnerId);
+    const fd=makeFinalDuel(f1,f2,finalLabel);
+    return {duels:[d1,d2],finalDuel:fd,winnerId:fd.winnerId};
+  };
+  const secondaryT=makeTournament(secondary,'Final');
+  const mainT=makeTournament(top4,'Grand Final');
+  const finale={format:'all_winners',finalistIds:top4,secondaryIds:secondary,events:[],duels:mainT.duels,finalDuel:mainT.finalDuel,winnerId:mainT.winnerId,runnerUpIds:[mainT.finalDuel.loserId],finalistOnlyIds:[...mainT.duels.map(d=>d.loserId)],thirdFourthIds:[...mainT.duels.map(d=>d.loserId)],secondaryDuels:secondaryT.duels,secondaryFinalDuel:secondaryT.finalDuel,secondaryWinnerId:secondaryT.winnerId};
+  gameState.season.allWinnersTop4=top4; gameState.season.allWinnersSecondary4=secondary; gameState.season.allWinnersSecondaryWinnerId=secondaryT.winnerId;
+  return finale;
+}
+
 function prepareFinale(){
   if(gameState.season.finale)return gameState.season.finale;
+  if(getSeasonFormat()==='all_winners'){const finale=prepareAllWinnersFinale(); gameState.season.status='finale'; gameState.season.finale=finale; saveGame(); return finale;}
   const finalists=gameState.queens.filter(q=>!q.isEliminated);
   const format=finalists.length>=4?sample(['top4_chosen','top4_lsfyc']):'top3_cut';
   const finale={format,finalistIds:finalists.map(q=>q.id),events:[],duels:[],finalDuel:null,winnerId:null,runnerUpIds:[],finalistOnlyIds:[],thirdFourthIds:[]};

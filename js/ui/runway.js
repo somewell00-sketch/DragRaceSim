@@ -322,12 +322,14 @@ function runwayWalkCard(p, placements, momentMap, opts={}){
 
 function runwaySafeDecisionBlock(ep, placements){
   if(ep?.special==='tournament_bracket')return '';
+  const isAllWinners=getSeasonFormat && getSeasonFormat()==='all_winners';
   const activeCount=gameState.queens.filter(q=>!q.isEliminated).length;
   const safeQueens=placements.filter(p=>p.placement==='SAFE');
   if(!safeQueens.length)return '';
   const safePortraits=`<div class="safe-portraits">${safeQueens.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return q?queenPortraitHtml(q,'sm'):'';}).join('')}</div>`;
   const safeLine=`${safePortraits}<p>${safeQueens.map(p=>{const q=gameState.queens.find(x=>x.id===p.queenId); return `<strong>${q?queenTeamNameHtml(q):escapeHtml(p.name)}</strong>`;}).join(', ')}</p>`;
-  return activeCount > 6 ? `<div class="card"><h3>I have made some decisions.</h3><p>Based on this week’s challenge and your runway presentation.</p><p>When I call your names, please step forward.</p>${safeLine}<p><strong>You are safe.</strong></p><p>You may untuck backstage.</p><p><strong>The rest of you represent the tops and bottoms of the week.</strong></p></div>` : '';
+  const critiqueLine=isAllWinners?'The rest of you represent the tops of the week.':'The rest of you represent the tops and bottoms of the week.';
+  return activeCount > 6 ? `<div class="card"><h3>I have made some decisions.</h3><p>Based on this week’s challenge and your runway presentation.</p><p>When I call your names, please step forward.</p>${safeLine}<p><strong>You are safe.</strong></p><p>You may untuck backstage.</p><p><strong>${critiqueLine}</strong></p></div>` : '';
 }
 
 function teamJudgingSummary(ep){
@@ -712,9 +714,11 @@ function renderJudgesCritiques(){
   const ep=gameState.currentEpisode;
   const placements=ep.placements;
   const isTournament=ep.special==='tournament_bracket';
-  const playerInBottom=!isTournament && ep.bottomQueens.includes(gameState.playerQueenId);
+  const isAllWinners=getSeasonFormat && getSeasonFormat()==='all_winners';
+  const playerInBottom=!isTournament && !isAllWinners && ep.bottomQueens.includes(gameState.playerQueenId);
   const lowQueens=placements.filter(p=>p.placement==='LOW');
   const winners=placements.filter(p=>p.placement==='WIN');
+  const top2Queens=placements.filter(p=>p.placement==='TOP2');
   const highs=placements.filter(p=>p.placement==='HIGH');
   const bottomSorted=placements.filter(p=>p.placement==='BTM').sort((a,b)=>a.score-b.score);
   const worst=bottomSorted[0];
@@ -738,6 +742,11 @@ function renderJudgesCritiques(){
       const names=nonWinners.map(qp=>escapeHtml(qp.name)).join(', ');
       bottomAnnouncements.push(`<p><strong>${names}</strong>, you remain in the bracket and will cast a point vote after the lip sync.</p>`);
     }
+  }else if(isAllWinners){
+    highs.slice().reverse().forEach(h=>topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===h.queenId),'xs')} <strong>${escapeHtml(h.name)}</strong>, you are safe.</p>`));
+    if(top2Queens.length){
+      topAnnouncements.push(`<p><strong>Condragulations, ${top2Queens.map(w=>escapeHtml(w.name)).join(' and ')}. You are the Top 2 All Stars of the week.</strong></p><p>You will lip sync for your legacy. The winner will become Top All Star of the Week and block one queen.</p>`);
+    }
   }else{
     highs.slice().reverse().forEach(h=>topAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===h.queenId),'xs')} <strong>${escapeHtml(h.name)}</strong>, you are safe.</p>`));
     if(winners.length===1){
@@ -754,11 +763,11 @@ function renderJudgesCritiques(){
     lowQueens.forEach(l=>bottomAnnouncements.push(`<p>${queenPortraitHtml(gameState.queens.find(q=>q.id===l.queenId),'xs')} <strong>${escapeHtml(l.name)}</strong>, you are safe.</p>`));
   }
   setHTML(`<main class="layout"><section class="screen">
-    <div class="hero"><span class="badge">Judges</span><h2>Judges’ Critiques</h2><p>${isTournament?'Every queen in this bracket receives critiques. Tonight is about points, not survival.':'The safe queens are backstage. The tops and bottoms remain on the main stage.'}</p></div>
+    <div class="hero"><span class="badge">Judges</span><h2>Judges’ Critiques</h2><p>${isTournament?'Every queen in this bracket receives critiques. Tonight is about points, not survival.':(isAllWinners?'The safe queens are backstage. The tops remain on the main stage.':'The safe queens are backstage. The tops and bottoms remain on the main stage.')}</p></div>
     <div class="card"><h3>Critiques</h3><div class="critique-list">${critiques}</div></div>
     ${judgeResponseBlock}
     <div class="card"><h3>Decisions</h3>${topAnnouncements.join('')}<hr class="decision-divider">${bottomAnnouncements.join('')}</div>
-    <button id="continue">${playerInBottom?'Go to the Lip Sync':'Watch the Lip Sync'}</button>
+    <button id="continue">${(isAllWinners||isTournament)?'Watch the Lip Sync':(playerInBottom?'Go to the Lip Sync':'Watch the Lip Sync')}</button>
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderJudgesCritiques));
   document.querySelectorAll('[data-judge]').forEach(btn=>btn.addEventListener('click',()=>{
