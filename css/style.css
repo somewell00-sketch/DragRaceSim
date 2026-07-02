@@ -938,13 +938,13 @@ button:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.2)}
   color:var(--muted);
 }
 .finale-section-heading:before,
-.finale-section-heading:after{
+/* .finale-section-heading:after{
   content:"";
   height:1px;
   flex:1;
   max-width:180px;
   background:linear-gradient(90deg,transparent,var(--line),transparent);
-}
+} */ 
 .finale-finalists,
 .finale-results-grid{
   gap:18px !important;
@@ -4594,8 +4594,7 @@ body.perf-mode .talent-card h3{
   padding:13px 16px;
   border:1px solid rgba(234,216,228,.88);
   border-radius:20px;
-  background:rgba(255,255,255,.72);
-  box-shadow:0 10px 26px rgba(74,20,48,.07);
+  background:radial-gradient(circle at 12% 0%,rgba(215,47,134,.18),transparent 38%),    radial-gradient(circle at 95% 12%,rgba(124,58,237,.15),transparent 36%),    linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.025))!important;
 }
 .season-topbar-main{
   min-width:0;
