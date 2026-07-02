@@ -178,13 +178,17 @@ const SOCIAL_EVENTS = [
     playerText:'Ru enters early and asks you one pointed question.',
     effects:{production:2.4, performance:1, stress:4}
   },
-  {
-    id:'guest_mentor',
-    type:'production',
-    text:'The guest judge visits the workroom and gives the cast a few notes.',
-    playerText:'The guest judge gives you a note that unlocks the challenge a little.',
-    effects:{performance:2, production:1.25, fans:1.25}
-  },
+{
+  id:'guest_mentor',
+  type:'production',
+  text: Math.random() < 0.3
+    ? '{guestJudge} surprises the queens during Untucked and shares a few words.'
+    : '{guestJudge} visits the Workroom and gives the cast a few notes.',
+  playerText: Math.random() < 0.3
+    ? '{guestJudge} shares a few encouraging words with you during Untucked.'
+    : '{guestJudge} gives you a note that unlocks the challenge a little.',
+  effects:{performance:2, production:1.25, fans:1.25}
+},
   {
     id:'sabotage_light',
     type:'sabotage',
@@ -478,7 +482,12 @@ function isPlayerInCurrentEpisode(){
   return !!player && !player.isEliminated;
 }
 function fillSocialText(t, a, b){
-  return String(t||'').replace(/\{a\}/g,a?.name||'A queen').replace(/\{b\}/g,b?.name||'another queen');
+  const guestJudge = gameState.currentEpisode?.guestJudge?.name || 'the guest judge';
+
+  return String(t||'')
+    .replace(/\{a\}/g, a?.name || 'A queen')
+    .replace(/\{b\}/g, b?.name || 'another queen')
+    .replace(/\{guestJudge\}/g, guestJudge);
 }
 function generateWorkroomSocialEvents(){
   const ep=gameState.currentEpisode;
@@ -488,6 +497,7 @@ function generateWorkroomSocialEvents(){
   const events=[];
   const count=Math.random()<0.25?3:2;
   for(let i=0;i<count;i++){
+    const guestVisitLocation = Math.random() < 0.3 ? 'untucked' : 'workroom';
     const ev=sample(SOCIAL_EVENTS);
     const others=shuffle(active.filter(q=>q.id!==player.id));
     const involvesPlayer=isPlayerInCurrentEpisode() && Math.random()<0.45;
@@ -496,10 +506,33 @@ function generateWorkroomSocialEvents(){
     if(involvesPlayer && player && others.length){
       a=others[0]; b=player;
       text=fillSocialText(ev.playerText||ev.text,a,b);
+      if (ev.id === 'guest_mentor') {
+  text = text.replace(
+    'visits the workroom',
+    guestVisitLocation === 'untucked'
+      ? 'joins the queens during Untucked'
+      : 'visits the Workroom'
+  );
+
+  text = text.replace(
+    'gives you a note that unlocks the challenge a little.',
+    guestVisitLocation === 'untucked'
+      ? 'shares a few encouraging words with you during Untucked.'
+      : 'gives you a note that unlocks the challenge a little.'
+  );
+}
       applyPlayerEffects(ev.effects,text,a.id);
       ensureEpisodeEffects().socialEventNotes.push(text);
     } else {
       text=fillSocialText(ev.text,a,b);
+      if (ev.id === 'guest_mentor') {
+  text = text.replace(
+    'visits the workroom',
+    guestVisitLocation === 'untucked'
+      ? 'joins the queens during Untucked'
+      : 'visits the Workroom'
+  );
+}
       if(a&&b&&a.id!==b.id){
         if(ev.type==='help'||ev.type==='alliance'||ev.type==='emotion'){changeRelationship(a.id,b.id,12,5);changeRelationship(b.id,a.id,9,3);}
         if(ev.type==='conflict'||ev.type==='sabotage'){changeRelationship(a.id,b.id,-13,-5);changeRelationship(b.id,a.id,-10,-3);}
