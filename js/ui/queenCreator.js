@@ -202,10 +202,9 @@ input.addEventListener('input',()=>{
 function renderSeasonInvitation(){
   const seasonFormats=(typeof SEASON_FORMATS!=='undefined' && Array.isArray(SEASON_FORMATS)) ? SEASON_FORMATS : [
     {id:'regular',name:'Regular Season'},
-    {id:'legacy',name:'Lip Sync for the Crown / Legacy'},
+    {id:'legacy',name:'Lip Sync Legacy'},
     {id:'assassin',name:'Lip Sync Assassin'},
     {id:'brackets',name:'Bracket Tournament'},
-    {id:'all_winners',name:'All Winners'}
   ];
   const formatOptions=seasonFormats.map(format=>`<option value="${format.id}" ${format.id==='regular'?'selected':''}>${format.name}</option>`).join('');
   const castOptions=castOptionsForFormat('regular');
