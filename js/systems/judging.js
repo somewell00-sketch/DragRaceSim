@@ -890,7 +890,7 @@ function calculateEpisodeResults(playerChoices={}){
     // should be felt directly. The runway attribute itself is still weighted by the
     // challenge's runwayWeight below, but choices like "Prioritize the runway" or
     // runway presentation moments are no longer diluted by that multiplier.
-    const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.15*10)/10;
+    const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.60*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
     const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
