@@ -378,6 +378,41 @@ function allStarsInvitationEligible(){
   const tags=(typeof seasonArcTags==='function')?seasonArcTags(player):[];
   return tags.includes('fan favorite') || tags.includes('production darling');
 }
+function allWinnersInvitationEligible(){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const format=(typeof getSeasonFormat==='function'?getSeasonFormat():gameState.season?.format);
+  return !!player && player.id===gameState.season?.winnerId && format!=='all_winners';
+}
+function renderAllWinnersInvite(){
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  setHTML(`<main class="screen">
+    <section class="hero finale-results-hero all-stars-invite-hero">
+      <span class="badge win">All Winners</span>
+      <h1>QUEEN OF ALL QUEENS AWAITS</h1>
+      ${player?`<div class="winner-portrait-wrap">${queenPortraitHtml(player,'xl','winner-portrait')}</div>`:''}
+      <p>You won the crown.</p>
+      <p>But there is one title left to claim:</p>
+      <p><strong>Queen of All Queens.</strong></p>
+      <div class="button-row">
+        <button id="acceptAllWinners" class="primary">Enter All Winners</button>
+        <button id="returnMainMenu" class="secondary">Return to Main Menu</button>
+      </div>
+    </section>
+  </main>`);
+  document.querySelector('#acceptAllWinners')?.addEventListener('click',async()=>{
+    const btn=document.querySelector('#acceptAllWinners');
+    try{
+      if(btn){btn.disabled=true; btn.textContent='Preparing All Winners cast...';}
+      await startAllStarsSeasonFromCurrent('all_winners');
+      renderEntrance();
+    }catch(err){
+      console.error(err);
+      alert('Could not start the All Winners season. Check the browser console for details.');
+      if(btn){btn.disabled=false; btn.textContent='Enter All Winners';}
+    }
+  });
+  document.querySelector('#returnMainMenu')?.addEventListener('click',()=>{clearSave(); resetState(); renderSeasonInvitation();});
+}
 function renderAllStarsInvite(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   setHTML(`<main class="screen">
@@ -1006,9 +1041,10 @@ function renderSummary(){
     <section class="card track-record-export-card" id="finalTrackRecordCard"><button type="button" class="track-record-download" id="downloadTrackRecord" title="Download Track Record" aria-label="Download Track Record" data-html2canvas-ignore="true">⬇️ Download</button><h2>Track Record</h2>${historyTable()}</section>
     ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}
     ${iconicLipSyncsTable()}
-    <div class="button-row"><button id="newGame">New season</button>${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
+    <div class="button-row"><button id="newGame">New season</button>${allWinnersInvitationEligible()?'<button id="allWinnersInvite" class="primary">Queen of All Queens Awaits</button>':''}${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
   </main>`);
   document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderSeasonInvitation();});
+  document.querySelector('#allWinnersInvite')?.addEventListener('click',renderAllWinnersInvite);
   document.querySelector('#allStarsInvite')?.addEventListener('click',renderAllStarsInvite);
   document.querySelector('#downloadTrackRecord')?.addEventListener('click',downloadFinalTrackRecord);
 }
