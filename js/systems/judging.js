@@ -1197,11 +1197,16 @@ function resolveLipSync(playerMoves=null, options={}){
         p.lipSyncWinner=(p.queenId===winner.queenId);
       }
     });
-    const shouldDeferPlayerBlock=!!options.deferAllWinnersPlayerBlock && winner.queenId===gameState.playerQueenId && !ep.playerAllWinnersBlockChosen;
-    const blockedId=shouldDeferPlayerBlock ? null : (typeof chooseAllWinnersBlockTarget==='function'?chooseAllWinnersBlockTarget(winner.queenId, ep.top2Queens||[]):null);
-    if(blockedId && typeof applyAllWinnersBlock==='function')applyAllWinnersBlock(winner.queenId, blockedId, ep);
-    ep.waitingForAllWinnersBlockChoice=!!shouldDeferPlayerBlock;
-    ep.lipSyncResult={song,results,outcome:'allWinnersTopAllStar',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],blockedQueenId:blockedId,difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10};
+    ep.lipSyncResult={song,results,outcome:'allWinnersTopAllStar',survivorId:winner.queenId,top2LoserId:loser?.queenId||null,eliminatedQueenId:null,eliminatedQueenIds:[],blockedQueenId:null,difference:Math.round(Math.abs(results[0].score10-results[1].score10)*10)/10};
+    if(typeof processAllWinnersGiftStars==='function'){
+      processAllWinnersGiftStars(ep, ep.lipSyncResult);
+    }else{
+      const shouldDeferPlayerBlock=!!options.deferAllWinnersPlayerBlock && winner.queenId===gameState.playerQueenId && !ep.playerAllWinnersBlockChosen;
+      const blockedId=shouldDeferPlayerBlock ? null : (typeof chooseAllWinnersBlockTarget==='function'?chooseAllWinnersBlockTarget(winner.queenId, ep.top2Queens||[]):null);
+      if(blockedId && typeof applyAllWinnersBlock==='function')applyAllWinnersBlock(winner.queenId, blockedId, ep);
+      ep.waitingForAllWinnersBlockChoice=!!shouldDeferPlayerBlock;
+      ep.lipSyncResult.blockedQueenId=blockedId;
+    }
     recordIconicLipSync(ep, ep.lipSyncResult);
     ep.eliminatedQueenId=null;
     saveGame();

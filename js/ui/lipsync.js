@@ -86,7 +86,9 @@ const assassinCards=assassinIntroCardsHtml(ep,bottom);
   } else if(pendingAssassinGroupVote){
     renderAssassinGroupVoteChoice(()=>{
       const result=resolveLipSync();
-      applyEpisodeStats();
+      if(!(result?.outcome==='allWinnersTopAllStar' && (gameState.currentEpisode?.waitingForAllWinnersStarChoice || gameState.currentEpisode?.waitingForAllWinnersBlockChoice))){
+        applyEpisodeStats();
+      }
       renderLipSyncResult(result);
     });
   } else if(playerInBottom){
@@ -98,7 +100,9 @@ const assassinCards=assassinIntroCardsHtml(ep,bottom);
     renderLipSyncResult(result);
   } else {
     const result=resolveLipSync();
-    applyEpisodeStats();
+    if(!(result?.outcome==='allWinnersTopAllStar' && (gameState.currentEpisode?.waitingForAllWinnersStarChoice || gameState.currentEpisode?.waitingForAllWinnersBlockChoice))){
+      applyEpisodeStats();
+    }
     renderLipSyncResult(result);
   }
 }
@@ -250,7 +254,7 @@ function renderLipSyncStrategyChoice(){
     const moves=lipSyncMovesFromStrategy(btn.dataset.strategy, gameState.currentEpisode.song);
     const isAllWinnersPlayerTop2=getSeasonFormat()==='all_winners' && (gameState.currentEpisode?.top2Queens||[]).includes(gameState.playerQueenId);
     const result=resolveLipSync(moves, {deferAllWinnersPlayerBlock:isAllWinnersPlayerTop2});
-    if(!(result?.outcome==='allWinnersTopAllStar' && result.survivorId===gameState.playerQueenId && gameState.currentEpisode?.waitingForAllWinnersBlockChoice)){
+    if(!(result?.outcome==='allWinnersTopAllStar' && (gameState.currentEpisode?.waitingForAllWinnersStarChoice || gameState.currentEpisode?.waitingForAllWinnersBlockChoice))){
       applyEpisodeStats();
     }
     renderLipSyncResult(result);
@@ -1216,8 +1220,15 @@ function lipSyncDecisionText(result){
       const amount=Number((typeof a.amount!=='undefined'?a.amount:a.stars)||0);
       return `<p><strong>${escapeHtml(q.name)}</strong> receives <strong>${amount}</strong> Legendary Legend Star${amount===1?'':'s'}.</p>`;
     }).filter(Boolean).join('');
+    const giftLines=(ep?.allWinnersGiftStars||[]).map(a=>{
+      const giver=gameState.queens.find(x=>x.id===a.giverId);
+      const target=gameState.queens.find(x=>x.id===a.targetId);
+      if(!giver || !target)return '';
+      return `<p><strong>${escapeHtml(giver.name)}</strong> awards an extra Legendary Legend Star to <strong>${escapeHtml(target.name)}</strong>.</p>`;
+    }).filter(Boolean).join('');
+    const giftIntro=(typeof isAllWinnersGiftStarEpisode==='function' && isAllWinnersGiftStarEpisode(ep)) ? `<p class="legacy-power-line"><strong>Tonight has one more twist.</strong> Each Top 2 queen must give one Legendary Legend Star to another queen.</p>` : '';
     const blockLine=blocked ? `<p><strong>${escapeHtml(winner?.name||'The Top All Star')}</strong> uses the Secret Silver Plunger to block <strong>${escapeHtml(blocked.name)}</strong> next week.</p>` : '';
-    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are the Top All Star of the Week.</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p>${starLines}${blockLine}`;
+    return `<p class="legacy-lipsync-win"><strong>${escapeHtml(winner?.name||'Winner')}.</strong><br><strong>You are the Top All Star of the Week.</strong></p><p class="legacy-lipsync-safe"><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p>${starLines}${giftIntro}${giftLines}${blockLine}`;
   }
   if(result.outcome==='legacyElimination'){
     const winner=gameState.queens.find(q=>q.id===result.survivorId);
@@ -1265,6 +1276,53 @@ function lipSyncDecisionText(result){
   const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
   const survivor=gameState.queens.find(q=>q.id===result.survivorId);
   return `<p><strong>${escapeHtml(survivor.name)}, Shantay, you stay.</strong></p><p><strong>${escapeHtml(eliminated.name)}</strong>, sashay away.</p>`;
+}
+
+
+function renderAllWinnersGiftStarChoice(result){
+  const ep=gameState.currentEpisode;
+  if(getSeasonFormat()!=='all_winners' || !ep || !result || result.outcome!=='allWinnersTopAllStar')return '';
+  if(!ep.waitingForAllWinnersStarChoice)return '';
+  const order=typeof allWinnersGiftStarOrder==='function'?allWinnersGiftStarOrder(ep,result):[];
+  const giverId=order.find(id=>id===gameState.playerQueenId && !(ep.allWinnersGiftStarChosenBy||{})[id]);
+  if(!giverId)return '';
+  const candidates=(typeof allWinnersGiftStarCandidates==='function'?allWinnersGiftStarCandidates(giverId, ep.top2Queens||[]):[]);
+  if(!candidates.length){
+    ep.allWinnersGiftStarChosenBy=ep.allWinnersGiftStarChosenBy||{};
+    ep.allWinnersGiftStarChosenBy[giverId]='__none__';
+    if(typeof processAllWinnersGiftStars==='function')processAllWinnersGiftStars(ep,result);
+    saveGame();
+    return '';
+  }
+  const giver=gameState.queens.find(q=>q.id===giverId);
+  const buttons=candidates.sort((a,b)=>{
+    return (Number(a.legendStars)||0)-(Number(b.legendStars)||0)
+      || String(a.name||'').localeCompare(String(b.name||''));
+  }).map(q=>{
+    const rel=gameState.relationships?.[giverId]?.[q.id]||{};
+    const affinity=Number(rel.affinity)||0;
+    const stars=Number(q.legendStars)||0;
+    const starText=stars>0?'⭐'.repeat(Math.min(stars,10))+(stars>10?` (${stars})`:''):'No stars';
+    const desc=`${starText} • affinity ${affinity>0?'+':''}${Math.round(affinity)}`;
+    return choiceButtonHtml({id:q.id,attr:'data-all-winners-gift-star-choice',label:`⭐ ${q.name}`,desc});
+  }).join('');
+  return `<div class="card decision-card important" id="allWinnersGiftStarChoice"><h3>Award a Legendary Legend Star</h3><p>This week, each Top 2 queen gives one extra Legendary Legend Star to another queen.</p><p><strong>${escapeHtml(giver?.name||'You')}</strong>, choose who receives your star.</p><p class="small">Top 2 queens cannot give stars to each other.</p><div class="options">${buttons}</div></div>`;
+}
+
+function bindAllWinnersGiftStarChoice(result){
+  const ep=gameState.currentEpisode;
+  if(!ep || !result || result.outcome!=='allWinnersTopAllStar')return;
+  document.querySelectorAll('[data-all-winners-gift-star-choice]').forEach(btn=>btn.addEventListener('click',()=>{
+    const targetId=btn.dataset.allWinnersGiftStarChoice;
+    if(targetId && typeof applyAllWinnersGiftStar==='function'){
+      applyAllWinnersGiftStar(gameState.playerQueenId,targetId,ep);
+    }
+    if(typeof processAllWinnersGiftStars==='function')processAllWinnersGiftStars(ep,result);
+    saveGame();
+    const stillWaiting=ep.waitingForAllWinnersStarChoice || ep.waitingForAllWinnersBlockChoice;
+    if(!stillWaiting && !ep.statsApplied && typeof applyEpisodeStats==='function')applyEpisodeStats();
+    renderLipSyncResult(ep.lipSyncResult||result);
+  }));
 }
 
 function renderAllWinnersBlockChoice(result){
@@ -1329,15 +1387,19 @@ function renderLipSyncResult(result){
   const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
   const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', (isAllWinners||isTournament||isLegacy)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue"  style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
 </div>`;
+  const pendingAllWinnersStar=result?.outcome==='allWinnersTopAllStar' && ep?.waitingForAllWinnersStarChoice;
   const pendingAllWinnersBlock=result?.outcome==='allWinnersTopAllStar' && result.survivorId===gameState.playerQueenId && ep?.waitingForAllWinnersBlockChoice && !ep?.playerAllWinnersBlockChosen;
+  const pendingAllWinnersChoice=pendingAllWinnersStar || pendingAllWinnersBlock;
   document.querySelector('.screen').innerHTML=`${resultHero}
   ${introBlock}
   <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
   ${lipSyncDecisionCards(result)}
+  ${renderAllWinnersGiftStarChoice(result)}
   ${renderAllWinnersBlockChoice(result)}
-  ${pendingAllWinnersBlock?'':finalAmenCard()}
-  ${pendingAllWinnersBlock?'':'<button id="continue">Continue</button>'}`;
+  ${pendingAllWinnersChoice?'':finalAmenCard()}
+  ${pendingAllWinnersChoice?'':'<button id="continue">Continue</button>'}`;
   scrollToTop();
+  bindAllWinnersGiftStarChoice(result);
   bindAllWinnersBlockChoice(result);
   const continueBtn=document.querySelector('#continue');
   if(continueBtn)continueBtn.addEventListener('click',renderUntucked);

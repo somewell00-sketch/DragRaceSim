@@ -69,6 +69,91 @@ function allWinnersBlockCandidates(blockerId, immuneIds=[]){
   });
 }
 
+
+function isAllWinnersGiftStarEpisode(ep){
+  return getSeasonFormat()==='all_winners' && ep && [5,10].includes(Number(ep.number));
+}
+function allWinnersGiftStarCandidates(giverId, top2Ids=[]){
+  ensureAllWinnersState();
+  const topSet=new Set(top2Ids||[]);
+  return (gameState.queens||[]).filter(q=>q && !q.isAssassin && !q.isEliminated && q.id!==giverId && !topSet.has(q.id));
+}
+function chooseAllWinnersGiftStarTarget(giverId, top2Ids=[]){
+  ensureAllWinnersState();
+  const giver=gameState.queens.find(q=>q.id===giverId);
+  const candidates=allWinnersGiftStarCandidates(giverId, top2Ids);
+  if(!giver || !candidates.length)return null;
+  const maxStars=Math.max(0,...(gameState.queens||[]).map(q=>Number(q.legendStars)||0));
+  const scored=candidates.map(q=>{
+    const rel=gameState.relationships?.[giverId]?.[q.id]||{};
+    const affinity=Number(rel.affinity)||0;
+    const st=q.statistics||{};
+    const behind=Math.max(0,maxStars-(Number(q.legendStars)||0));
+    const weakTrack=Math.max(0,4-((st.wins||0)*1.5+(st.highs||0)*0.75));
+    const score=(behind*24)+(weakTrack*6)+(affinity*0.55)+rand(-7,7);
+    return {id:q.id,score};
+  }).sort((a,b)=>b.score-a.score);
+  return scored[0]?.id||candidates[0]?.id||null;
+}
+function applyAllWinnersGiftStar(giverId, targetId, ep){
+  const giver=gameState.queens.find(q=>q.id===giverId);
+  const target=gameState.queens.find(q=>q.id===targetId);
+  if(!giver || !target || giver.id===target.id)return null;
+  const top2Ids=ep?.top2Queens||[];
+  if(top2Ids.includes(target.id))return null;
+  ensureAllWinnersQueenState(giver); ensureAllWinnersQueenState(target);
+  target.legendStars=(Number(target.legendStars)||0)+1;
+  ep.allWinnersGiftStars=ep.allWinnersGiftStars||[];
+  ep.allWinnersGiftStars.push({giverId:giver.id,targetId:target.id,amount:1});
+  ep.allWinnersGiftStarChosenBy=ep.allWinnersGiftStarChosenBy||{};
+  ep.allWinnersGiftStarChosenBy[giver.id]=target.id;
+  if(typeof changeRelationship==='function'){
+    changeRelationship(target.id,giver.id,18,3);
+    changeRelationship(giver.id,target.id,8,1);
+  }
+  return target;
+}
+function allWinnersGiftStarOrder(ep, result){
+  const loserId=result?.top2LoserId||null;
+  const winnerId=result?.survivorId||null;
+  return [loserId,winnerId].filter(Boolean);
+}
+function finishAllWinnersPostGiftBlock(ep,result){
+  if(!ep || !result || result.outcome!=='allWinnersTopAllStar')return result;
+  if(result.blockedQueenId || ep.waitingForAllWinnersBlockChoice)return result;
+  const winnerId=result.survivorId;
+  if(winnerId===gameState.playerQueenId && !ep.playerAllWinnersBlockChosen){
+    ep.waitingForAllWinnersBlockChoice=true;
+    result.blockedQueenId=null;
+  }else{
+    const blockedId=typeof chooseAllWinnersBlockTarget==='function'?chooseAllWinnersBlockTarget(winnerId, ep.top2Queens||[]):null;
+    if(blockedId && typeof applyAllWinnersBlock==='function')applyAllWinnersBlock(winnerId, blockedId, ep);
+    result.blockedQueenId=blockedId;
+    ep.waitingForAllWinnersBlockChoice=false;
+  }
+  ep.lipSyncResult=result;
+  return result;
+}
+function processAllWinnersGiftStars(ep,result){
+  if(!isAllWinnersGiftStarEpisode(ep) || !result || result.outcome!=='allWinnersTopAllStar')return finishAllWinnersPostGiftBlock(ep,result);
+  ep.allWinnersGiftStarChosenBy=ep.allWinnersGiftStarChosenBy||{};
+  const order=allWinnersGiftStarOrder(ep,result);
+  for(const giverId of order){
+    if(ep.allWinnersGiftStarChosenBy[giverId])continue;
+    if(giverId===gameState.playerQueenId){
+      ep.waitingForAllWinnersStarChoice=true;
+      result.waitingForAllWinnersStarChoice=true;
+      ep.lipSyncResult=result;
+      return result;
+    }
+    const targetId=chooseAllWinnersGiftStarTarget(giverId, ep.top2Queens||[]);
+    if(targetId)applyAllWinnersGiftStar(giverId,targetId,ep);
+  }
+  ep.waitingForAllWinnersStarChoice=false;
+  result.waitingForAllWinnersStarChoice=false;
+  return finishAllWinnersPostGiftBlock(ep,result);
+}
+
 function applyAllWinnersBlock(blockerId, blockedId, ep){
   const blocker=gameState.queens.find(q=>q.id===blockerId);
   const blocked=gameState.queens.find(q=>q.id===blockedId);
