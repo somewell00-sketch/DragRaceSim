@@ -50,7 +50,7 @@ const PREP_CHOICES = {
   rest: {
     label:'Protect your energy',
     description:'Recover now, even if the challenge gets less polish.',
-    effects:{performance:-2, energy:14, stress:-8, production:-1.2, queens:1.25, fans:0},
+    effects:{performance:-6, energy:14, stress:-8, production:-4, queens:1.25, fans:-1},
     text:'You take a breath and stop spiraling. The challenge may suffer, but your body thanks you.'
   }
 };
