@@ -189,21 +189,72 @@ async function saveCommunityQueen(queen) {
   return data?.[0] || null;
 }
 
-async function loadCommunityQueens(limit = 100) {
+function isTrueLike(value) {
+  return value === true || value === 1 || value === '1' || String(value || '').toLowerCase() === 'true';
+}
+
+function isMissingOrderColumnError(error) {
+  return /created_at|order|column/i.test(error?.message || '') || /created_at|order|column/i.test(error?.details || '');
+}
+
+async function runQueenTableQuery(tableName, limit = 100, queryBuilder = null, useCreatedAtOrder = true) {
+  let query = communityDb
+    .from(tableName)
+    .select('*');
+
+  if (useCreatedAtOrder) {
+    query = query.order('created_at', { ascending: false });
+  }
+
+  query = query.limit(limit);
+
+  if (typeof queryBuilder === 'function') {
+    query = queryBuilder(query);
+  }
+
+  return query;
+}
+
+async function loadQueensFromTable(tableName, limit = 100, queryBuilder = null) {
   if (!communityDb) return [];
 
-  const { data, error } = await communityDb
-    .from('community_queens')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  let { data, error } = await runQueenTableQuery(tableName, limit, queryBuilder, true);
+
+  // New/custom tables may not have created_at. Retry without ordering instead of
+  // silently falling back to generated queens.
+  if (error && isMissingOrderColumnError(error)) {
+    console.warn(`${tableName} could not be ordered by created_at; retrying without order:`, error);
+    ({ data, error } = await runQueenTableQuery(tableName, limit, queryBuilder, false));
+  }
 
   if (error) {
-    console.warn('Could not load community queens:', error);
+    console.warn(`Could not load queens from ${tableName}:`, error);
     return [];
   }
 
+  console.info(`[CAST DB] Loaded ${data?.length || 0} rows from ${tableName}.`);
   return data || [];
+}
+
+async function loadCommunityQueens(limit = 100) {
+  return loadQueensFromTable('community_queens', limit);
+}
+
+async function loadWinnerQueens(limit = 100) {
+  return loadQueensFromTable('winner_queens', limit);
+}
+
+async function loadCommunityWinnerQueens(limit = 100) {
+  const remoteFilteredRows = await loadQueensFromTable('community_queens', limit, query => query.eq('winner', true));
+
+  if (remoteFilteredRows.length) {
+    return remoteFilteredRows.filter(row => isTrueLike(row?.winner));
+  }
+
+  // If the filter returns nothing because the column is missing from the API
+  // schema cache or values are stored differently, fetch locally and filter.
+  const allRows = await loadCommunityQueens(limit);
+  return allRows.filter(row => isTrueLike(row?.winner));
 }
 
 
@@ -230,13 +281,13 @@ async function loadEligibleCommunityQueens(options = {}) {
   ));
 }
 
-function convertCommunityQueenToGameQueen(row, index = 0) {
+function convertCommunityQueenToGameQueen(row, index = 0, sourcePrefix = 'community') {
   const safeName = String(row?.name || `Community Queen ${index + 1}`).trim() || `Community Queen ${index + 1}`;
   const safeType = row?.drag_type || row?.type || 'Jack of All Trades';
   const safePersonality = row?.personality || row?.personalityId || 'confident';
 
   return hydrateQueen({
-    id: slugifyQueenName(safeName, `community_${row?.id || index}`),
+    id: slugifyQueenName(safeName, `${sourcePrefix}_${row?.id || index}`),
     name: safeName,
     type: safeType,
     personalityId: safePersonality,
@@ -255,6 +306,8 @@ function convertCommunityQueenToGameQueen(row, index = 0) {
 
 window.saveCommunityQueen = saveCommunityQueen;
 window.loadCommunityQueens = loadCommunityQueens;
+window.loadWinnerQueens = loadWinnerQueens;
+window.loadCommunityWinnerQueens = loadCommunityWinnerQueens;
 window.convertCommunityQueenToGameQueen = convertCommunityQueenToGameQueen;
 window.loadEligibleCommunityQueens = loadEligibleCommunityQueens;
 window.normalizeCommunityLocation = normalizeCommunityLocation;

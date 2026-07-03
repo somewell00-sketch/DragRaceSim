@@ -321,6 +321,59 @@ function buildNpcCastExact(count){
   for(let i=1;i<=needed;i++) cast.push(makeGeneratedQueen(i, usedNames));
   return cast;
 }
+function uniqueQueensByName(rows, blockedNames = new Set()) {
+  const seen = new Set([...blockedNames].map(name => String(name || '').trim().toLowerCase()).filter(Boolean));
+  return (rows || []).filter(row => {
+    const name = String(row?.name || '').trim();
+    const key = name.toLowerCase();
+    if (!name || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+async function buildAllWinnersCast(playerQueen) {
+  const blockedNames = new Set([playerQueen?.name]);
+  let winnerQueens = [];
+  let communityWinnerQueens = [];
+
+  try {
+    if (typeof loadWinnerQueens === 'function' && typeof convertCommunityQueenToGameQueen === 'function') {
+      winnerQueens = uniqueQueensByName(await loadWinnerQueens(250), blockedNames)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 6)
+        .map((q, i) => convertCommunityQueenToGameQueen(q, i, 'winner'));
+    }
+  } catch (err) {
+    console.warn('Could not load winner queens for All Winners cast:', err);
+    winnerQueens = [];
+  }
+
+  winnerQueens.forEach(q => blockedNames.add(q.name));
+
+  try {
+    if (typeof loadCommunityWinnerQueens === 'function' && typeof convertCommunityQueenToGameQueen === 'function') {
+      communityWinnerQueens = uniqueQueensByName(await loadCommunityWinnerQueens(250), blockedNames)
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 1)
+        .map((q, i) => convertCommunityQueenToGameQueen(q, i, 'community_winner'));
+    }
+  } catch (err) {
+    console.warn('Could not load community winner queen for All Winners cast:', err);
+    communityWinnerQueens = [];
+  }
+
+  const neededFallback = Math.max(0, 8 - 1 - winnerQueens.length - communityWinnerQueens.length);
+  if (neededFallback > 0) {
+    console.warn(`[ALL WINNERS CAST] Database returned ${winnerQueens.length}/6 winner_queens and ${communityWinnerQueens.length}/1 community winner. Generating ${neededFallback} fallback queen(s). Check table name, public SELECT/RLS policy, and columns.`);
+  } else {
+    console.info('[ALL WINNERS CAST] Cast loaded from winner_queens/community_queens successfully.');
+  }
+  const fallbackCast = buildNpcCastExact(neededFallback);
+
+  return shuffle([playerQueen, ...winnerQueens, ...communityWinnerQueens, ...fallbackCast]);
+}
+
 function pickFinaleSize(castSize){
   // 8-9 queen seasons are tighter and end at Top 3. Larger seasons mostly end at Top 4,
   // but Top 3 finales remain possible so all finale formats can appear across seasons.
@@ -777,27 +830,31 @@ async function startSeason(playerQueen, castSize='random', seasonFormat='regular
   gameState.settings.seasonFormat=format;
   gameState.playerQueenId=playerQueen.id;
 
-  let communityQueens=[];
+  if(format==='all_winners'){
+    gameState.queens=await buildAllWinnersCast(playerQueen);
+  }else{
+    let communityQueens=[];
 
-  try{
-    if(typeof loadCommunityQueens==='function' && typeof convertCommunityQueenToGameQueen==='function'){
-      const wanted=Math.random()<0.5?1:2;
-      const savedQueens=await loadCommunityQueens(100);
-      communityQueens=savedQueens
-        .filter(q=>q.name && q.name!==playerQueen.name)
-        .sort(()=>Math.random()-0.5)
-        .slice(0,wanted)
-        .map((q,i)=>convertCommunityQueenToGameQueen(q,i));
+    try{
+      if(typeof loadCommunityQueens==='function' && typeof convertCommunityQueenToGameQueen==='function'){
+        const wanted=Math.random()<0.5?1:2;
+        const savedQueens=await loadCommunityQueens(100);
+        communityQueens=savedQueens
+          .filter(q=>q.name && q.name!==playerQueen.name)
+          .sort(()=>Math.random()-0.5)
+          .slice(0,wanted)
+          .map((q,i)=>convertCommunityQueenToGameQueen(q,i));
+      }
+    }catch(err){
+      console.warn('Could not load community queens for cast:',err);
+      communityQueens=[];
     }
-  }catch(err){
-    console.warn('Could not load community queens for cast:',err);
-    communityQueens=[];
+
+    const neededNpc=Math.max(0,resolvedCastSize-1-communityQueens.length);
+    const cast=buildNpcCastExact(neededNpc);
+
+    gameState.queens=shuffle([playerQueen,...communityQueens,...cast]);
   }
-
-  const neededNpc=Math.max(0,resolvedCastSize-1-communityQueens.length);
-  const cast=buildNpcCastExact(neededNpc);
-
-  gameState.queens=shuffle([playerQueen,...communityQueens,...cast]);
 
   const finaleSize=format==='all_winners'?4:pickFinaleSize(gameState.queens.length);
 
@@ -911,9 +968,13 @@ async function startAllStarsSeasonFromCurrent(format){
   gameState.settings.castSize=resolvedCastSize;
   gameState.settings.seasonFormat=normalized;
   gameState.playerQueenId=nextPlayer.id;
-  const neededNpc=Math.max(0,resolvedCastSize-1-nextReturning.length);
-  const cast=buildNpcCastExact(neededNpc);
-  gameState.queens=shuffle([nextPlayer,...nextReturning,...cast]);
+  if(normalized==='all_winners'){
+    gameState.queens=await buildAllWinnersCast(nextPlayer);
+  }else{
+    const neededNpc=Math.max(0,resolvedCastSize-1-nextReturning.length);
+    const cast=buildNpcCastExact(neededNpc);
+    gameState.queens=shuffle([nextPlayer,...nextReturning,...cast]);
+  }
   const finaleSize=normalized==='all_winners'?4:pickFinaleSize(gameState.queens.length);
   gameState.season={number:2,status:isTournamentFormat(normalized)?'tournament_entrance':'entrance',format:normalized,allStarsInvitation:true,finaleSize,originalCastSize:gameState.queens.length,
     episodeCount:normalized==='all_winners'?12:null,returnTwist:initializeReturnTwist(normalized),returnAnnouncement:null,doubleShantayUsed:false,doubleSashayUsed:false,challengePlan:{},finale:null,iconicLipSyncs:[],lalaparuzaDone:false,lalaparuzaChecked:false,reunionDone:false,reunionChecked:false,usedRunwayActions:[],currentBlockedQueen:null,allWinnersTop4:[],allWinnersSecondary4:[],allWinnersSecondaryWinnerId:null};
@@ -923,10 +984,12 @@ async function startAllStarsSeasonFromCurrent(format){
   gameState.season.challengePlan=createSeasonChallengePlan(gameState.queens.length, gameState.season.finaleSize);
   initializePerformanceArcs();
   initializeRelationships();
-  nextReturning.forEach(r=>{
-    if(previousRelationships?.[nextPlayer.id]?.[r.id])gameState.relationships[nextPlayer.id][r.id]=previousRelationships[nextPlayer.id][r.id];
-    if(previousRelationships?.[r.id]?.[nextPlayer.id])gameState.relationships[r.id][nextPlayer.id]=previousRelationships[r.id][nextPlayer.id];
-  });
+  if(normalized!=='all_winners'){
+    nextReturning.forEach(r=>{
+      if(previousRelationships?.[nextPlayer.id]?.[r.id])gameState.relationships[nextPlayer.id][r.id]=previousRelationships[nextPlayer.id][r.id];
+      if(previousRelationships?.[r.id]?.[nextPlayer.id])gameState.relationships[r.id][nextPlayer.id]=previousRelationships[r.id][nextPlayer.id];
+    });
+  }
   if(typeof ensureAllSocialStats==='function')ensureAllSocialStats();
   saveGame();
 }
