@@ -870,7 +870,7 @@ function rollEventLuck(baseScore){
     label = 'Bad Luck';
     finalScore = baseScore >= 0
       ? baseScore * 0.75
-      : baseScore * 1.4;
+      : baseScore * 1.5;
   } else if (roll >= 16) {
     label = 'Good Luck';
     finalScore = baseScore >= 0
