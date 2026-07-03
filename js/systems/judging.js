@@ -850,7 +850,33 @@ function maybeApplyTripleBottomLipSync(ep,scored){
   ep.rupaulAnnouncement='RuPaul announces a Triple Bottom Lip Sync.';
   return true;
 }
+function rollEventLuck(baseScore){
+  const roll = Math.floor(Math.random() * 20) + 1;
 
+  let multiplier = 1;
+  let label = 'Normal';
+
+  if (roll === 1 && baseScore < 0) {
+    multiplier = 2;
+    label = 'Critical Failure';
+  } else if (roll === 20 && baseScore > 0) {
+    multiplier = 2;
+    label = 'Critical Success';
+  } else if (roll <= 5 && baseScore < 0) {
+    multiplier = 1.4;
+    label = 'Bad Luck';
+  } else if (roll >= 16 && baseScore > 0) {
+    multiplier = 1.4;
+    label = 'Good Luck';
+  }
+
+  return {
+    roll,
+    label,
+    baseScore,
+    finalScore: Math.round(baseScore * multiplier * 10) / 10
+  };
+}
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -881,8 +907,23 @@ function calculateEpisodeResults(playerChoices={}){
     const frontrunnerVolatility=frontrunnerVolatilityModifier(q,ep);
     const riskBonus=riskRoll(risk);
     const miniBonus=q.id===ep.miniWinnerId?3:0;
-    if(q.id!==gameState.playerQueenId && ep.eventRolls[q.id]===undefined) ep.eventRolls[q.id]=rand(-1.25,1.25);
-    const eventBonus=q.id===gameState.playerQueenId?(ep.event?.score||0):(ep.eventRolls[q.id]||0);
+    let eventBonus = 0;
+let eventLuck = null;
+
+if (q.id === gameState.playerQueenId) {
+  if (!ep.eventLuckRoll) {
+    ep.eventLuckRoll = rollEventLuck(ep.event?.score || 0);
+  }
+
+  eventLuck = ep.eventLuckRoll;
+  eventBonus = eventLuck.finalScore;
+} else {
+  if (ep.eventRolls[q.id] === undefined) {
+    ep.eventRolls[q.id] = rollEventLuck(rand(-1.25, 1.25)).finalScore;
+  }
+
+  eventBonus = ep.eventRolls[q.id] || 0;
+}
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
     const energyStressMod=queenEnergyStressMod(q);
     const effectSource=q.id===gameState.playerQueenId?playerEffects:qEffects;
@@ -897,7 +938,7 @@ function calculateEpisodeResults(playerChoices={}){
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
