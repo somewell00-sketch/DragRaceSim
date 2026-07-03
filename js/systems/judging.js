@@ -885,6 +885,13 @@ function rollEventLuck(baseScore){
     finalScore: Math.round(finalScore * 10) / 10
   };
 }
+function getLuckLabel(roll){
+  if (roll === 1) return "Total flop!";
+  if (roll <= 5) return "Meh";
+  if (roll <= 15) return "Safe play";
+  if (roll <= 19) return "Serving";
+  return "Gag Worthy!";
+}
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
