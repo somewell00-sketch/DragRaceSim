@@ -15,7 +15,7 @@ const WORKROOM_CHOICES = {
   observe: {
     label:'Observe first',
     description:'You stay quiet, read the room, and protect your focus.',
-    effects:{performance:1, energy:2, stress:-3, production:-1, queens:1, fans:0},
+    effects:{performance:1, energy:2, stress:-3, production:-4, queens:1, fans:0},
     text:'You sit back and watch. Less screen time, more information.'
   }
 };
@@ -30,7 +30,7 @@ const PREP_CHOICES = {
   runway: {
     label:'Prioritize the runway',
     description:'Boost your visual presentation but split your focus.',
-    effects:{performance:-2, runway:7, energy:-9, stress:4, production:1.25, queens:0, fans:3.8},
+    effects:{performance:-2, runway:10, energy:-9, stress:4, production:1.25, queens:0, fans:3.8},
     text:'You pour extra time into the look. The fantasy gets stronger, but the challenge gets less rehearsal.'
   },
   ask_help: {
