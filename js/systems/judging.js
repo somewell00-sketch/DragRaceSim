@@ -853,28 +853,36 @@ function maybeApplyTripleBottomLipSync(ep,scored){
 function rollEventLuck(baseScore){
   const roll = Math.floor(Math.random() * 20) + 1;
 
-  let multiplier = 1;
+  let finalScore = baseScore;
   let label = 'Normal';
 
-  if (roll === 1 && baseScore < 0) {
-    multiplier = 2;
+  if (roll === 1) {
     label = 'Critical Failure';
-  } else if (roll === 20 && baseScore > 0) {
-    multiplier = 2;
+    finalScore = baseScore >= 0
+      ? baseScore * 0.5
+      : baseScore * 2;
+  } else if (roll === 20) {
     label = 'Critical Success';
-  } else if (roll <= 5 && baseScore < 0) {
-    multiplier = 1.4;
+    finalScore = baseScore >= 0
+      ? baseScore * 2
+      : baseScore * 0.5;
+  } else if (roll <= 5) {
     label = 'Bad Luck';
-  } else if (roll >= 16 && baseScore > 0) {
-    multiplier = 1.4;
+    finalScore = baseScore >= 0
+      ? baseScore * 0.75
+      : baseScore * 1.4;
+  } else if (roll >= 16) {
     label = 'Good Luck';
+    finalScore = baseScore >= 0
+      ? baseScore * 1.4
+      : baseScore * 0.75;
   }
 
   return {
     roll,
     label,
     baseScore,
-    finalScore: Math.round(baseScore * multiplier * 10) / 10
+    finalScore: Math.round(finalScore * 10) / 10
   };
 }
 function calculateEpisodeResults(playerChoices={}){
@@ -885,6 +893,7 @@ function calculateEpisodeResults(playerChoices={}){
   const active=gameState.queens.filter(q=>!q.isEliminated && (!ep.participantIds || ep.participantIds.includes(q.id)));
   const seasonFormat=getSeasonFormat();
   if(!ep.runwayRolls) ep.runwayRolls={};
+  if(!ep.eventLuckRolls) ep.eventLuckRolls={};
   if(!ep.eventRolls) ep.eventRolls={};
   const scored=active.map(q=>{
     const qEffects=currentQueenEffects(q);
@@ -918,11 +927,12 @@ if (q.id === gameState.playerQueenId) {
   eventLuck = ep.eventLuckRoll;
   eventBonus = eventLuck.finalScore;
 } else {
-  if (ep.eventRolls[q.id] === undefined) {
-    ep.eventRolls[q.id] = rollEventLuck(rand(-1.25, 1.25)).finalScore;
+  if (ep.eventLuckRolls[q.id] === undefined) {
+    ep.eventLuckRolls[q.id] = rollEventLuck(rand(-1.25, 1.25));
   }
 
-  eventBonus = ep.eventRolls[q.id] || 0;
+  eventLuck = ep.eventLuckRolls[q.id];
+  eventBonus = eventLuck.finalScore;
 }
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
     const energyStressMod=queenEnergyStressMod(q);
