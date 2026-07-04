@@ -1783,5 +1783,324 @@ window.GAME_DATA.events = [
     "type": "judging",
     "text": "The guest judge cannot stop praising the jewelry.",
     "score": 2
+  },
+  {
+    "id": "michelle_contour_harsh",
+    "type": "judging",
+    "text": "Michelle winces and states the contour looks like a dirt smudge on the runway.",
+    "score": -2
+  },
+  {
+    "id": "michelle_contour_harsh_alt",
+    "type": "judging",
+    "text": "Michelle sighs deeply, pointing out that the harsh lighting exposes the unblended foundation.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_posture_slump",
+    "type": "judging",
+    "text": "RuPaul adjusts her own posture and remarks that the queen looks completely defeated on stage.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_posture_slump_alt",
+    "type": "judging",
+    "text": "RuPaul mentions that the lack of stage presence made the entire presentation vanish into thin air.",
+    "score": -2
+  },
+  {
+    "id": "carson_silhouette_disaster",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson shudders and claims the silhouette completely swallows the queen's natural shape.",
+    "score": -2
+  },
+  {
+    "id": "carson_silhouette_disaster_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson gasps in horror, asking if the belt was applied in the dark.",
+    "score": -2
+  },
+  {
+    "id": "michelle_eyeshadow_fallout",
+    "type": "judging",
+    "text": "Michelle points at her own face to signal eyeshadow fallout under the queen's eyes.",
+    "score": -1
+  },
+  {
+    "id": "michelle_eyeshadow_fallout_alt",
+    "type": "judging",
+    "text": "Michelle squints and suggests the chosen lip color washes out the queen’s complexion.",
+    "score": -1
+  },
+  {
+    "id": "ross_proportions",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross notes that the size of the handbag throws off the proportion of the entire look.",
+    "score": -1
+  },
+  {
+    "id": "ross_proportions_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross wonders aloud if smaller earrings would have let the queen's face breathe more.",
+    "score": -1
+  },
+  {
+    "id": "carson_shoe_clash",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson winces slightly, noting that the stilettos clash with the energy of the presentation.",
+    "score": -1
+  },
+  {
+    "id": "carson_shoe_clash_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson mentions that the choice of platform boots feels a bit heavy for the overall look.",
+    "score": -1
+  },
+  {
+    "id": "panel_wig_debate",
+    "type": "judging",
+    "text": "The panel enters a lengthy debate over whether the height of the wig was intentional.",
+    "score": 0
+  },
+  {
+    "id": "panel_wig_debate_alt",
+    "type": "judging",
+    "text": "The judges trade whispering glances, clearly divided on the asymmetry of the hair.",
+    "score": 0
+  },
+  {
+    "id": "guest_poker_face",
+    "type": "judging",
+    "text": "The guest judge maintains a perfect poker face while examining the queen's charisma.",
+    "score": 0
+  },
+  {
+    "id": "guest_poker_face_alt",
+    "type": "judging",
+    "text": "The guest judge nods slowly, offering a polite but unreadable expression toward the presentation.",
+    "score": 0
+  },
+  {
+    "id": "michelle_neutral_nail",
+    "type": "judging",
+    "text": "Michelle acknowledges the nail art but moves swiftly to the next topic without emotion.",
+    "score": 0
+  },
+  {
+    "id": "michelle_neutral_nail_alt",
+    "type": "judging",
+    "text": "Michelle shrugs slightly, stating the ring selection is acceptable but predictable.",
+    "score": 0
+  },
+  {
+    "id": "rupaul_chuckle_confidence",
+    "type": "judging",
+    "text": "RuPaul lets out a warm chuckle, praising the queen's radiating confidence on stage.",
+    "score": 1
+  },
+  {
+    "id": "rupaul_chuckle_confidence_alt",
+    "type": "judging",
+    "text": "RuPaul beams slightly, noting that the queen’s posture commanded the entire room.",
+    "score": 1
+  },
+  {
+    "id": "ross_gushes_details",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross gushes over how the crown catches the stage lights beautifully.",
+    "score": 1
+  },
+  {
+    "id": "ross_gushes_details_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross claps his hands together, delighted by the subtle precision of the nail art.",
+    "score": 1
+  },
+  {
+    "id": "carson_approves_glow",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson compliments the stunning placement of the blush and highlighter.",
+    "score": 1
+  },
+  {
+    "id": "carson_approves_glow_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson points out how the dramatic eyelashes perfectly frame the queen's expressions.",
+    "score": 1
+  },
+  {
+    "id": "rupaul_obsessed_wig",
+    "type": "judging",
+    "text": "RuPaul declares she is utterly obsessed with the flawless execution of the hairline.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_obsessed_wig_alt",
+    "type": "judging",
+    "text": "RuPaul stands up for a brief moment, blown away by the massive presence the queen brought to the stage.",
+    "score": 2
+  },
+  {
+    "id": "michelle_perfection",
+    "type": "judging",
+    "text": "Michelle gasps and calls the intricate jewelry placement absolute perfection.",
+    "score": 2
+  },
+  {
+    "id": "michelle_perfection_alt",
+    "type": "judging",
+    "text": "Michelle beams with pride, stating the makeup application is completely industry-standard.",
+    "score": 2
+  },
+  {
+    "id": "guest_speechless",
+    "type": "judging",
+    "text": "The guest judge is left completely speechless by the impeccable choice of shoes.",
+    "score": 2
+  },
+  {
+    "id": "guest_speechless_alt",
+    "type": "judging",
+    "text": "The guest judge raves that the queen's magnetic charisma gave them literal goosebumps.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_memory_lane_bad",
+    "type": "judging",
+    "text": "RuPaul goes on a 5-minute tangent about a 1980s club kid who did this look better, leaving the room cold.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_memory_lane_bad_alt",
+    "type": "judging",
+    "text": "RuPaul stares at the wig and starts singing an obscure disco track until the silence becomes painfully awkward.",
+    "score": -2
+  },
+  {
+    "id": "michelle_pun_savage",
+    "type": "judging",
+    "text": "Michelle makes a sharp pun about the shoe choice.",
+    "score": -2
+  },
+  {
+    "id": "michelle_pun_savage_alt",
+    "type": "judging",
+    "text": "Michelle delivers a dry one-liner about the makeup.",
+    "score": -2
+  },
+  {
+    "id": "ross_bad_pun",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross forces a dad joke about the jewelry that lands with a dull thud on the main stage.",
+    "score": -1
+  },
+  {
+    "id": "ross_bad_pun_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross rambles about his local grocery store trying to explain his feelings on the accessories.",
+    "score": -1
+  },
+  {
+    "id": "carson_fashion_rant",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson goes on a mini-rant about why he hates that specific heel height in modern fashion.",
+    "score": -1
+  },
+  {
+    "id": "carson_fashion_rant_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson makes a hyper-specific fashion joke that only RuPaul understands, leaving everyone else confused.",
+    "score": -1
+  },
+  {
+    "id": "panel_banter_loop",
+    "type": "judging",
+    "text": "RuPaul and Michelle get trapped in a loop of echoing each other's catchphrases.",
+    "score": 0
+  },
+  {
+    "id": "panel_banter_loop_alt",
+    "type": "judging",
+    "text": "The judges start throwing random rhymes back and forth based on the color of the eyeshadow.",
+    "score": 0
+  },
+  {
+    "id": "guest_awkward_joke",
+    "type": "judging",
+    "text": "The guest judge tries to make a joke about the hair accessory, but it requires a bit too much explanation.",
+    "score": 0
+  },
+  {
+    "id": "guest_awkward_joke_alt",
+    "type": "judging",
+    "text": "The guest judge uses a local slang word that makes RuPaul stop the critiques to ask what it means.",
+    "score": 0
+  },
+  {
+    "id": "rupaul_cackle_pun",
+    "type": "judging",
+    "text": "RuPaul makes a hilarious double entendre about the gloves and lets out her signature loud cackle.",
+    "score": 1
+  },
+  {
+    "id": "rupaul_cackle_pun_alt",
+    "type": "judging",
+    "text": "RuPaul hits the queen with a quick, witty pun about the lipstick that.",
+    "score": 1
+  },
+  {
+    "id": "carson_innuendo",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson drops a subtle, dirty joke about the silhouette that has Michelle hiding her face in her hands.",
+    "score": 1
+  },
+  {
+    "id": "carson_innuendo_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson uses a theatrical voice to praise the shoes, making the queen break character and smile.",
+    "score": 1
+  },
+  {
+    "id": "rupaul_inner_child",
+    "type": "judging",
+    "text": "RuPaul launches into an incredibly inspiring, funny story about her early days in New York that perfectly validates the queen's presentation.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_inner_child_alt",
+    "type": "judging",
+    "text": "RuPaul bounces off the queen's energy, creating an iconic, rapid-fire comedic banter that delights the entire room.",
+    "score": 2
+  },
+  {
+    "id": "ross_iconic_analogy",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross delivers one of his famous, wildly specific analogies about a 'local girl at a mall' that perfectly sums up why the look is genius.",
+    "score": 2
+  },
+  {
+    "id": "ross_iconic_analogy_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross starts a standing ovation at the judges' table after making a brilliant pun about the crown.",
+    "score": 2
   }
+  
 ];
