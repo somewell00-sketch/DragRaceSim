@@ -1044,661 +1044,7 @@ window.GAME_DATA.events = [
     "type": "runway",
     "text": "Your silhouette confuses the judges before you even pose.",
     "score": -1
-  },
-  {
-    "id": "michelle_nods",
-    "type": "judging",
-    "text": "Michelle nods like she knows exactly what you were trying to do.",
-    "score": 2
-  },
-  {
-    "id": "michelle_squints",
-    "type": "judging",
-    "text": "Michelle squints at one detail and your soul briefly leaves your body.",
-    "score": -1
-  },
-  {
-    "id": "rupaul_cackles",
-    "type": "judging",
-    "text": "RuPaul laughs so hard judging has to pause.",
-    "score": 3
-  },
-  {
-    "id": "rupaul_silent",
-    "type": "judging",
-    "text": "RuPaul is silent for long enough to become frightening.",
-    "score": -1
-  },
-  {
-    "id": "ross_gets_it",
-    "type": "judging",
-    "text": "Ross understands the exact joke you were making.",
-    "score": 2
-  },
-  {
-    "id": "ross_misses_it",
-    "type": "judging",
-    "text": "Ross misses your reference and the critique turns strange.",
-    "score": -1
-  },
-  {
-    "id": "carson_detail",
-    "type": "judging",
-    "text": "Carson notices one tiny detail you worked hard on.",
-    "score": 2
-  },
-  {
-    "id": "carson_tailoring",
-    "type": "judging",
-    "text": "Carson points out a tailoring issue you hoped was invisible.",
-    "score": -1
-  },
-  {
-    "id": "guest_confused",
-    "type": "judging",
-    "text": "The guest judge does not quite understand your concept.",
-    "score": -1
-  },
-  {
-    "id": "guest_quote",
-    "type": "judging",
-    "text": "The guest judge quotes your joke back to you.",
-    "score": 2
-  },
-  {
-    "id": "panel_debate",
-    "type": "judging",
-    "text": "The judges debate your placement longer than expected.",
-    "score": 0
-  },
-  {
-    "id": "clear_praise",
-    "type": "judging",
-    "text": "The judges praise you in a clear and specific way.",
-    "score": 2
-  },
-  {
-    "id": "vague_praise",
-    "type": "judging",
-    "text": "The judges praise you, but it sounds suspiciously safe.",
-    "score": 0
-  },
-  {
-    "id": "clear_critique",
-    "type": "judging",
-    "text": "The judges identify the exact weakness in your work.",
-    "score": -1
-  },
-  {
-    "id": "harsh_critique",
-    "type": "judging",
-    "text": "A critique lands harder than you expected.",
-    "score": -2
-  },
-  {
-    "id": "softened_critique",
-    "type": "judging",
-    "text": "A judge softens a critique because they see your effort.",
-    "score": 1
-  },
-  {
-    "id": "concept_applauded",
-    "type": "judging",
-    "text": "Your concept gets applause from the panel.",
-    "score": 2
-  },
-  {
-    "id": "concept_questioned",
-    "type": "judging",
-    "text": "The panel questions whether your concept came through.",
-    "score": -1
-  },
-  {
-    "id": "execution_praised",
-    "type": "judging",
-    "text": "The judges praise the execution more than the idea.",
-    "score": 1
-  },
-  {
-    "id": "idea_better_than_execution",
-    "type": "judging",
-    "text": "The judges like the idea more than the execution.",
-    "score": -1
-  },
-  {
-    "id": "brand_recognized",
-    "type": "judging",
-    "text": "The judges say they understand your drag brand better now.",
-    "score": 2
-  },
-  {
-    "id": "brand_confusion",
-    "type": "judging",
-    "text": "The judges say they are still not sure who you are.",
-    "score": -2
-  },
-  {
-    "id": "growth_noticed",
-    "type": "judging",
-    "text": "The judges notice your growth in the competition.",
-    "score": 2
-  },
-  {
-    "id": "plateau_warning",
-    "type": "judging",
-    "text": "The judges warn that you may be plateauing.",
-    "score": -1
-  },
-  {
-    "id": "risk_rewarded",
-    "type": "judging",
-    "text": "A risky choice gets rewarded by the panel.",
-    "score": 2
-  },
-  {
-    "id": "risk_punished",
-    "type": "judging",
-    "text": "A risky choice gets punished by the panel.",
-    "score": -2
-  },
-  {
-    "id": "safe_but_good",
-    "type": "judging",
-    "text": "The judges say you were good, but not memorable.",
-    "score": 0
-  },
-  {
-    "id": "almost_top",
-    "type": "judging",
-    "text": "The critiques suggest you were very close to the top.",
-    "score": 1
-  },
-  {
-    "id": "almost_bottom",
-    "type": "judging",
-    "text": "The critiques suggest you barely avoided disaster.",
-    "score": -1
-  },
-  {
-    "id": "tape_measure_betrayal",
-    "type": "workroom",
-    "text": "The tape measure gives you a number you are not emotionally prepared for.",
-    "score": -1
-  },
-  {
-    "id": "tape_measure_betrayal_alt",
-    "type": "workroom",
-    "text": "The tape measure gives you a number you are not emotionally prepared for.",
-    "score": -1
-  },
-  {
-    "id": "glamour_focus",
-    "type": "workroom",
-    "text": "A quiet minute at the mirror helps you lock into the fantasy.",
-    "score": 1
-  },
-  {
-    "id": "glamour_focus_alt",
-    "type": "workroom",
-    "text": "A quiet minute at the mirror helps you lock into the fantasy.",
-    "score": 1
-  },
-  {
-    "id": "fabric_queen",
-    "type": "workroom",
-    "text": "The fabric starts cooperating like it finally signed a contract.",
-    "score": 1
-  },
-  {
-    "id": "fabric_queen_alt",
-    "type": "workroom",
-    "text": "The fabric starts cooperating like it finally signed a contract.",
-    "score": 1
-  },
-  {
-    "id": "craft_panic",
-    "type": "workroom",
-    "text": "The craft table looks at you and chooses violence.",
-    "score": -1
-  },
-  {
-    "id": "craft_panic_alt",
-    "type": "workroom",
-    "text": "The craft table looks at you and chooses violence.",
-    "score": -1
-  },
-  {
-    "id": "rupaul_side_eye",
-    "type": "workroom",
-    "text": "RuPaul gives your station a side-eye that could be studied in schools.",
-    "score": -1
-  },
-  {
-    "id": "rupaul_side_eye_alt",
-    "type": "workroom",
-    "text": "RuPaul gives your station a side-eye that could be studied in schools.",
-    "score": -1
-  },
-  {
-    "id": "golden_scissors",
-    "type": "workroom",
-    "text": "You find the sharp scissors and suddenly feel powerful.",
-    "score": 1
-  },
-  {
-    "id": "golden_scissors_alt",
-    "type": "workroom",
-    "text": "Today, you find the sharp scissors and suddenly feel powerful.",
-    "score": 1
-  },
-  {
-    "id": "hot_glue_gospel",
-    "type": "workroom",
-    "text": "You preach the gospel of hot glue and somehow convert the room.",
-    "score": 1
-  },
-  {
-    "id": "hot_glue_gospel_alt",
-    "type": "workroom",
-    "text": "Today, you preach the gospel of hot glue and somehow convert the room.",
-    "score": 1
-  },
-  {
-    "id": "pattern_prayer",
-    "type": "workroom",
-    "text": "You say a small prayer over your pattern pieces.",
-    "score": 0
-  },
-  {
-    "id": "pattern_prayer_alt",
-    "type": "workroom",
-    "text": "Today, you say a small prayer over your pattern pieces.",
-    "score": 0
-  },
-  {
-    "id": "kiki_corner",
-    "type": "social",
-    "text": "A corner kiki turns into the best part of the morning.",
-    "score": 1
-  },
-  {
-    "id": "kiki_corner_alt",
-    "type": "social",
-    "text": "A corner kiki turns into the best part of the morning.",
-    "score": 1
-  },
-  {
-    "id": "chosen_family",
-    "type": "social",
-    "text": "A chosen-family conversation makes the competition feel less lonely.",
-    "score": 1
-  },
-  {
-    "id": "chosen_family_alt",
-    "type": "social",
-    "text": "A chosen-family conversation makes the competition feel less lonely.",
-    "score": 1
-  },
-  {
-    "id": "reading_light",
-    "type": "social",
-    "text": "A light read breaks the tension without hurting anyone.",
-    "score": 1
-  },
-  {
-    "id": "reading_light_alt",
-    "type": "social",
-    "text": "A light read breaks the tension without hurting anyone.",
-    "score": 1
-  },
-  {
-    "id": "reading_heavy",
-    "type": "social",
-    "text": "A read lands heavier than intended.",
-    "score": -1
-  },
-  {
-    "id": "reading_heavy_alt",
-    "type": "social",
-    "text": "A read lands heavier than intended.",
-    "score": -1
-  },
-  {
-    "id": "borrowed_blush",
-    "type": "social",
-    "text": "Borrowing blush becomes a tiny act of sisterhood.",
-    "score": 1
-  },
-  {
-    "id": "borrowed_blush_alt",
-    "type": "social",
-    "text": "Borrowing blush becomes a tiny act of sisterhood.",
-    "score": 1
-  },
-  {
-    "id": "side_eye_exchange",
-    "type": "social",
-    "text": "A silent side-eye exchange says more than words ever could.",
-    "score": 0
-  },
-  {
-    "id": "side_eye_exchange_alt",
-    "type": "social",
-    "text": "A silent side-eye exchange says more than words ever could.",
-    "score": 0
-  },
-  {
-    "id": "drag_crush",
-    "type": "social",
-    "text": "Someone admits a harmless drag crush and the room loses it.",
-    "score": 0
-  },
-  {
-    "id": "drag_crush_alt",
-    "type": "social",
-    "text": "Someone admits a harmless drag crush and the room loses it.",
-    "score": 0
-  },
-  {
-    "id": "trust_wobble",
-    "type": "social",
-    "text": "A tiny comment makes you question who you can trust.",
-    "score": -1
-  },
-  {
-    "id": "trust_wobble_alt",
-    "type": "social",
-    "text": "A tiny comment makes you question who you can trust.",
-    "score": -1
-  },
-  {
-    "id": "untucked_whisper",
-    "type": "drama",
-    "text": "A whisper in Untucked turns into a full investigation.",
-    "score": -1
-  },
-  {
-    "id": "untucked_whisper_alt",
-    "type": "drama",
-    "text": "A whisper in Untucked turns into a full investigation.",
-    "score": -1
-  },
-  {
-    "id": "safe_girl_speech",
-    "type": "drama",
-    "text": "A safe queen gives a speech like she just survived war.",
-    "score": 0
-  },
-  {
-    "id": "safe_girl_speech_alt",
-    "type": "drama",
-    "text": "A safe queen gives a speech like she just survived war.",
-    "score": 0
-  },
-  {
-    "id": "glass_clink_silence",
-    "type": "drama",
-    "text": "A glass clink happens at the exact wrong time and the room freezes.",
-    "score": 0
-  },
-  {
-    "id": "glass_clink_silence_alt",
-    "type": "drama",
-    "text": "A glass clink happens at the exact wrong time and the room freezes.",
-    "score": 0
-  },
-  {
-    "id": "mirror_message_shade",
-    "type": "drama",
-    "text": "An eliminated queen's mirror message contains one last piece of shade.",
-    "score": 0
-  },
-  {
-    "id": "mirror_message_shade_alt",
-    "type": "drama",
-    "text": "An eliminated queen's mirror message contains one last piece of shade.",
-    "score": 0
-  },
-  {
-    "id": "crying_in_liner",
-    "type": "drama",
-    "text": "Someone cries through perfect liner and the room respects the craft.",
-    "score": 0
-  },
-  {
-    "id": "crying_in_liner_alt",
-    "type": "drama",
-    "text": "Someone cries through perfect liner and the room respects the craft.",
-    "score": 0
-  },
-  {
-    "id": "petty_receipt",
-    "type": "drama",
-    "text": "A petty receipt appears and nobody is ready.",
-    "score": -1
-  },
-  {
-    "id": "petty_receipt_alt",
-    "type": "drama",
-    "text": "A petty receipt appears and nobody is ready.",
-    "score": -1
-  },
-  {
-    "id": "apology_hug",
-    "type": "drama",
-    "text": "An apology hug actually seems sincere.",
-    "score": 1
-  },
-  {
-    "id": "apology_hug_alt",
-    "type": "drama",
-    "text": "An apology hug actually seems sincere.",
-    "score": 1
-  },
-  {
-    "id": "delusion_balloon",
-    "type": "drama",
-    "text": "Someone's delusion inflates until the whole room can see it.",
-    "score": 0
-  },
-  {
-    "id": "delusion_balloon_alt",
-    "type": "drama",
-    "text": "Someone's delusion inflates until the whole room can see it.",
-    "score": 0
-  },
-  {
-    "id": "reaction_shot",
-    "type": "production",
-    "text": "Your reaction shot becomes the punctuation mark of the scene.",
-    "score": 1
-  },
-  {
-    "id": "reaction_shot_alt",
-    "type": "production",
-    "text": "Today, your reaction shot becomes the punctuation mark of the scene.",
-    "score": 1
-  },
-  {
-    "id": "producer_eyebrow",
-    "type": "production",
-    "text": "A producer raises one eyebrow and you immediately start explaining.",
-    "score": 0
-  },
-  {
-    "id": "producer_eyebrow_alt",
-    "type": "production",
-    "text": "A producer raises one eyebrow and you immediately start explaining.",
-    "score": 0
-  },
-  {
-    "id": "soundbite_flop",
-    "type": "production",
-    "text": "You try to make a catchphrase happen and it does not happen.",
-    "score": -1
-  },
-  {
-    "id": "soundbite_flop_alt",
-    "type": "production",
-    "text": "Today, you try to make a catchphrase happen and it does not happen.",
-    "score": -1
-  },
-  {
-    "id": "confessional_poetry",
-    "type": "production",
-    "text": "Your confessional accidentally becomes poetry.",
-    "score": 1
-  },
-  {
-    "id": "confessional_poetry_alt",
-    "type": "production",
-    "text": "Today, your confessional accidentally becomes poetry.",
-    "score": 1
-  },
-  {
-    "id": "villain_sting",
-    "type": "production",
-    "text": "You can almost hear the villain sting after your sentence.",
-    "score": -1
-  },
-  {
-    "id": "villain_sting_alt",
-    "type": "production",
-    "text": "Today, you can almost hear the villain sting after your sentence.",
-    "score": -1
-  },
-  {
-    "id": "heroic_cut",
-    "type": "production",
-    "text": "The camera catches you at your most generous.",
-    "score": 1
-  },
-  {
-    "id": "heroic_cut_alt",
-    "type": "production",
-    "text": "The camera catches you at your most generous.",
-    "score": 1
-  },
-  {
-    "id": "continuity_gremlin",
-    "type": "production",
-    "text": "A continuity gremlin makes the timeline feel cursed.",
-    "score": 0
-  },
-  {
-    "id": "continuity_gremlin_alt",
-    "type": "production",
-    "text": "A continuity gremlin makes the timeline feel cursed.",
-    "score": 0
-  },
-  {
-    "id": "extra_pickup",
-    "type": "production",
-    "text": "Production asks for an extra pickup because your moment matters.",
-    "score": 1
-  },
-  {
-    "id": "extra_pickup_alt",
-    "type": "production",
-    "text": "Production asks for an extra pickup because your moment matters.",
-    "score": 1
-  },
-  {
-    "id": "stiletto_prayer",
-    "type": "runway",
-    "text": "Every step feels like a prayer to the stiletto gods.",
-    "score": 0
-  },
-  {
-    "id": "stiletto_prayer_alt",
-    "type": "runway",
-    "text": "Every step feels like a prayer to the stiletto gods.",
-    "score": 0
-  },
-  {
-    "id": "fan_reveal",
-    "type": "runway",
-    "text": "A fan reveal gives the look exactly the drama it needed.",
-    "score": 2
-  },
-  {
-    "id": "fan_reveal_alt",
-    "type": "runway",
-    "text": "A fan reveal gives the look exactly the drama it needed.",
-    "score": 2
-  },
-  {
-    "id": "fan_reveal_fail",
-    "type": "runway",
-    "text": "A fan reveal opens halfway and commits to neither option.",
-    "score": -1
-  },
-  {
-    "id": "fan_reveal_fail_alt",
-    "type": "runway",
-    "text": "A fan reveal opens halfway and commits to neither option.",
-    "score": -1
-  },
-  {
-    "id": "bead_trail",
-    "type": "runway",
-    "text": "A tiny trail of beads follows you like breadcrumbs.",
-    "score": -1
-  },
-  {
-    "id": "bead_trail_alt",
-    "type": "runway",
-    "text": "A tiny trail of beads follows you like breadcrumbs.",
-    "score": -1
-  },
-  {
-    "id": "camera_love",
-    "type": "runway",
-    "text": "The camera loves your face tonight.",
-    "score": 2
-  },
-  {
-    "id": "camera_love_alt",
-    "type": "runway",
-    "text": "The camera loves your face tonight.",
-    "score": 2
-  },
-  {
-    "id": "pose_clean",
-    "type": "runway",
-    "text": "Your final pose is clean, readable, and confident.",
-    "score": 1
-  },
-  {
-    "id": "pose_clean_alt",
-    "type": "runway",
-    "text": "Today, your final pose is clean, readable, and confident.",
-    "score": 1
-  },
-  {
-    "id": "pose_confused",
-    "type": "runway",
-    "text": "Your final pose seems to confuse even you.",
-    "score": -1
-  },
-  {
-    "id": "pose_confused_alt",
-    "type": "runway",
-    "text": "Today, your final pose seems to confuse even you.",
-    "score": -1
-  },
-  {
-    "id": "runway_camp_lands",
-    "type": "runway",
-    "text": "The camp lands without sacrificing the fashion.",
-    "score": 2
-  },
-  {
-    "id": "runway_camp_lands_alt",
-    "type": "runway",
-    "text": "The camp lands without sacrificing the fashion.",
-    "score": 2
-  },
+  },  
   {
     "id": "michelle_yes",
     "type": "judging",
@@ -1714,85 +1060,85 @@ window.GAME_DATA.events = [
   {
     "id": "michelle_no",
     "type": "judging",
-    "text": "Michelle says 'no' under her breath and you hear it.",
+    "text": "Michelle says 'no' under her breath and the queen hears it.",
     "score": -2
   },
   {
     "id": "michelle_no_alt",
     "type": "judging",
-    "text": "Michelle says 'no' under her breath and you hear it.",
+    "text": "Michelle says 'no' under her breath and the queen hears it.",
     "score": -2
   },
   {
     "id": "rupaul_smirk",
     "type": "judging",
-    "text": "RuPaul smirks like she knows exactly what you were doing.",
+    "text": "RuPaul smirks like she knows exactly what the queen was doing.",
     "score": 1
   },
   {
     "id": "rupaul_smirk_alt",
     "type": "judging",
-    "text": "RuPaul smirks like she knows exactly what you were doing.",
+    "text": "RuPaul smirks like she knows exactly what the queen was doing.",
     "score": 1
   },
   {
     "id": "guest_giggle",
     "type": "judging",
-    "text": "The guest judge giggles through your entire critique.",
+    "text": "The guest judge giggles through the queen's entire critique.",
     "score": 1
   },
   {
     "id": "guest_giggle_alt",
     "type": "judging",
-    "text": "The guest judge giggles through your entire critique.",
+    "text": "The guest judge giggles through the queen's entire critique.",
     "score": 1
   },
   {
     "id": "carson_reference",
     "type": "judging",
-    "text": "Carson gets your fashion reference immediately.",
+    "text": "Carson gets the queen's fashion reference immediately.",
     "score": 2
   },
   {
     "id": "carson_reference_alt",
     "type": "judging",
-    "text": "Carson gets your fashion reference immediately.",
+    "text": "Carson gets the queen's fashion reference immediately.",
     "score": 2
   },
   {
     "id": "ross_button",
     "type": "judging",
-    "text": "Ross calls one joke 'a little button' and somehow it helps.",
+    "text": "Ross calls one joke 'a little button' and somehow it helps the queen.",
     "score": 1
   },
   {
     "id": "ross_button_alt",
     "type": "judging",
-    "text": "Ross calls one joke 'a little button' and somehow it helps.",
+    "text": "Ross calls one joke 'a little button' and somehow it helps the queen.",
     "score": 1
   },
   {
     "id": "panel_split",
     "type": "judging",
-    "text": "The panel seems split on whether your risk paid off.",
+    "text": "The panel seems split on whether the queen's risk paid off.",
     "score": 0
   },
   {
     "id": "panel_split_alt",
     "type": "judging",
-    "text": "The panel seems split on whether your risk paid off.",
+    "text": "The panel seems split on whether the queen's risk paid off.",
     "score": 0
   },
   {
     "id": "critique_spiral",
     "type": "judging",
-    "text": "One critique sends your brain into a tiny spiral.",
+    "text": "One critique sends the queen's brain into a tiny spiral.",
     "score": -1
   },
   {
     "id": "critique_spiral_alt",
     "type": "judging",
-    "text": "One critique sends your brain into a tiny spiral.",
+    "text": "One critique sends the queen's brain into a tiny spiral.",
     "score": -1
   }
 ];
