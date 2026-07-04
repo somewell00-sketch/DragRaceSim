@@ -1157,7 +1157,7 @@ function queenExitQuote(q){
   return farewellPick('queenExitByPersonality', farewellPersonalityKey(q), 'This is not the end of my story.');
 }
 function rupaulDecisionIntro(){
-  return shortPick(farewellData().rupaulIntros, 'The time has come...');
+  return shortPick(farewellData().rupaulIntros, 'I made my decision...');
 }
 function rupaulFinalLine(){
   return shortPick(farewellData().ruFinale, "If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?");
