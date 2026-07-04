@@ -917,10 +917,23 @@ function ensureRunwayEventForQueen(ep,q){
 function runwayEventScore(ep,q){
   const event=ensureRunwayEventForQueen(ep,q);
   return event ? Number(event.score)||0 : 0;
-}
-function getJudgingEventBank(){
-  const events=gameState.data?.events || window.GAME_DATA?.events || [];
-  return Array.isArray(events) ? events.filter(e=>e && e.type==='judging' && e.text) : [];
+}function getJudgingEventBank(ep){
+  const events = gameState.data?.events || window.GAME_DATA?.events || [];
+  if (!Array.isArray(events)) return [];
+
+  const rotatingJudge = (ep?.number || 0) % 2 === 0
+    ? "Ross"
+    : "Carson";
+
+  return events.filter(e =>
+    e &&
+    e.type === "judging" &&
+    e.text &&
+    (
+      !e.judge ||           // Michelle, RuPaul e Guest (sem campo judge)
+      e.judge === rotatingJudge
+    )
+  );
 }
 function ensureJudgingEventForQueen(ep,q){
   if(!ep || !q)return null;
