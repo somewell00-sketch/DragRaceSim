@@ -1303,7 +1303,7 @@ function renderAllWinnersGiftStarChoice(result){
     const affinity=Number(rel.affinity)||0;
     const stars=Number(q.legendStars)||0;
     const starText=stars>0?'⭐'.repeat(Math.min(stars,10))+(stars>10?` (${stars})`:''):'No stars';
-    const desc=`${starText} • affinity ${affinity>0?'+':''}${Math.round(affinity)}`;
+    const desc = starText;
     return choiceButtonHtml({id:q.id,attr:'data-all-winners-gift-star-choice',label:`⭐ ${q.name}`,desc});
   }).join('');
   return `<div class="card decision-card important" id="allWinnersGiftStarChoice"><h3>Award a Legendary Legend Star</h3><p>This week, each Top 2 queen gives one extra Legendary Legend Star to another queen.</p><p><strong>${escapeHtml(giver?.name||'You')}</strong>, choose who receives your star.</p><p class="small">Top 2 queens cannot give stars to each other.</p><div class="options">${buttons}</div></div>`;
