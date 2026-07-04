@@ -1046,74 +1046,93 @@ window.GAME_DATA.events = [
     "score": -1
   },  
   {
+    "id": "guest_loves",
+    "type": "judging",
+    "judge": "Guest Judge",
+    "text": "The guest judge seems obsessed with the queen's performance.",
+    "score": 2
+  },
+  {
     "id": "michelle_yes",
     "type": "judging",
+    "judge": "Michelle Visage",
     "text": "Michelle says 'yes' before anyone else starts talking.",
     "score": 2
   },
   {
     "id": "michelle_yes_alt",
     "type": "judging",
+    "judge": "Michelle Visage",
     "text": "Michelle says 'yes' before anyone else starts talking.",
     "score": 2
   },
   {
     "id": "michelle_no",
     "type": "judging",
+    "judge": "Michelle Visage",
     "text": "Michelle says 'no' under her breath and the queen hears it.",
     "score": -2
   },
   {
     "id": "michelle_no_alt",
     "type": "judging",
+    "judge": "Michelle Visage",
     "text": "Michelle says 'no' under her breath and the queen hears it.",
     "score": -2
   },
   {
     "id": "rupaul_smirk",
     "type": "judging",
+    "judge": "RuPaul",
     "text": "RuPaul smirks like she knows exactly what the queen was doing.",
     "score": 1
   },
   {
     "id": "rupaul_smirk_alt",
     "type": "judging",
+    "judge": "RuPaul",
     "text": "RuPaul smirks like she knows exactly what the queen was doing.",
     "score": 1
   },
   {
     "id": "guest_giggle",
     "type": "judging",
+    "judge": "Guest Judge",
     "text": "The guest judge giggles through the queen's entire critique.",
     "score": 1
   },
   {
     "id": "guest_giggle_alt",
     "type": "judging",
+    "judge": "Guest Judge",
     "text": "The guest judge giggles through the queen's entire critique.",
     "score": 1
   },
   {
     "id": "carson_reference",
     "type": "judging",
+    "judge": "Carson Kressley",
     "text": "Carson gets the queen's fashion reference immediately.",
     "score": 2
   },
   {
     "id": "carson_reference_alt",
     "type": "judging",
+    "judge": "Carson Kressley",
     "text": "Carson gets the queen's fashion reference immediately.",
     "score": 2
   },
   {
     "id": "ross_button",
     "type": "judging",
+    "judge": "Ross Mathews",
     "text": "Ross calls one joke 'a little button' and somehow it helps the queen.",
     "score": 1
   },
   {
     "id": "ross_button_alt",
     "type": "judging",
+    "judge": "Ross Mathews",
     "text": "Ross calls one joke 'a little button' and somehow it helps the queen.",
     "score": 1
   },
