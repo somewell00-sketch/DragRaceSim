@@ -573,7 +573,9 @@ function allWinnersTop2Eligible(scoreRow, ep){
   return true;
 }
 function pickAllWinnersPlacementRows(scored, ep){
-  const ranked=[...scored].sort((a,b)=>b.score-a.score);
+  // Keep the current order. applyAllWinnersSpotlightSwaps() may have already
+  // softened repeated Top 2/HIGH placements; sorting by score again would undo it.
+  const ranked=[...scored];
   let top2=[];
   for(const row of ranked){
     if(top2.length>=2)break;
@@ -892,6 +894,53 @@ function getLuckLabel(roll){
   if (roll <= 19) return "Serving";
   return "Gag Worthy!";
 }
+
+function getRunwayEventBank(){
+  const events=gameState.data?.events || window.GAME_DATA?.events || [];
+  return Array.isArray(events) ? events.filter(e=>e && e.type==='runway' && e.text) : [];
+}
+function ensureRunwayEventForQueen(ep,q){
+  if(!ep || !q)return null;
+  if(!ep.runwayEvents)ep.runwayEvents={};
+  if(!ep.runwayEvents[q.id]){
+    const bank=getRunwayEventBank();
+    const event=sample(bank);
+    ep.runwayEvents[q.id]=event ? {
+      id:event.id || `runway_event_${q.id}`,
+      type:'runway',
+      text:event.text,
+      score:Number(event.score)||0
+    } : null;
+  }
+  return ep.runwayEvents[q.id];
+}
+function runwayEventScore(ep,q){
+  const event=ensureRunwayEventForQueen(ep,q);
+  return event ? Number(event.score)||0 : 0;
+}
+function getJudgingEventBank(){
+  const events=gameState.data?.events || window.GAME_DATA?.events || [];
+  return Array.isArray(events) ? events.filter(e=>e && e.type==='judging' && e.text) : [];
+}
+function ensureJudgingEventForQueen(ep,q){
+  if(!ep || !q)return null;
+  if(!ep.judgingEvents)ep.judgingEvents={};
+  if(!ep.judgingEvents[q.id]){
+    const bank=getJudgingEventBank();
+    const event=sample(bank);
+    ep.judgingEvents[q.id]=event ? {
+      id:event.id || `judging_event_${q.id}`,
+      type:'judging',
+      text:event.text,
+      score:Number(event.score)||0
+    } : null;
+  }
+  return ep.judgingEvents[q.id];
+}
+function judgingEventScore(ep,q){
+  const event=ensureJudgingEventForQueen(ep,q);
+  return event ? Number(event.score)||0 : 0;
+}
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -911,8 +960,12 @@ function calculateEpisodeResults(playerChoices={}){
     if(ballRunway){
       ep.runwayRolls[q.id]=ballRunway.composite;
     }else if(ep.runwayRolls[q.id]===undefined) ep.runwayRolls[q.id]=rand(-5.5,5.5);
-    const runway=ballRunway ? ballRunway.composite : q.attributes.runway*3+ep.runwayRolls[q.id];
-    const tootBootScore=ballRunway ? ballRunway.scores[ballRunway.scores.length-1] : (ep.challengeType==='design' ? designTootBootScore(q,runway) : runway);
+    const runwayEvent=ensureRunwayEventForQueen(ep,q);
+    const runwayEventBonus=Number(runwayEvent?.score)||0;
+    const judgingEvent=ensureJudgingEventForQueen(ep,q);
+    const judgingEventBonus=Number(judgingEvent?.score)||0;
+    const runway=ballRunway ? ballRunway.composite+runwayEventBonus : q.attributes.runway*3+ep.runwayRolls[q.id]+runwayEventBonus;
+    const tootBootScore=ballRunway ? (ballRunway.scores[ballRunway.scores.length-1]+runwayEventBonus) : (ep.challengeType==='design' ? designTootBootScore(q,runway) : runway);
     const production=clamp((q.publicScores.production/8) * ((q.statistics?.wins||0)>=4 ? 0.5 : 1),-2,2);
     const momentum=q.momentum||0;
     const episodeForm=episodeFormModifier(q,ep);
@@ -951,11 +1004,11 @@ if (q.id === gameState.playerQueenId) {
     const choiceBonus=Math.round(((effectSource.performance||0)+(effectSource.runway||0))*1.60*10)/10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
-    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+choiceBonus+energyStressMod;
+    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+judgingEventBonus+choiceBonus+energyStressMod;
     const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,runwayEventBonus:Math.round(runwayEventBonus*10)/10,runwayEvent,judgingEventBonus:Math.round(judgingEventBonus*10)/10,judgingEvent,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
@@ -1022,7 +1075,7 @@ if (q.id === gameState.playerQueenId) {
     const fatigueText=s.fatigue?` • Fatigue ${s.fatigue}`:'';
     const legacyPressureText=s.legacyPressure?` • All Stars pressure ${s.legacyPressure}`:'';
     const allWinnersBalanceText=s.allWinnersBalance?` • Spotlight balance ${s.allWinnersBalance}`:'';
-    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${allWinnersBalanceText}${extra}${teamText}${winThrottleText}`;
+    s.internalReading=`Base ${s.base} • Runway ${s.runway} • Risk ${s.riskBonus>=0?'+':''}${s.riskBonus} • Production ${s.production>=0?'+':''}${s.production} • Momentum ${s.momentum>=0?'+':''}${s.momentum}${formText}${fatigueText}${legacyPressureText}${allWinnersBalanceText}${s.judgingEventBonus?` • Judging event ${s.judgingEventBonus>=0?'+':''}${s.judgingEventBonus}`:''}${extra}${teamText}${winThrottleText}`;
     const finalStretchPraise=isLastCompetitiveEpisodeBeforeFinale(ep);
     const tournamentPraise=ep.special==='tournament_bracket';
     s.critique=(finalStretchPraise||tournamentPraise)?getFinalStretchPositiveCritique(s,ep):getCritiqueText(s.placement,ep.challengeType,s.risk,success);

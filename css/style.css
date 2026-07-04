@@ -4692,7 +4692,7 @@ body.perf-mode table{
 }
 
 /* All Winners finale bracket compact cards + anti white repaint */
-/* html, body, #app{background:#09090d!important;}*/
+html, body, #app{background:#09090d!important;}
 #app{min-height:100vh;}
 .finale-duel-card.compact{
   padding:14px!important;
@@ -4814,4 +4814,45 @@ body::before{
 .home-stage{
   background:transparent!important;
   box-shadow:none!important;
+}
+
+
+.runway-player-event{
+  margin-top:.55rem;
+  padding:.65rem .75rem;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:14px;
+  background:rgba(0,0,0,.34);
+  font-style:italic;
+}
+
+.judging-event{
+  margin:.45rem 0 0;
+  padding:.55rem .7rem;
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:12px;
+  background:rgba(0,0,0,.28);
+  font-style:italic;
+  color:var(--muted);
+}
+
+
+.judging-event-extra{
+  margin:.75rem 0 0;
+  padding:.7rem .8rem;
+  border:1px solid rgba(255,255,255,.16);
+  border-radius:14px;
+  background:rgba(0,0,0,.32);
+}
+.judging-event-extra strong{
+  display:block;
+  margin-bottom:.25rem;
+  font-size:.78rem;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  color:var(--muted);
+}
+.judging-event-extra p{
+  margin:0;
+  font-style:italic;
 }

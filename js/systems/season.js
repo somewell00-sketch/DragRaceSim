@@ -644,7 +644,7 @@ function buildReturnSmackdownEpisode(type){
     runwayCategory:'Lip Sync Return',
     runwayCategories:['Lip Sync Return'],
     song:sample(gameState.data.songs),
-    events: shuffle(gameState.data.events).slice(0, 2),
+    events: shuffle((gameState.data.events||[]).filter(e=>e && !['runway','judging'].includes(e.type))).slice(0, 2),
     guestJudge:pickGuestJudge(),
     structure:{id:'return_smackdown',label:'Return Smackdown'},
     teams:[],
@@ -1528,7 +1528,7 @@ function generateEpisode(){
   const fullActiveCount=fullActive.length;
   const number=gameState.episodeHistory.length+1;
   if(!premiereIds && shouldTriggerLalaparuza(fullActiveCount)){
-    gameState.currentEpisode={number,activeCount:fullActiveCount,challengeType:'lalaparuza',challengeName:'Lalaparuza',themeId:'lalaparuza',themeName:'Lalaparuza Smackdown',themeNotes:'The queens lip sync in brackets. Lose and you move forward. Keep losing and you risk elimination.',runwayCategory:'Lip Sync Survival',runwayCategories:['Lip Sync Survival'],song:sample(gameState.data.songs),events: shuffle(gameState.data.events).slice(0, 2),guestJudge:pickGuestJudge(),structure:{id:'smackdown',label:'Lip Sync Smackdown'},teams:[],judgingMode:'individual',placements:[],bottomQueens:[],eliminatedQueenId:null,lipSyncResult:null,special:'lalaparuza',participantIds:fullActive.map(q=>q.id),socialEvents:[]}; saveGame(); return gameState.currentEpisode;
+    gameState.currentEpisode={number,activeCount:fullActiveCount,challengeType:'lalaparuza',challengeName:'Lalaparuza',themeId:'lalaparuza',themeName:'Lalaparuza Smackdown',themeNotes:'The queens lip sync in brackets. Lose and you move forward. Keep losing and you risk elimination.',runwayCategory:'Lip Sync Survival',runwayCategories:['Lip Sync Survival'],song:sample(gameState.data.songs),events: shuffle((gameState.data.events||[]).filter(e=>e && !['runway','judging'].includes(e.type))).slice(0, 2),guestJudge:pickGuestJudge(),structure:{id:'smackdown',label:'Lip Sync Smackdown'},teams:[],judgingMode:'individual',placements:[],bottomQueens:[],eliminatedQueenId:null,lipSyncResult:null,special:'lalaparuza',participantIds:fullActive.map(q=>q.id),socialEvents:[]}; saveGame(); return gameState.currentEpisode;
   }
   const tournamentFinalFirstEpisode=isTournamentFormat(getSeasonFormat()) && gameState.season?.brackets?.stage==='final' && !(gameState.episodeHistory||[]).some(h=>h.special!=='tournament_bracket');
   let challenge=inTournamentGroups?pickTournamentBracketChallenge():(tournamentFinalFirstEpisode?makeTalentChallenge():pickChallengeByRules(fullActiveCount));
@@ -1590,7 +1590,7 @@ function generateEpisode(){
     miniWinnerId:miniWinner?.id||null,
     miniWinnerName:miniWinner?.name||null,
     song,
-    events: shuffle(gameState.data.events).slice(0, 2),
+    events: shuffle((gameState.data.events||[]).filter(e=>e && !['runway','judging'].includes(e.type))).slice(0, 2),
     guestJudge,
     structure,
     teams,

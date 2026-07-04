@@ -307,6 +307,17 @@ function runwayStarCount(p, placements){
 function runwayTagMarkup(tags){
   return tags.map(t=>`<span class="runway-label">${t.icon} ${escapeHtml(t.label)}</span>`).join('');
 }
+function playerRunwayEventMarkup(p){
+  if(!p || p.queenId!==gameState.playerQueenId)return '';
+  const event=p.runwayEvent || gameState.currentEpisode?.runwayEvents?.[p.queenId];
+  if(!event?.text)return '';
+  return `<p class="runway-player-event">${escapeHtml(event.text)}</p>`;
+}
+function judgingEventMarkup(p){
+  const event=p?.judgingEvent || gameState.currentEpisode?.judgingEvents?.[p?.queenId];
+  if(!event?.text)return '';
+  return `<div class="judging-event-extra"><strong>Judging moment</strong><p>${escapeHtml(event.text)}</p></div>`;
+}
 function runwayWalkCard(p, placements, momentMap, opts={}){
   const moment=momentMap[p.queenId] || 'normal';
   const starCount=runwayStarCount(p,placements);
@@ -316,7 +327,7 @@ function runwayWalkCard(p, placements, momentMap, opts={}){
   return `<article class="runway-look runway-${moment}">
     <div class="runway-tags">${runwayTagMarkup(tags)}</div>
     <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p.name)}</h4>
-    <p>${escapeHtml(runwayTone(p,placements))}</p></div></div>
+    <p>${escapeHtml(runwayTone(p,placements))}</p>${playerRunwayEventMarkup(p)}</div></div>
   </article>`;
 }
 
@@ -728,7 +739,7 @@ function renderJudgesCritiques(){
     const snatch=ep.snatchCharacters?.find(c=>c.queenId===p.queenId);
     const snatchLine=snatch?`<p class="small">as <strong>${escapeHtml(snatch.character)}</strong></p>`:'';
     const q=gameState.queens.find(x=>x.id===p.queenId);
-    return `<article class="critique critique-${isTournament?(p.placement==='WIN'?'win':'high'):critiqueBucket(p)}"><div class="critique-head">${q?queenPortraitHtml(q,'md'):''}<div><h4>${escapeHtml(p.name)}</h4>${snatchLine}</div></div><div class="judge-critique-grid">${composedJudgeCritique(p, placements, ep)}</div></article>`;
+    return `<article class="critique critique-${isTournament?(p.placement==='WIN'?'win':'high'):critiqueBucket(p)}"><div class="critique-head">${q?queenPortraitHtml(q,'md'):''}<div><h4>${escapeHtml(p.name)}</h4>${snatchLine}</div></div><div class="judge-critique-grid">${composedJudgeCritique(p, placements, ep)}</div>${judgingEventMarkup(p)}</article>`;
   }).join('');
   const playerPlacement=placements.find(p=>p.queenId===gameState.playerQueenId);
   const playerGetsCritique=playerPlacement && (!ep.participantIds || ep.participantIds.includes(gameState.playerQueenId)) && (isTournament || playerPlacement.placement!=='SAFE');
