@@ -151,52 +151,82 @@ async function initSeasonInvitationQueens(){
   const datalist=document.querySelector('#inviteCommunityQueenList');
   const startBtn=document.querySelector('#inviteStartSeason');
   if(!panel||!input||!datalist||!startBtn)return;
-  panel.hidden=true;
-  if(typeof loadEligibleCommunityQueens!=='function')return;
-  try{
-    creatorCommunityQueens=await loadEligibleCommunityQueens({limit:250,days:LOCAL_COMMUNITY_QUEEN_FILTERS.days,location:LOCAL_COMMUNITY_QUEEN_FILTERS.location});
-    creatorCommunityQueens.sort((a,b)=>String(a?.name||'').localeCompare(String(b?.name||''),undefined,{sensitivity:'base'}));
-    if(!creatorCommunityQueens.length)return;
-    const updateSearchResults = () => {
-  const query = input.value.trim().toLowerCase();
 
-  if (query.length < 2) {
-    datalist.innerHTML = '';
-    input.dataset.selectedIndex = '';
-    startBtn.hidden = true;
+  // Show the card immediately. The database is only loaded once the user searches.
+  panel.hidden=false;
+  input.dataset.selectedIndex='';
+  input.dataset.loaded='false';
+  startBtn.hidden=true;
+
+  if(typeof loadEligibleCommunityQueens!=='function'){
+    input.placeholder='Queen search unavailable';
+    input.disabled=true;
     return;
   }
-const matches = creatorCommunityQueens
-  .map((row,index)=>({row,index}))
-  .filter(item =>
-    String(item.row?.name || '').toLowerCase().includes(query)
-  )
-  .slice(0,20);
 
+  let loadPromise=null;
+  const loadQueensForSearch=async()=>{
+    if(input.dataset.loaded==='true')return creatorCommunityQueens;
+    if(loadPromise)return loadPromise;
+    const previousPlaceholder=input.placeholder;
+    input.placeholder='Loading queens...';
+    loadPromise=loadEligibleCommunityQueens({
+      limit:250,
+      days:LOCAL_COMMUNITY_QUEEN_FILTERS.days,
+      location:LOCAL_COMMUNITY_QUEEN_FILTERS.location
+    }).then(rows=>{
+      creatorCommunityQueens=[...(rows||[])].sort((a,b)=>String(a?.name||'').localeCompare(String(b?.name||''),undefined,{sensitivity:'base'}));
+      input.dataset.loaded='true';
+      input.placeholder=creatorCommunityQueens.length ? previousPlaceholder : 'No community queens found';
+      return creatorCommunityQueens;
+    }).catch(err=>{
+      console.warn('Could not load community queens for the invitation search:',err);
+      input.placeholder='Could not load queens';
+      return [];
+    }).finally(()=>{
+      loadPromise=null;
+    });
+    return loadPromise;
+  };
 
-  datalist.innerHTML = matches
-    .map(item =>
-      `<option value="${communityQueenInviteLabel(item.row,item.index)}"></option>`
-    )
-    .join('');
-};
-    panel.hidden=false;
-    const syncSelection=()=>{
-      const typed=input.value.trim();
-      const selectedIndex=creatorCommunityQueens.findIndex((row,index)=>communityQueenSearchValue(row,index)===typed);
-      input.dataset.selectedIndex=selectedIndex>=0?String(selectedIndex):'';
-      startBtn.hidden=selectedIndex<0;
-      panel.classList.toggle('has-selection',selectedIndex>=0);
-    };
-input.addEventListener('input',()=>{
-  updateSearchResults();
-  syncSelection();
-});
-    input.addEventListener('change',syncSelection);
-  }catch(err){
-    console.warn('Could not load community queens for the invitation screen:',err);
-    panel.hidden=true;
-  }
+  const updateSearchResults=()=>{
+    const query=input.value.trim().toLowerCase();
+    if(query.length<2){
+      datalist.innerHTML='';
+      input.dataset.selectedIndex='';
+      startBtn.hidden=true;
+      panel.classList.remove('has-selection');
+      return;
+    }
+    const matches=creatorCommunityQueens
+      .map((row,index)=>({row,index}))
+      .filter(item=>String(item.row?.name||'').toLowerCase().includes(query))
+      .slice(0,20);
+    datalist.innerHTML=matches
+      .map(item=>`<option value="${communityQueenInviteLabel(item.row,item.index)}"></option>`)
+      .join('');
+  };
+
+  const syncSelection=()=>{
+    const typed=input.value.trim();
+    const selectedIndex=creatorCommunityQueens.findIndex((row,index)=>communityQueenSearchValue(row,index)===typed);
+    input.dataset.selectedIndex=selectedIndex>=0?String(selectedIndex):'';
+    startBtn.hidden=selectedIndex<0;
+    panel.classList.toggle('has-selection',selectedIndex>=0);
+  };
+
+  input.addEventListener('input',async()=>{
+    const query=input.value.trim();
+    if(query.length>=2 && input.dataset.loaded!=='true')await loadQueensForSearch();
+    updateSearchResults();
+    syncSelection();
+  });
+  input.addEventListener('focus',()=>{
+    if(input.value.trim().length>=2 && input.dataset.loaded!=='true'){
+      loadQueensForSearch().then(()=>{updateSearchResults();syncSelection();});
+    }
+  });
+  input.addEventListener('change',syncSelection);
 }
 
 function renderSeasonInvitation(){

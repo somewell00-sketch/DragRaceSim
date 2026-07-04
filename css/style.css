@@ -4781,3 +4781,37 @@ html, body, #app{background:#09090d!important;}
   .finale-duel-title{display:block!important;}
   .finale-duel-title .small{text-align:left!important;margin-top:4px!important;}
 }
+
+/* v41.2: header.jpg as top background behind all screens */
+html,
+body{
+  background:#000000!important;
+  min-height:100%;
+}
+body{
+  position:relative;
+  overflow-x:hidden;
+}
+body::before{
+  content:"";
+  position:fixed;
+  inset:0 0 auto 0;
+  width:100%;
+  height:calc(100vw * 368 / 1691);
+  min-height:160px;
+  max-height:368px;
+  background-image:url('../assets/header.jpg');
+  background-repeat:no-repeat;
+  background-position:top center;
+  background-size:100% auto;
+  pointer-events:none;
+  z-index:0;
+}
+#app{
+  position:relative;
+  z-index:1;
+}
+.home-stage{
+  background:transparent!important;
+  box-shadow:none!important;
+}
