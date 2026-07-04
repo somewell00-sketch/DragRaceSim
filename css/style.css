@@ -14,7 +14,10 @@ table th small{display:block;font-size:.7rem;font-weight:500;line-height:1.15;op
 
 .commentary-block{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
 .commentary-block p{margin:.45rem 0}
-
+.sr-only {
+    position: absolute;
+    left: -9999px;
+}
 
 .status-card{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem}
 .status-card span,.chip{display:inline-flex;align-items:center;gap:.25rem;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);border-radius:999px;padding:.35rem .6rem;font-size:.85rem}
