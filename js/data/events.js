@@ -1145,5 +1145,643 @@ window.GAME_DATA.events = [
     "type": "judging",
     "text": "One critique sends the queen's brain into a tiny spiral.",
     "score": -1
+  },
+   {
+    "id": "michelle_no",
+    "type": "judging",
+    "text": "Michelle says 'no' under her breath about the shoe choice.",
+    "score": -2
+  },
+  {
+    "id": "michelle_no_alt",
+    "type": "judging",
+    "text": "Michelle shakes her head slowly at the wig line.",
+    "score": -2
+  },
+  {
+    "id": "michelle_says_ugly",
+    "type": "judging",
+    "text": "Michelle calls the accessory choice 'downright ugly'.",
+    "score": -2
+  },
+  {
+    "id": "michelle_says_ugly_alt",
+    "type": "judging",
+    "text": "Michelle says the makeup looks 'like a cry for help'.",
+    "score": -2
+  },
+  {
+    "id": "michelle_no_personality",
+    "type": "judging",
+    "text": "Michelle says the jewelry shows 'no personality'.",
+    "score": -2
+  },
+  {
+    "id": "michelle_no_personality_alt",
+    "type": "judging",
+    "text": "Michelle asks 'Who are you?' while staring at the shoes.",
+    "score": -2
+  },
+  {
+    "id": "michelle_questions_taste",
+    "type": "judging",
+    "text": "Michelle questions the taste level of the heel height.",
+    "score": -2
+  },
+  {
+    "id": "michelle_questions_taste_alt",
+    "type": "judging",
+    "text": "Michelle says the earrings are 'not what we asked for'.",
+    "score": -2
+  },
+  {
+    "id": "michelle_asks_what_was_that",
+    "type": "judging",
+    "text": "Michelle asks 'What was that?' about the lip color.",
+    "score": -2
+  },
+  {
+    "id": "michelle_asks_what_was_that_alt",
+    "type": "judging",
+    "text": "Michelle looks confused and asks if the necklace is a joke.",
+    "score": -2
+  },
+  {
+    "id": "michelle_calls_messy",
+    "type": "judging",
+    "text": "Michelle calls the eyelashes 'messy' and the room winces.",
+    "score": -2
+  },
+  {
+    "id": "michelle_calls_messy_alt",
+    "type": "judging",
+    "text": "Michelle says the foundation is 'sloppy' and it cuts deep.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_says_predictable",
+    "type": "judging",
+    "text": "RuPaul says the shoe choice was 'predictable'.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_says_predictable_alt",
+    "type": "judging",
+    "text": "RuPaul says she has 'seen this makeup before'.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_stares_through",
+    "type": "judging",
+    "text": "RuPaul stares through the jewelry like it does not exist.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_stares_through_alt",
+    "type": "judging",
+    "text": "RuPaul looks away mid-critique about the wig.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_says_disappointed",
+    "type": "judging",
+    "text": "RuPaul says she is 'disappointed' in the heel choice.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_says_disappointed_alt",
+    "type": "judging",
+    "text": "RuPaul sighs and says 'I expected more from the accessories'.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_asks_if_queen_tried",
+    "type": "judging",
+    "text": "RuPaul asks if anyone even tried with that makeup.",
+    "score": -2
+  },
+  {
+    "id": "rupaul_asks_if_queen_tried_alt",
+    "type": "judging",
+    "text": "RuPaul asks 'Did you want to be here?' while pointing at the shoes.",
+    "score": -2
+  },
+
+  // 20% score -1 (20 eventos)
+  {
+    "id": "michelle_squints",
+    "type": "judging",
+    "text": "Michelle squints at the contour and the room holds its breath.",
+    "score": -1
+  },
+  {
+    "id": "michelle_squints_alt",
+    "type": "judging",
+    "text": "Michelle leans in to inspect the earrings more closely.",
+    "score": -1
+  },
+  {
+    "id": "michelle_crosses_arms",
+    "type": "judging",
+    "text": "Michelle crosses her arms at the platform boots.",
+    "score": -1
+  },
+  {
+    "id": "michelle_crosses_arms_alt",
+    "type": "judging",
+    "text": "Michelle folds her arms and raises an eyebrow at the nail art.",
+    "score": -1
+  },
+  {
+    "id": "michelle_shoulder_pad",
+    "type": "judging",
+    "text": "Michelle mentions the shoulder pads and the energy shifts.",
+    "score": -1
+  },
+  {
+    "id": "michelle_shoulder_pad_alt",
+    "type": "judging",
+    "text": "Michelle asks about the fit of the gloves.",
+    "score": -1
+  },
+  {
+    "id": "rupaul_silent",
+    "type": "judging",
+    "text": "RuPaul is silent while examining the wig and it becomes terrifying.",
+    "score": -1
+  },
+  {
+    "id": "rupaul_silent_alt",
+    "type": "judging",
+    "text": "RuPaul pauses and stares at the shoes for an eternity.",
+    "score": -1
+  },
+  {
+    "id": "rupaul_raises_eyebrow",
+    "type": "judging",
+    "text": "RuPaul raises one eyebrow at the lipstick choice.",
+    "score": -1
+  },
+  {
+    "id": "rupaul_raises_eyebrow_alt",
+    "type": "judging",
+    "text": "RuPaul arches an eyebrow at the belt and the mood shifts.",
+    "score": -1
+  },
+  {
+    "id": "carson_tailoring",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson points out a tailoring issue with the gloves.",
+    "score": -1
+  },
+  {
+    "id": "carson_tailoring_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson notices the uneven hem of the jacket.",
+    "score": -1
+  },
+  {
+    "id": "carson_material",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson asks about the material of the handbag.",
+    "score": -1
+  },
+  {
+    "id": "carson_material_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson touches the brooch and his expression says everything.",
+    "score": -1
+  },
+  {
+    "id": "carson_color",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson questions the color of the eyeshadow.",
+    "score": -1
+  },
+  {
+    "id": "carson_color_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson says the blush is 'fighting' the lip color.",
+    "score": -1
+  },
+  {
+    "id": "ross_misses_it",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross misses the reference in the hair accessory.",
+    "score": -1
+  },
+  {
+    "id": "ross_misses_it_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross looks blank when the necklace inspiration is explained.",
+    "score": -1
+  },
+  {
+    "id": "ross_confused",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross looks confused by the ring choice.",
+    "score": -1
+  },
+  {
+    "id": "ross_confused_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross tilts his head at the bracelet and the room grows quiet.",
+    "score": -1
+  },
+
+  // 20% score 0 (20 eventos)
+  {
+    "id": "rupaul_leans_forward",
+    "type": "judging",
+    "text": "RuPaul leans forward to examine the necklace more closely.",
+    "score": 0
+  },
+  {
+    "id": "rupaul_leans_forward_alt",
+    "type": "judging",
+    "text": "RuPaul rests her chin on her hand and studies the earrings.",
+    "score": 0
+  },
+  {
+    "id": "rupaul_interesting",
+    "type": "judging",
+    "text": "RuPaul says 'Interesting' about the shoe color.",
+    "score": 0
+  },
+  {
+    "id": "rupaul_interesting_alt",
+    "type": "judging",
+    "text": "RuPaul simply says 'Hmm' about the makeup.",
+    "score": 0
+  },
+  {
+    "id": "panel_split",
+    "type": "judging",
+    "text": "The panel seems split on the shoe choice.",
+    "score": 0
+  },
+  {
+    "id": "panel_split_alt",
+    "type": "judging",
+    "text": "Half the judges love the accessories and half hate them.",
+    "score": 0
+  },
+  {
+    "id": "panel_debate",
+    "type": "judging",
+    "text": "The judges debate the belt choice longer than expected.",
+    "score": 0
+  },
+  {
+    "id": "panel_debate_alt",
+    "type": "judging",
+    "text": "The judges argue about the gloves and the room watches.",
+    "score": 0
+  },
+  {
+    "id": "vague_praise",
+    "type": "judging",
+    "text": "The judges praise the shoes, but it sounds suspiciously safe.",
+    "score": 0
+  },
+  {
+    "id": "vague_praise_alt",
+    "type": "judging",
+    "text": "The judges say 'good job' about the hair, nothing more.",
+    "score": 0
+  },
+  {
+    "id": "safe_but_good",
+    "type": "judging",
+    "text": "The judges say the makeup was good, but not memorable.",
+    "score": 0
+  },
+  {
+    "id": "safe_but_good_alt",
+    "type": "judging",
+    "text": "The judges call the accessories 'solid' and nothing more.",
+    "score": 0
+  },
+  {
+    "id": "panel_silence",
+    "type": "judging",
+    "text": "The panel goes silent while looking at the jewelry.",
+    "score": 0
+  },
+  {
+    "id": "panel_silence_alt",
+    "type": "judging",
+    "text": "The judges exchange glances about the nail art.",
+    "score": 0
+  },
+  {
+    "id": "one_judge_disagrees",
+    "type": "judging",
+    "text": "One judge disagrees with the rest about the heel height.",
+    "score": 0
+  },
+  {
+    "id": "one_judge_disagrees_alt",
+    "type": "judging",
+    "text": "A single judge challenges the consensus on the lip color.",
+    "score": 0
+  },
+  {
+    "id": "guest_deadpan",
+    "type": "judging",
+    "text": "The guest judge gives a deadpan reaction to the belt.",
+    "score": 0
+  },
+  {
+    "id": "guest_deadpan_alt",
+    "type": "judging",
+    "text": "The guest judge stares blankly at the bracelet.",
+    "score": 0
+  },
+  {
+    "id": "michelle_stone_face",
+    "type": "judging",
+    "text": "Michelle keeps a stone face while examining the brooch.",
+    "score": 0
+  },
+  {
+    "id": "michelle_stone_face_alt",
+    "type": "judging",
+    "text": "Michelle gives absolutely nothing away about the crown.",
+    "score": 0
+  },
+
+  // 20% score 1 (20 eventos)
+  {
+    "id": "rupaul_smirk",
+    "type": "judging",
+    "text": "RuPaul smirks like she knows exactly why those shoes were chosen.",
+    "score": 1
+  },
+  {
+    "id": "rupaul_smirk_alt",
+    "type": "judging",
+    "text": "RuPaul gives a knowing smile at the earrings.",
+    "score": 1
+  },
+  {
+    "id": "michelle_uncrosses_arms",
+    "type": "judging",
+    "text": "Michelle uncrosses her arms when she sees the necklace.",
+    "score": 1
+  },
+  {
+    "id": "michelle_uncrosses_arms_alt",
+    "type": "judging",
+    "text": "Michelle's posture softens looking at the makeup.",
+    "score": 1
+  },
+  {
+    "id": "michelle_laughs",
+    "type": "judging",
+    "text": "Michelle laughs at the shoe choice and the room relaxes.",
+    "score": 1
+  },
+  {
+    "id": "michelle_laughs_alt",
+    "type": "judging",
+    "text": "Michelle cracks a smile at the hair accessory.",
+    "score": 1
+  },
+  {
+    "id": "carson_silhouette",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson compliments the silhouette created by the belt.",
+    "score": 1
+  },
+  {
+    "id": "carson_silhouette_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson says the shoe choice is 'divine'.",
+    "score": 1
+  },
+  {
+    "id": "carson_accessory",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson loves the brooch and the room warms up.",
+    "score": 1
+  },
+  {
+    "id": "carson_accessory_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson points out a detail in the rings and praises it.",
+    "score": 1
+  },
+  {
+    "id": "ross_button",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross calls the makeup choice 'a little button' and it helps.",
+    "score": 1
+  },
+  {
+    "id": "ross_button_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross says the shoe choice is 'on the right track'.",
+    "score": 1
+  },
+  {
+    "id": "ross_giggles",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross giggles about the hair accessory and tension breaks.",
+    "score": 1
+  },
+  {
+    "id": "ross_giggles_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross can barely contain his laughter about the earrings.",
+    "score": 1
+  },
+  {
+    "id": "ross_note",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross gives a helpful note about the lip color.",
+    "score": 1
+  },
+  {
+    "id": "ross_note_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross offers constructive feedback about the gloves.",
+    "score": 1
+  },
+  {
+    "id": "guest_advice",
+    "type": "judging",
+    "text": "The guest judge gives helpful advice about the jewelry.",
+    "score": 1
+  },
+  {
+    "id": "guest_advice_alt",
+    "type": "judging",
+    "text": "The guest judge shares wisdom about shoes.",
+    "score": 1
+  },
+  {
+    "id": "softened_critique",
+    "type": "judging",
+    "text": "A judge softens a critique about the wig.",
+    "score": 1
+  },
+  {
+    "id": "softened_critique_alt",
+    "type": "judging",
+    "text": "A judge delivers feedback about the foundation with kindness.",
+    "score": 1
+  },
+
+  // 20% score 2 (20 eventos)
+  {
+    "id": "rupaul_fan_clap",
+    "type": "judging",
+    "text": "RuPaul gives a slow fan clap for the shoe choice.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_fan_clap_alt",
+    "type": "judging",
+    "text": "RuPaul claps slowly at the makeup and the room erupts.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_winks",
+    "type": "judging",
+    "text": "RuPaul winks at the accessory choice and the room gasps.",
+    "score": 2
+  },
+  {
+    "id": "rupaul_winks_alt",
+    "type": "judging",
+    "text": "RuPaul gives a knowing wink about the shoes.",
+    "score": 2
+  },
+  {
+    "id": "michelle_yes",
+    "type": "judging",
+    "text": "Michelle says 'yes' before anyone else starts about the earrings.",
+    "score": 2
+  },
+  {
+    "id": "michelle_yes_alt",
+    "type": "judging",
+    "text": "Michelle nods enthusiastically at the hair.",
+    "score": 2
+  },
+  {
+    "id": "michelle_nods",
+    "type": "judging",
+    "text": "Michelle nods like she knows why that lip color was chosen.",
+    "score": 2
+  },
+  {
+    "id": "michelle_nods_alt",
+    "type": "judging",
+    "text": "Michelle gives a firm nod of approval at the shoes.",
+    "score": 2
+  },
+  {
+    "id": "carson_reference",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson gets the shoe reference immediately.",
+    "score": 2
+  },
+  {
+    "id": "carson_reference_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson names the exact designer the necklace references.",
+    "score": 2
+  },
+  {
+    "id": "carson_detail",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson notices one tiny detail in the hair that was worked hard on.",
+    "score": 2
+  },
+  {
+    "id": "carson_detail_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson spots a subtle choice in the gloves no one else would see.",
+    "score": 2
+  },
+  {
+    "id": "carson_vision",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson says the makeup shows 'vision' and the room feels it.",
+    "score": 2
+  },
+  {
+    "id": "carson_vision_alt",
+    "type": "judging",
+    "judge": "Carson",
+    "text": "Carson calls the accessories 'artistic' and the room applauds.",
+    "score": 2
+  },
+  {
+    "id": "ross_gets_it",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross understands exactly why those shoes were chosen.",
+    "score": 2
+  },
+  {
+    "id": "ross_gets_it_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross catches every nuance of the jewelry and applauds.",
+    "score": 2
+  },
+  {
+    "id": "ross_heart",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross says he can see the passion in the makeup choices.",
+    "score": 2
+  },
+  {
+    "id": "ross_heart_alt",
+    "type": "judging",
+    "judge": "Ross",
+    "text": "Ross gets emotional talking about the shoes and the room feels it.",
+    "score": 2
+  },
+  {
+    "id": "guest_loves",
+    "type": "judging",
+    "text": "The guest judge seems obsessed with the hair accessory.",
+    "score": 2
+  },
+  {
+    "id": "guest_loves_alt",
+    "type": "judging",
+    "text": "The guest judge cannot stop praising the jewelry.",
+    "score": 2
   }
 ];
