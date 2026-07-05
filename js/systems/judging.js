@@ -330,11 +330,26 @@ function assignTeamPlacements(scored, ep){
 
   const best=teams[0];
   const worst=teams[teams.length-1];
-  setTeamPlacement(best,'WIN');
+  const bestMembers=scored.filter(s=>best?.team?.queenIds?.includes(s.queenId));
+  const bestGroupSize=bestMembers.length;
+
+  // Duos judged as pairs share the win. For larger judged groups, the group is
+  // praised together, but normally only the strongest member receives WIN.
+  // Small groups of 3-4 that all stay on stage for critiques have a rare
+  // group-win moment where the whole group receives WIN.
+  const smallCritiquedGroupWin=bestGroupSize>2 && bestGroupSize<=4 && Math.random()<0.10;
+  ep.smallCritiquedGroupWin=!!smallCritiquedGroupWin;
+  if(bestGroupSize<=2 || smallCritiquedGroupWin){
+    setTeamPlacement(best,'WIN');
+  }else{
+    setTeamPlacement(best,'HIGH');
+    const individualWinner=bestMembers.sort((a,b)=>b.individualScore-a.individualScore)[0];
+    if(individualWinner)individualWinner.placement='WIN';
+  }
   if(worst && worst.team.id!==best.team.id)setTeamPlacement(worst,'BTM');
 
   // With a large cast, call one additional whole team as HIGH/LOW.
-  // Still never split members inside the same judged group.
+  // Still never split members inside the same judged group into top and bottom.
   if(scored.length>=13 && teams.length>=4){
     const secondBest=teams[1];
     if(secondBest && ![best.team.id,worst.team.id].includes(secondBest.team.id))setTeamPlacement(secondBest,'HIGH');
