@@ -1634,7 +1634,7 @@ if(challengeId==='design'){
   return {
     designCategory: category,
     designTheme: design,
-    challengeTitle: design?.title || 'Design Challenge',
+challengeTitle: design?.title || category?.category || 'Design Challenge',
     challengePrompt: design?.prompt || 'Create one original runway look using the assigned materials.',
     mainTheme: design?.title || 'Design'
   };
