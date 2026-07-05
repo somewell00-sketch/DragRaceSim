@@ -59,21 +59,21 @@ const CHALLENGE_APPROACHES = {
   safe: {
     label:'Play it safe',
     description:'Consistent and controlled. Less likely to flop, less likely to win.',
-    effects:{performance:0.5, energy:-4, stress:-2, production:-1.25, queens:1.25, fans:0},
+    effects:{performance:0.8, energy:-3, stress:-3, production:-1.5, queens:1.5, fans:-0.3},
     risk:'safe',
     text:'You choose control over chaos.'
   },
   risk: {
     label:'Go all in',
     description:'Bigger upside, bigger crash potential.',
-    effects:{performance:1.25, energy:-9, stress:7, production:2.5, queens:0, fans:2.5},
+    effects:{performance:1.2, energy:-10, stress:7, production:2.5, queens:-0.3, fans:2.5},
     risk:'risk',
     text:'You swing for the crown, knowing the bottom is also watching.'
   },
   unexpected: {
     label:'Do something unexpected',
     description:'Very television. Could be iconic. Could be cursed.',
-    effects:{performance:0, energy:-7, stress:9, production:3.8, queens:-1.25, fans:3.8},
+    effects:{performance:0.4, energy:-7, stress:7, production:3.8, queens:-1.25, fans:3.8},
     risk:'unexpected',
     text:'You choose the option that makes a producer sit upright.'
   }
