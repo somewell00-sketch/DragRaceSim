@@ -72,12 +72,29 @@ function ensureEffectBucket(q){
   return ep.queenEffects[q.id];
 }
 
+// Public perception balance:
+// - Positive Production/Fans gains are softened so acclaim is earned over time.
+// - Negative Production/Fans hits are amplified so messy choices can create mixed or bad receptions.
+// Queens/cast reputation is left untouched here because its simulated average was already healthy.
+const PUBLIC_RECEPTION_BALANCE = {
+  positiveMultiplier: 0.6,
+  negativeMultiplier: 1.35,
+  positivePersonalityBiasMultiplier: 0.5,
+  negativePersonalityBiasMultiplier: 0.4
+};
+
 function adjustedEffectPublicDelta(q,key,val){
   if(!val || !['production','fans'].includes(key)) return val;
-  if(typeof personalityPublicBias!=='function') return val;
-  const bias=personalityPublicBias(q,key)||0;
-  if(val>0) return Math.round((val + bias)*10)/10;
-  if(val<0) return Math.round((val + Math.min(0,bias*0.6))*10)/10;
+  const balance=PUBLIC_RECEPTION_BALANCE;
+  const bias=(typeof personalityPublicBias==='function') ? (personalityPublicBias(q,key)||0) : 0;
+  if(val>0){
+    const adjusted=(val*balance.positiveMultiplier)+(bias*balance.positivePersonalityBiasMultiplier);
+    return Math.round(adjusted*10)/10;
+  }
+  if(val<0){
+    const adjusted=(val*balance.negativeMultiplier)+Math.min(0,bias*balance.negativePersonalityBiasMultiplier);
+    return Math.round(adjusted*10)/10;
+  }
   return val;
 }
 

@@ -381,9 +381,9 @@ function effectChips(effects={}){ return ''; }
 function adjustedPublicDeltaForPersonality(q,key,val){
   if(!val || !['production','fans'].includes(key)) return val;
   const bias=(typeof personalityPublicBias==='function')?personalityPublicBias(q,key):0;
-  // Bias nudges public perception without overwhelming the action itself.
-  if(val>0) return Math.round((val + bias)*10)/10;
-  if(val<0) return Math.round((val + Math.min(0,bias*0.6))*10)/10;
+  const balance=typeof PUBLIC_RECEPTION_BALANCE==='object' ? PUBLIC_RECEPTION_BALANCE : {positiveMultiplier:0.6,negativeMultiplier:1.35,positivePersonalityBiasMultiplier:0.5,negativePersonalityBiasMultiplier:0.4};
+  if(val>0) return Math.round(((val*balance.positiveMultiplier)+(bias*balance.positivePersonalityBiasMultiplier))*10)/10;
+  if(val<0) return Math.round(((val*balance.negativeMultiplier)+Math.min(0,bias*balance.negativePersonalityBiasMultiplier))*10)/10;
   return val;
 }
 function applyPersonalityEpisodeDrift(q){

@@ -11,24 +11,23 @@ function receptionTier(value, tiers){
 }
 function fanReceptionTier(fans){
   return receptionTier(fans,[
-    {min:70,label:'Legend',tone:'Your run already feels bigger than the season itself.'},
-    {min:50,label:'Season Icon',tone:'Fans will be quoting you, debating you, and asking for more.'},
-    {min:35,label:'Fan Favorite',tone:'The audience rooted for you hard, even when the competition got messy.'},
-    {min:20,label:'Cult Favorite',tone:'Your fans may not be the loudest crowd, but they are loyal.'},
-    {min:8,label:'Well Received',tone:'The audience respected your run and found clear moments to remember.'},
-    {min:-7,label:'Mild Reception',tone:'You landed with some viewers, but never fully took over the conversation.'},
-    {min:-25,label:'Rejected',tone:'The audience had a hard time connecting with your choices this season.'},
+    {min:45,label:'Season Icon',tone:'Fans will be quoting you, debating you, and asking for more.'},
+    {min:30,label:'Fan Favorite',tone:'The audience rooted for you hard, even when the competition got messy.'},
+    {min:19,label:'Cult Favorite',tone:'A loyal part of the fandom held onto your run.'},
+    {min:9,label:'Well Received',tone:'Fans appreciated your journey without turning it into a coronation.'},
+    {min:-4,label:'Mixed Reception',tone:'You made an impression, but opinions stayed split.'},
+    {min:-19,label:'Polarizing Contestant',tone:'The audience debated your choices more than they simply embraced them.'},
     {min:-999,label:'Fan Backlash',tone:'Your run sparked more criticism than affection from the audience.'}
   ]);
 }
 function productionReceptionTier(prod){
   return receptionTier(prod,[
-    {min:70,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
-    {min:50,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
-    {min:30,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
-    {min:10,label:'Reliable Presence',tone:'You were useful television without overwhelming the season.'},
-    {min:-9,label:'Neutral Edit',tone:'Production neither pushed nor buried your story.'},
-    {min:-29,label:'Invisible Edit',tone:'The edit rarely made you central to the episode.'},
+    {min:38,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
+    {min:26,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
+    {min:16,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
+    {min:5,label:'Useful Television',tone:'Production enjoyed having you on the show, but did not build everything around you.'},
+    {min:-14,label:'Professional Relationship',tone:'Production could use you when needed, but the relationship stayed mostly neutral.'},
+    {min:-29,label:'Hard to Center',tone:'The edit rarely made you central to the episode.'},
     {min:-999,label:'Hard to Edit',tone:'Production struggled to turn your run into a clear story.'}
   ]);
 }
@@ -48,13 +47,13 @@ function castReceptionScore(q){
 }
 function castReceptionTier(value){
   return receptionTier(value,[
-    {min:70,label:'Cast Favorite',tone:'The workroom treated you like one of the hearts of the season.'},
-    {min:48,label:'Beloved by the Cast',tone:'The other queens clearly had room for you.'},
-    {min:28,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
-    {min:10,label:'Generally Liked',tone:'Most of the cast seemed comfortable with you.'},
-    {min:-9,label:'Complicated Cast Reception',tone:'Your relationships had warmth, distance, and a few unresolved edges.'},
-    {min:-27,label:'Divisive in the Workroom',tone:'Some queens connected with you, but the tension was real.'},
-    {min:-49,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
+    {min:38,label:'Cast Favorite',tone:'The workroom treated you like one of the hearts of the season.'},
+    {min:24,label:'Beloved by the Cast',tone:'The other queens clearly had real affection for you.'},
+    {min:12,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
+    {min:-4,label:'Generally Liked',tone:'Most of the cast seemed comfortable with you.'},
+    {min:-14,label:'Complicated Cast Reception',tone:'Your relationships had warmth, distance, and a few unresolved edges.'},
+    {min:-29,label:'Divisive in the Workroom',tone:'Some queens connected with you, but the tension was real.'},
+    {min:-44,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
     {min:-999,label:'Cast Villain',tone:'The cast did not exactly line up to braid your wig.'}
   ]);
 }
@@ -87,14 +86,14 @@ function seasonArcTags(q){
   const tags=[];
   if(frontRunnerIds().includes(q.id)) tags.push('front-runner');
   if((st.lipSyncWins||0)>=2) tags.push('lip sync assassin');
-  if((st.wins||0)+(st.highs||0)>=3 && q.id!==gameState.season?.winnerId && fans>=25) tags.push('robbed queen');
-  if(fans>=35 && cast>=-10) tags.push('fan favorite');
-  if(prod>=25 && cast<=-20 && fans>=-10) tags.push('villain edit');
+  if((st.wins||0)+(st.highs||0)>=3 && q.id!==gameState.season?.winnerId && fans>=19) tags.push('robbed queen');
+  if(fans>=30 && cast>=-10) tags.push('fan favorite');
+  if(prod>=16 && cast<=-20 && fans>=-10) tags.push('villain edit');
   if(q.id===worstRelationshipQueenId() && castRelationshipAverage(q)<10) tags.push('villain');
-  if(fans<10 && prod<10 && (st.wins||0)===0 && (st.highs||0)<=1 && (st.bottoms||0)<3) tags.push('filler queen');
-  if(prod>=40) tags.push('production darling');
-  if(prod<=-10 && fans<20) tags.push('invisible edit');
-  if(cast>=35) tags.push('workroom favorite');
+  if(fans<9 && prod<5 && (st.wins||0)===0 && (st.highs||0)<=1 && (st.bottoms||0)<3) tags.push('filler queen');
+  if(prod>=26) tags.push('production darling');
+  if(prod<=-15 && fans<19) tags.push('invisible edit');
+  if(cast>=24) tags.push('workroom favorite');
   if(cast<=-35) tags.push('cast villain');
   if(!tags.length){
     if((st.wins||0)>=2) tags.push('competitive threat');
@@ -171,7 +170,7 @@ function buildFansSummary(q,tier){
     mid:['Viewers found a clear story in your season, even when the edit moved elsewhere.','Fans may not have agreed on every choice, but they remembered you.','Your reception had layers: praise, debate, and a few very loud opinions.'],
     low:['The audience had a complicated relationship with your run.','Viewers did not always know what to make of you this season.','Your season sparked more debate than universal applause.']
   };
-  summaryUniquePush(lines,summaryPick(s.fans>=35?opening.high:s.fans>=-7?opening.mid:opening.low));
+  summaryUniquePush(lines,summaryPick(s.fans>=19?opening.high:s.fans>=-4?opening.mid:opening.low));
   if(s.tags.includes('fan favorite')) summaryUniquePush(lines,summaryPick(['You had the kind of fan support that turns confessionals into quotes and exits into campaigns.','A loyal chunk of the fandom was ready to defend you no matter what happened.','By the end, people were talking about you like a queen they wanted to see again.']));
   if(s.runwayIcon) summaryUniquePush(lines,summaryPick(['Your runway package became one of the biggest parts of your fan reputation.','Even viewers rooting for other queens had to admit your looks were memorable.','Fashion fans kept screenshots of your runways ready for every debate.']));
   if(s.lipsyncLegend) summaryUniquePush(lines,summaryPick(['Your lip syncs gave the fandom exactly the kind of drama they log on for.','Every time you landed in danger, fans expected a performance worth replaying.','You turned survival into part of your brand.']));
@@ -180,20 +179,20 @@ function buildFansSummary(q,tier){
   if(s.villain && s.fans>=10) summaryUniquePush(lines,summaryPick(['You were messy in a way many viewers found entertaining rather than unforgivable.','Some fans loved you because you were willing to cause a little chaos.','You became the kind of polarizing queen people could not stop discussing.']));
   if(s.villain && s.fans<0) summaryUniquePush(lines,summaryPick(['For some viewers, the drama overshadowed the drag.','The fandom was not always ready to forgive the messier parts of your season.','Your louder moments created backlash that followed the rest of your run.']));
   if((s.robbed || s.eliminated) && s.competitive>=3) summaryUniquePush(lines,summaryPick(['Your elimination immediately entered the “was she robbed?” conversation.','A lot of viewers felt your track record deserved a longer runway.','The exit felt abrupt enough to keep fans debating it.']));
-  if(s.earlyOut && s.fans>=15) summaryUniquePush(lines,summaryPick(['Even with limited time, you left enough of an impression to become a cult favorite.','Your run was short, but fans still found a reason to remember you.']));
+  if(s.earlyOut && s.fans>=9) summaryUniquePush(lines,summaryPick(['Even with limited time, you left enough of an impression to become a cult favorite.','Your run was short, but fans still found a reason to remember you.']));
   if(lines.length<2) summaryUniquePush(lines,tier.tone);
   return lines.slice(0,Math.min(3,Math.max(1,lines.length))).join(' ');
 }
 function buildProductionSummary(q,tier){
   const s=summarySignals(q), lines=[];
-  summaryUniquePush(lines,summaryPick(s.production>=35?['Production quickly realized you were useful television.','The story team clearly knew where to place you in the season.','The cameras had plenty of reasons to stay near you.']:s.production>=-5?['Production could use you when the episode needed texture.','Your edit gave the season a steady presence without taking over completely.','Behind the scenes, you were reliable material.']:['Production struggled to find the cleanest version of your story.','The edit did not always know where to put you.','You were not always the easiest queen to shape into a simple storyline.']));
+  summaryUniquePush(lines,summaryPick(s.production>=16?['Production quickly realized you were useful television.','The story team clearly knew where to place you in the season.','The cameras had plenty of reasons to stay near you.']:s.production>=-14?['Production could use you when the episode needed texture.','Your edit gave the season a steady presence without taking over completely.','Behind the scenes, you were reliable material.']:['Production struggled to find the cleanest version of your story.','The edit did not always know where to put you.','You were not always the easiest queen to shape into a simple storyline.']));
   if(s.tags.includes('production darling')) summaryUniquePush(lines,summaryPick(['You gave confessionals, stakes, and enough personality to keep the edit moving.','Whenever the season needed a point of view, you were an easy cutaway.','You had the kind of presence producers can build episodes around.']));
   if(s.villain && s.production>=15) summaryUniquePush(lines,summaryPick(['The tension around you gave production a storyline with teeth.','Your conflicts were easy to edit into episode momentum.','You knew how to make a scene feel bigger than the challenge itself.']));
   if(s.underdog) summaryUniquePush(lines,summaryPick(['Your close calls gave the editors a natural underdog arc.','Production could frame your season as a fight to stay in the room.','The vulnerable weeks gave your story real stakes.']));
   if(s.improved) summaryUniquePush(lines,summaryPick(['The arc was clear: struggle, adjustment, and a stronger finish.','Your season gave production a usable redemption shape.','The improvement made your story easier to root for.']));
   if(s.consistent) summaryUniquePush(lines,summaryPick(['You were dependable, which made you easy to build around without forcing drama.','The producers could trust you to deliver clean competition beats.','Your track record gave the edit a professional backbone.']));
   if(s.lipsyncLegend) summaryUniquePush(lines,summaryPick(['Every lip sync gave production a built-in climax.','Your survival moments were exactly the kind of footage producers can sell in a recap.','Danger around you rarely felt boring.']));
-  if(s.fans>=35 && s.production<20) summaryUniquePush(lines,summaryPick(['Even when production did not center you, the audience found you anyway.','Your fan response did some of the work the edit did not.']));
+  if(s.fans>=30 && s.production<16) summaryUniquePush(lines,summaryPick(['Even when production did not center you, the audience found you anyway.','Your fan response did some of the work the edit did not.']));
   if(s.finalist && !s.won) summaryUniquePush(lines,summaryPick(['By the finale, you looked like credible endgame material.','Production had enough footage to make your finalist story make sense.']));
   if(lines.length<2) summaryUniquePush(lines,tier.tone);
   return lines.slice(0,Math.min(3,Math.max(1,lines.length))).join(' ');
