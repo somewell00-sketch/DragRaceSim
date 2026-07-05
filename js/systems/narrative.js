@@ -239,13 +239,13 @@ function ruNarrativeComment(q, placement){
     'Your personality carries you, but your performance needs to catch up.',
     'We see the heart. Now show us the hunger.',
     'You have the warmth—now prove you have the fire.',
-    'Being beloved is a privilege. Earn it every week.'
+    'Being beloved is a privilege. Earn it every day.'
   ]
 },
     
     [NARRATIVE_TAGS.PRODUCERS_DREAM]: {
       positive: [
-        'Every week, you give us something to remember.',
+        'Every day, you give us something to remember.',
         'You know how to command our attention.',
         'You understand television in a way few queens do.',
         'Every moment with you is electric and unpredictable.',
@@ -326,12 +326,12 @@ function ruNarrativeComment(q, placement){
     
     [NARRATIVE_TAGS.RISING]: {
       positive: [
-        'You are becoming clearer and more confident every week.',
+        'You are becoming clearer and more confident every day.',
         'This is the growth we have been waiting to see.',
         'You are proving that Drag Race is a marathon, not a sprint.',
         'Your trajectory is one of the most exciting this season.',
         'You are peaking at exactly the right time.',
-        'Every week you get stronger, sharper, more undeniable.',
+        'Every day you get stronger, sharper, more undeniable.',
         'You are turning potential into power.',
         'Your growth is a testament to your determination.',
         'You are becoming a force to be reckoned with.',
@@ -412,7 +412,7 @@ function ruNarrativeComment(q, placement){
         'Your fashion choices are always a moment.',
         'You have an eye for style that is undeniable.',
         'The runway is where you truly shine.',
-        'Every week, you elevate the standard of fashion.',
+        'Every day, you elevate the standard of fashion.',
         'Your looks are art, and I am here for it.',
         'You understand the power of a silhouette.',
         'Fashion is your language, and you speak it fluently.',
