@@ -996,7 +996,7 @@ async function startSeason(playerQueen, castSize='random', seasonFormat='regular
     try{
       if(typeof loadCommunityQueens==='function' && typeof convertCommunityQueenToGameQueen==='function'){
         const wanted=Math.random()<0.5?1:2;
-        const savedQueens=await loadCommunityQueens(100);
+        const savedQueens=await loadCommunityQueens(1000);
         communityQueens=savedQueens
           .filter(q=>q.name && q.name!==playerQueen.name)
           .sort(()=>Math.random()-0.5)
