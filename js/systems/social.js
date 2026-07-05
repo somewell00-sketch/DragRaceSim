@@ -66,7 +66,7 @@ const CHALLENGE_APPROACHES = {
   risk: {
     label:'Go all in',
     description:'Bigger upside, bigger crash potential.',
-    effects:{performance:1.2, energy:-10, stress:7, production:2.5, queens:-0.3, fans:2.5},
+    effects:{performance:1.2, energy:-15, stress:10, production:2.5, queens:-0.3, fans:2.5},
     risk:'risk',
     text:'You swing for the crown, knowing the bottom is also watching.'
   },
