@@ -227,13 +227,13 @@ window.GAME_DATA.queenTypes = [
     "description": "Fast edits, viral instincts, and chaotic confidence.",
     "attributes": {
       "cunt": 8,
-      "lipSync": 8,
+      "lipSync": 7,
       "makeup": 7,
       "sewing": 3,
       "runway": 6,
       "acting": 7
     }
-    // Total: 39
+    // Total: 38
   },
   {
     "name": "Hostess Queen",
