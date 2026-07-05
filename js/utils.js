@@ -6,7 +6,7 @@ function weightedAttributeScore(attributes, weights) {
   return Object.entries(weights).reduce((t, [a, w]) => {
     const globalAttrMultiplier = {
       cunt: 1,
-      runway: 1.15
+      runway: 1
     };
 
     const mult = globalAttrMultiplier[a] ?? 1;
