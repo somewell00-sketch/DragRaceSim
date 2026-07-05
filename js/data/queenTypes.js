@@ -12,6 +12,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 7,
       "acting": 7
     }
+    // Total: 40
   },
   {
     "name": "Fashion Queen",
@@ -20,34 +21,37 @@ window.GAME_DATA.queenTypes = [
       "cunt": 7,
       "lipSync": 5,
       "makeup": 8,
-      "sewing": 8,
+      "sewing": 7,
       "runway": 9,
       "acting": 4
     }
+    // Total: 40
   },
   {
     "name": "Comedy Queen",
     "description": "Lives for punchlines, timing, and confessionals.",
     "attributes": {
-      "cunt": 9,
+      "cunt": 8,
       "lipSync": 6,
       "makeup": 6,
-      "sewing": 3,
+      "sewing": 4,
       "runway": 5,
       "acting": 9
     }
+    // Total: 38
   },
   {
     "name": "Dancing Queen",
     "description": "A stage performer with stamina and fire.",
     "attributes": {
       "cunt": 7,
-      "lipSync": 10,
+      "lipSync": 9,
       "makeup": 5,
-      "sewing": 3,
+      "sewing": 4,
       "runway": 8,
-      "acting": 5
+      "acting": 6
     }
+    // Total: 39
   },
   {
     "name": "Pageant Queen",
@@ -56,10 +60,11 @@ window.GAME_DATA.queenTypes = [
       "cunt": 6,
       "lipSync": 7,
       "makeup": 8,
-      "sewing": 7,
+      "sewing": 6,
       "runway": 9,
       "acting": 5
     }
+    // Total: 41
   },
   {
     "name": "Camp Queen",
@@ -72,6 +77,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 6,
       "acting": 8
     }
+    // Total: 38
   },
   {
     "name": "Alternative Queen",
@@ -82,8 +88,9 @@ window.GAME_DATA.queenTypes = [
       "makeup": 8,
       "sewing": 6,
       "runway": 7,
-      "acting": 7
+      "acting": 6
     }
+    // Total: 41
   },
   {
     "name": "Glamour Queen",
@@ -93,9 +100,10 @@ window.GAME_DATA.queenTypes = [
       "lipSync": 6,
       "makeup": 9,
       "sewing": 5,
-      "runway": 9,
+      "runway": 8,
       "acting": 5
     }
+    // Total: 40
   },
   {
     "name": "Club Queen",
@@ -108,6 +116,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 7,
       "acting": 5
     }
+    // Total: 38
   },
   {
     "name": "Horror Queen",
@@ -118,8 +127,9 @@ window.GAME_DATA.queenTypes = [
       "makeup": 9,
       "sewing": 6,
       "runway": 7,
-      "acting": 7
+      "acting": 6
     }
+    // Total: 42
   },
   {
     "name": "Cosplay Queen",
@@ -127,11 +137,12 @@ window.GAME_DATA.queenTypes = [
     "attributes": {
       "cunt": 6,
       "lipSync": 5,
-      "makeup": 9,
+      "makeup": 8,
       "sewing": 8,
-      "runway": 8,
-      "acting": 7
+      "runway": 7,
+      "acting": 6
     }
+    // Total: 40
   },
   {
     "name": "Sewing Queen",
@@ -141,9 +152,10 @@ window.GAME_DATA.queenTypes = [
       "lipSync": 6,
       "makeup": 8,
       "sewing": 10,
-      "runway": 8,
+      "runway": 7,
       "acting": 4
     }
+    // Total: 42
   },
   {
     "name": "Acting Queen",
@@ -156,6 +168,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 6,
       "acting": 10
     }
+    // Total: 40
   },
   {
     "name": "Lip Sync Assassin",
@@ -165,9 +178,10 @@ window.GAME_DATA.queenTypes = [
       "lipSync": 10,
       "makeup": 5,
       "sewing": 3,
-      "runway": 8,
+      "runway": 7,
       "acting": 5
     }
+    // Total: 38
   },
   {
     "name": "Social Queen",
@@ -180,6 +194,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 6,
       "acting": 7
     }
+    // Total: 38
   },
   {
     "name": "Social Media Queen",
@@ -190,8 +205,9 @@ window.GAME_DATA.queenTypes = [
       "makeup": 7,
       "sewing": 3,
       "runway": 7,
-      "acting": 8
+      "acting": 7
     }
+    // Total: 39
   },
   {
     "name": "Influencer Queen",
@@ -202,8 +218,9 @@ window.GAME_DATA.queenTypes = [
       "makeup": 9,
       "sewing": 3,
       "runway": 8,
-      "acting": 7
+      "acting": 6
     }
+    // Total: 40
   },
   {
     "name": "TikTok Queen",
@@ -216,6 +233,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 6,
       "acting": 7
     }
+    // Total: 39
   },
   {
     "name": "Hostess Queen",
@@ -228,6 +246,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 7,
       "acting": 8
     }
+    // Total: 40
   },
   {
     "name": "Ballroom Queen",
@@ -240,6 +259,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 9,
       "acting": 4
     }
+    // Total: 39
   },
   {
     "name": "Makeup Queen",
@@ -252,6 +272,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 8,
       "acting": 5
     }
+    // Total: 40
   },
   {
     "name": "Look Queen",
@@ -264,10 +285,11 @@ window.GAME_DATA.queenTypes = [
       "runway": 10,
       "acting": 4
     }
+    // Total: 41
   },
   {
     "name": "Theatre Queen",
-    "description": "Projection, emotion, choreography, and a full eleven o’clock number.",
+    "description": "Projection, emotion, choreography, and a full eleven o'clock number.",
     "attributes": {
       "cunt": 7,
       "lipSync": 7,
@@ -276,6 +298,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 7,
       "acting": 9
     }
+    // Total: 40
   },
   {
     "name": "Vocal Diva",
@@ -288,6 +311,7 @@ window.GAME_DATA.queenTypes = [
       "runway": 7,
       "acting": 8
     }
+    // Total: 40
   },
   {
     "name": "Weird Queen",
@@ -298,7 +322,8 @@ window.GAME_DATA.queenTypes = [
       "makeup": 7,
       "sewing": 5,
       "runway": 6,
-      "acting": 8
+      "acting": 7
     }
+    // Total: 40
   }
 ];
