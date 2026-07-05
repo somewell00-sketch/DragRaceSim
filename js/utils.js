@@ -5,7 +5,7 @@ function rand(min,max){return Math.round((Math.random()*(max-min)+min)*10)/10;}
 function weightedAttributeScore(attributes, weights) {
   return Object.entries(weights).reduce((t, [a, w]) => {
     const globalAttrMultiplier = {
-      cunt: 0.8,
+      cunt: 1,
       runway: 1.15
     };
 
