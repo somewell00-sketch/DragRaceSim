@@ -65,22 +65,22 @@ window.GAME_DATA.challenges = [
     "name": "Design Challenge",
     "runwayWeight": 0.3,
     "weights": {
-      "sewing": 0.5,
-      "runway": 0.3,
-      "cunt": 0.1,
-      "makeup": 0.1
-    }
+  "sewing": 0.6,
+  "runway": 0.25,
+  "makeup": 0.1,
+  "cunt": 0.05
+}
   },
   {
     "id": "ball",
     "name": "Ball",
     "runwayWeight": 0.4,
     "weights": {
-      "runway": 0.4,
-      "sewing": 0.35,
-      "makeup": 0.15,
-      "cunt": 0.1
-    }
+  "runway": 0.45,
+  "sewing": 0.35,
+  "makeup": 0.15,
+  "cunt": 0.05
+}
   },
   {
     "id": "branding",
@@ -156,12 +156,12 @@ window.GAME_DATA.challenges = [
     "id": "makeover",
     "name": "Makeover",
     "runwayWeight": 0.35,
-    "weights": {
-      "makeup": 0.4,
-      "runway": 0.3,
-      "sewing": 0.2,
-      "cunt": 0.1
-    },
+   "weights": {
+  "runway": 0.35,
+  "makeup": 0.25,
+  "sewing": 0.25,
+  "cunt": 0.15
+},
     "uniqueSeason": true
   },
   {
