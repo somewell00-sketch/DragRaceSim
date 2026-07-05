@@ -271,6 +271,10 @@ function challengeContentBlock(ep){
   if(ep.challengeType==='ball' && c.runwayCategories?.length){
     return `<div class="card"><h3>${escapeHtml(c.challengeTitle||'The Ball')}</h3><p class="small">${escapeHtml(c.challengePrompt||'Three categories. One runway war.')}</p><ol>${c.runwayCategories.map(cat=>`<li><strong>Category is:</strong> ${escapeHtml(cat)}</li>`).join('')}</ol></div>`;
   }
+  if(ep.challengeType==='fashion_wars'){
+    const battles=(c.battles||[]).map(b=>`<li><strong>${escapeHtml(b.title||'Fashion Duel')}</strong><br><span class="small">${escapeHtml(b.prompt||'Create a winning design look.')}</span></li>`).join('');
+    return `<div class="card"><h3>${escapeHtml(c.challengeTitle||'The Fashion Wars')}</h3><p>${escapeHtml(c.challengePrompt||'Design battle by battle. Each victory scores a point.')}</p>${battles?`<ol>${battles}</ol>`:''}</div>`;
+  }
   if(ep.challengeType==='design'){
     return `<div class="card"><h3>${escapeHtml(c.challengeTitle||'Design Challenge')}</h3><p>${escapeHtml(c.challengePrompt||'Create one original runway look from the assigned materials.')}</p></div>`;
   }

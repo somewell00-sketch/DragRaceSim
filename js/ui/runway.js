@@ -369,7 +369,34 @@ function categoryWeightNote(placements, idx, isLast){
   const pct=Math.round(weights[idx]*100);
   return `<p class="small">${isLast?'Final category':'Category'} weight: ${pct}% of the ball runway package.</p>`;
 }
+
+function fashionWarsBattleCards(ep, placements){
+  const battles=ep?.challengeContent?.battles||[];
+  if(!battles.length)return '';
+  const byId=Object.fromEntries(placements.map(p=>[p.queenId,p]));
+  const teamName=(id)=>{const team=(ep.teams||[]).find(t=>(t.queenIds||[]).includes(id)); return team?.name||'';};
+  const points=(ep.fashionWarsPoints||[]).map(t=>`<p><strong>${escapeHtml(t.name)}</strong>: ${t.points} point${t.points===1?'':'s'}</p>`).join('');
+  const cards=battles.map((battle,idx)=>{
+    const rows=(battle.queenIds||[]).map(id=>{
+      const p=byId[id];
+      const q=gameState.queens.find(x=>x.id===id);
+      const won=id===battle.winnerId;
+      return `<div class="runway-look ${won?'runway-showstopper':''}">
+        <div class="runway-look-head">${q?queenPortraitHtml(q,won?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p?.name||'Queen')}</h4><p class="small">${escapeHtml(teamName(id))}</p>${won?'<p><strong>Wins this fashion battle.</strong></p>':'<p>Falls short in this battle.</p>'}</div></div>
+      </div>`;
+    }).join('');
+    return `<div class="card runway-card fashion-war-battle">
+      ${runwayCategoryHeader(battle.title||`Fashion Battle ${idx+1}`)}
+      <p>${escapeHtml(battle.prompt||'Create a winning design look.')}</p>
+      <div class="runway-walk-list">${rows}</div>
+      ${battle.winnerId?`<div class="card subtle"><h3>Battle winner</h3><p><strong>${escapeHtml(qName(battle.winnerId))}</strong> scores a point for ${escapeHtml(teamName(battle.winnerId)||'her team')}.</p></div>`:''}
+    </div>`;
+  }).join('');
+  return `${cards}${points?`<div class="card"><h3>Fashion Wars score</h3>${points}</div>`:''}`;
+}
+
 function runwayCategoryCards(ep, placements, runwayOrder){
+  if(ep.challengeType==='fashion_wars')return fashionWarsBattleCards(ep, placements);
   const categories=(ep.runwayCategories&&ep.runwayCategories.length)?ep.runwayCategories:[ep.runwayCategory];
   if(ep.challengeType==='ball' && categories.length>1){
     return categories.map((cat,idx)=>{
