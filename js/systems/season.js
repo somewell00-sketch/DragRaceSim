@@ -1313,14 +1313,17 @@ function pickChallengeContent(challengeId){
     };
   }
   if(challengeId==='design'){
-    const theme=sample(data.balls||[]);
-    return {
-      designTheme: theme,
-      challengeTitle: `${theme?.mainTheme || theme?.title || 'Unconventional'} Design Challenge`,
-      challengePrompt: `Create one original runway look inspired by ${theme?.mainTheme || theme?.title || 'the assigned materials'}.`,
-      mainTheme: theme?.mainTheme || theme?.title || 'Design'
-    };
-  }
+  const category = sample(data.designChallenges || []);
+  const design = sample(category?.challenges || []);
+
+  return {
+    designCategory: category,
+    designTheme: design,
+    challengeTitle: `${design?.title || 'Unconventional'} Design Challenge`,
+    challengePrompt: design?.prompt || 'Create one original runway look using the assigned materials.',
+    mainTheme: design?.title || category?.category || 'Design'
+  };
+}
   if(challengeId==='makeover'){
     const makeover=sample(data.makeovers||['drag superfans']);
     return {
