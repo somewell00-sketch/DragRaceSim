@@ -76,7 +76,6 @@ window.GAME_DATA.songs = [
   { "title": "The Beginning", "artist": "RuPaul", "energy": "high" },
   { "title": "Brasil", "artist": "Gal Costa", "energy": "medium" },
   { "title": "Tombei", "artist": "Karol Conká ft. Tropkillaz", "energy": "high" },
-  { "title": "A Dona Aranha", "artist": "Luísa Sonza", "energy": "high" },
   { "title": "Bixinho (Lux & Tróia Remix)", "artist": "Duda Beat", "energy": "medium" },
   { "title": "Jeito Sexy", "artist": "Fat Family", "energy": "medium" },
   { "title": "O Amor e o Poder", "artist": "Rosana Fiengo", "energy": "low" },
@@ -545,5 +544,406 @@ window.GAME_DATA.songs = [
 { "title": "You Are My Everything", "artist": "RuPaul", "energy": "low" },
 { "title": "Lift Me Up", "artist": "RuPaul", "energy": "low" },
 { "title": "Soul of a Man", "artist": "RuPaul", "energy": "low" },
-{ "title": "I'll Be Your Mirror", "artist": "RuPaul", "energy": "low" }
+{ "title": "I'll Be Your Mirror", "artist": "RuPaul", "energy": "low" },
+  { "title": "Jerusalema", "artist": "Nomcebo Zikode", "energy": "medium" },
+{ "title": "Ke Star (Remix)", "artist": "Focalistic ft. Vigro Deep", "energy": "high" },
+{ "title": "Woman", "artist": "Simi", "energy": "medium" },
+{ "title": "Drogba (Joanna)", "artist": "Afro B ft. Wizkid", "energy": "high" },
+{ "title": "Mama", "artist": "Mayra Andrade", "energy": "low" },
+{ "title": "Penso Positivo", "artist": "Anitta", "energy": "high" },
+{ "title": "Fuego", "artist": "Eleni Foureira", "energy": "high" },
+{ "title": "Zitti e Buoni", "artist": "Måneskin", "energy": "high" },
+{ "title": "Habibi", "artist": "Saad Lamjarred", "energy": "high" },
+{ "title": "Batwanes Beek", "artist": "Warda", "energy": "low" },
+{ "title": "Moustahil", "artist": "Myriam Fares", "energy": "high" },
+{ "title": "Ghungroo", "artist": "Shreya Ghoshal", "energy": "high" },
+{ "title": "Mere Dholna", "artist": "Shreya Ghoshal", "energy": "low" },
+{ "title": "Kamli", "artist": "Sunidhi Chauhan", "energy": "high" },
+{ "title": "Fantastic Baby", "artist": "2NE1", "energy": "high" },
+{ "title": "Boombayah", "artist": "BLACKPINK", "energy": "high" },
+{ "title": "Gashina", "artist": "Sunmi", "energy": "high" },
+{ "title": "Tail", "artist": "Sunmi", "energy": "high" },
+{ "title": "Maria", "artist": "Hwasa", "energy": "medium" },
+{ "title": "Nunu Nana", "artist": "Jessi", "energy": "high" },
+{ "title": "Shake It", "artist": "Sistar", "energy": "high" },
+{ "title": "Ponytail", "artist": "Yuna", "energy": "medium" },
+{ "title": "La Tortura", "artist": "Shakira", "energy": "medium" },
+{ "title": "Hips Don't Lie", "artist": "Shakira", "energy": "high" },
+{ "title": "Waka Waka", "artist": "Shakira", "energy": "high" },
+{ "title": "Ojos Así", "artist": "Shakira", "energy": "high" },
+{ "title": "Loca", "artist": "Shakira", "energy": "high" },
+{ "title": "Ella", "artist": "Bebe", "energy": "low" },
+{ "title": "Sálvame", "artist": "RBD", "energy": "medium" },
+{ "title": "Tú", "artist": "Shakira", "energy": "medium" },
+{ "title": "The Phantom of the Opera", "artist": "Sarah Brightman", "energy": "high" },
+{ "title": "I Dreamed a Dream", "artist": "Anne Hathaway", "energy": "low" },
+{ "title": "100% Pure Love", "artist": "Crystal Waters", "energy": "high" },
+{ "title": "Show Me Love", "artist": "Robin S.", "energy": "high" },
+{ "title": "Dreamer", "artist": "Livin' Joy", "energy": "high" },
+{ "title": "Break My Soul", "artist": "Beyoncé", "energy": "high" },
+{ "title": "Cuff It", "artist": "Beyoncé", "energy": "high" },
+{ "title": "Alien Superstar", "artist": "Beyoncé", "energy": "high" },
+{ "title": "Flowers", "artist": "Miley Cyrus", "energy": "medium" },
+{ "title": "Midnight Sky", "artist": "Miley Cyrus", "energy": "high" },
+{ "title": "Don't Start Now", "artist": "Dua Lipa", "energy": "high" },
+{ "title": "Levitating", "artist": "Dua Lipa", "energy": "high" },
+{ "title": "Hallucinate", "artist": "Dua Lipa", "energy": "high" },
+{ "title": "Ain't No Way", "artist": "Aretha Franklin", "energy": "low" },
+{ "title": "I Say a Little Prayer", "artist": "Aretha Franklin", "energy": "medium" },
+{ "title": "Midnight Train to Georgia", "artist": "Gladys Knight", "energy": "medium" },
+{ "title": "Neither One of Us", "artist": "Gladys Knight", "energy": "low" },
+{ "title": "Love Is a Battlefield", "artist": "Pat Benatar", "energy": "high" },
+{ "title": "Hit Me With Your Best Shot", "artist": "Pat Benatar", "energy": "high" },
+{ "title": "Amor I Love You", "artist": "Marisa Monte", "energy": "low" },
+{ "title": "Diariamente", "artist": "Marisa Monte", "energy": "low" },
+{ "title": "Ainda Bem", "artist": "Marisa Monte", "energy": "medium" },
+{ "title": "Vou Deitar e Rolar", "artist": "Gal Costa", "energy": "high" },
+{ "title": "Baby", "artist": "Gal Costa", "energy": "low" },
+{ "title": "Meu Nome É Gal", "artist": "Gal Costa", "energy": "high" },
+{ "title": "Free", "artist": "Ultra Naté", "energy": "high" },
+{ "title": "Insomnia", "artist": "Faithless", "energy": "high" },
+{ "title": "Freed from Desire", "artist": "Gala", "energy": "high" },
+{ "title": "Let Me Be Your Fantasy", "artist": "Baby D", "energy": "high" },
+  { "title": "Dog Days Are Over", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "Shake It Out", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "Spectrum (Say My Name)", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "What Kind of Man", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "Ship to Wreck", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "Hunger", "artist": "Florence + The Machine", "energy": "medium" },
+{ "title": "Cosmic Love", "artist": "Florence + The Machine", "energy": "medium" },
+{ "title": "No Light, No Light", "artist": "Florence + The Machine", "energy": "high" },
+{ "title": "Queen of Peace", "artist": "Florence + The Machine", "energy": "medium" },
+{ "title": "Never Let Me Go", "artist": "Florence + The Machine", "energy": "low" },
+
+{ "title": "Zombie", "artist": "The Cranberries", "energy": "high" },
+{ "title": "Dreams", "artist": "The Cranberries", "energy": "medium" },
+{ "title": "Linger", "artist": "The Cranberries", "energy": "low" },
+
+{ "title": "Boadicea", "artist": "Enya", "energy": "low" },
+{ "title": "Orinoco Flow", "artist": "Enya", "energy": "medium" },
+
+{ "title": "Running Up That Hill", "artist": "Kate Bush", "energy": "high" },
+{ "title": "Wuthering Heights", "artist": "Kate Bush", "energy": "medium" },
+{ "title": "Cloudbusting", "artist": "Kate Bush", "energy": "medium" },
+{ "title": "Hounds of Love", "artist": "Kate Bush", "energy": "high" },
+
+{ "title": "Jolene", "artist": "Dolly Parton", "energy": "medium" },
+{ "title": "9 to 5", "artist": "Dolly Parton", "energy": "high" },
+{ "title": "Here You Come Again", "artist": "Dolly Parton", "energy": "medium" },
+
+{ "title": "Before He Cheats", "artist": "Carrie Underwood", "energy": "high" },
+{ "title": "Cowboy Casanova", "artist": "Carrie Underwood", "energy": "high" },
+{ "title": "Blown Away", "artist": "Carrie Underwood", "energy": "medium" },
+
+{ "title": "The House That Built Me", "artist": "Miranda Lambert", "energy": "low" },
+{ "title": "Gunpowder & Lead", "artist": "Miranda Lambert", "energy": "high" },
+
+{ "title": "Nada", "artist": "Natalia Oreiro", "energy": "medium" },
+{ "title": "Tu Veneno", "artist": "Natalia Oreiro", "energy": "high" },
+
+{ "title": "A Flor e o Espinho", "artist": "Alcione", "energy": "medium" },
+{ "title": "Não Deixe o Samba Morrer", "artist": "Alcione", "energy": "medium" },
+
+{ "title": "Ilê Ayê", "artist": "Margareth Menezes", "energy": "high" },
+{ "title": "Dandalunda", "artist": "Margareth Menezes", "energy": "high" },
+
+{ "title": "O Leãozinho", "artist": "Gal Costa", "energy": "medium" },
+
+{ "title": "Tum Tum", "artist": "Daniela Mercury", "energy": "high" },
+{ "title": "O Canto da Cidade", "artist": "Daniela Mercury", "energy": "high" },
+
+{ "title": "Sonne", "artist": "Rammstein", "energy": "high" },
+{ "title": "Du Hast", "artist": "Rammstein", "energy": "high" },
+
+{ "title": "Major Tom", "artist": "Peter Schilling", "energy": "high" },
+
+{ "title": "99 Luftballons", "artist": "Nena", "energy": "high" },
+{ "title": "Irgendwie, Irgendwo, Irgendwann", "artist": "Nena", "energy": "high" },
+
+{ "title": "Nella Fantasia", "artist": "Sarah Brightman", "energy": "low" },
+{ "title": "Con te partirò", "artist": "Sarah Brightman", "energy": "low" },
+
+{ "title": "Gloria", "artist": "Laura Branigan", "energy": "high" },
+{ "title": "Self Control", "artist": "Laura Branigan", "energy": "high" },
+
+{ "title": "Ti Amo", "artist": "Umberto Tozzi", "energy": "medium" },
+
+{ "title": "Mamma Maria", "artist": "Ricchi e Poveri", "energy": "high" },
+
+{ "title": "Kalinka", "artist": "Balalaika Ensemble", "energy": "high" },
+{ "title": "Katyusha", "artist": "Traditional", "energy": "medium" },
+
+{ "title": "Yeke Yeke", "artist": "Mory Kanté", "energy": "high" },
+
+{ "title": "Pata Pata", "artist": "Miriam Makeba", "energy": "high" },
+{ "title": "The Click Song", "artist": "Miriam Makeba", "energy": "medium" },
+{ "title": "Malaika", "artist": "Miriam Makeba", "energy": "low" },
+
+{ "title": "Mama Africa", "artist": "Youssou N'Dour", "energy": "medium" },
+
+{ "title": "Waka Waka (Esto es África)", "artist": "Shakira", "energy": "high" },
+
+{ "title": "Lambada", "artist": "Kaoma", "energy": "high" },
+
+{ "title": "Ai Se Eu Te Pego", "artist": "Michel Teló", "energy": "high" },
+
+{ "title": "Satisfaction", "artist": "Benny Benassi", "energy": "high" },
+
+{ "title": "Tongue Tied", "artist": "Grouplove", "energy": "high" },
+
+{ "title": "Royals", "artist": "Lorde", "energy": "medium" },
+{ "title": "Tennis Court", "artist": "Lorde", "energy": "medium" },
+{ "title": "Green Light", "artist": "Lorde", "energy": "high" },
+
+{ "title": "Breathe", "artist": "Kylie Minogue", "energy": "medium" },
+
+{ "title": "Sadeness (Part I)", "artist": "Enigma", "energy": "low" },
+
+{ "title": "Return to Innocence", "artist": "Enigma", "energy": "medium" },
+
+{ "title": "Mundian To Bach Ke", "artist": "Panjabi MC", "energy": "high" },
+
+{ "title": "Jai Ho", "artist": "AR Rahman ft. Sukhwinder Singh", "energy": "high" },
+
+{ "title": "Numb", "artist": "Linkin Park", "energy": "high" },
+
+{ "title": "Bring Me to Life", "artist": "Evanescence", "energy": "high" },
+{ "title": "My Immortal", "artist": "Evanescence", "energy": "low" },
+{ "title": "Going Under", "artist": "Evanescence", "energy": "high" },
+
+{ "title": "So What", "artist": "P!nk", "energy": "high" },
+{ "title": "U + Ur Hand", "artist": "P!nk", "energy": "high" },
+{ "title": "Just Like a Pill", "artist": "P!nk", "energy": "high" },
+{ "title": "Who Knew", "artist": "P!nk", "energy": "medium" },
+{ "title": "Try", "artist": "P!nk", "energy": "medium" },
+
+{ "title": "Issues", "artist": "Julia Michaels", "energy": "low" },
+
+{ "title": "Heaven Is a Place on Earth", "artist": "Belinda Carlisle", "energy": "high" },
+{ "title": "Circle in the Sand", "artist": "Belinda Carlisle", "energy": "medium" },
+
+{ "title": "Eternal Flame", "artist": "The Bangles", "energy": "low" },
+{ "title": "Manic Monday", "artist": "The Bangles", "energy": "medium" },
+{ "title": "Walk Like an Egyptian", "artist": "The Bangles", "energy": "high" },
+
+{ "title": "Kids in America", "artist": "Kim Wilde", "energy": "high" },
+{ "title": "You Keep Me Hangin' On", "artist": "Kim Wilde", "energy": "high" },
+
+{ "title": "Maneater", "artist": "Nelly Furtado", "energy": "high" },
+{ "title": "Promiscuous", "artist": "Nelly Furtado", "energy": "high" },
+{ "title": "Say It Right", "artist": "Nelly Furtado", "energy": "medium" },
+
+{ "title": "Doo Wop (That Thing)", "artist": "Lauryn Hill", "energy": "high" },
+{ "title": "Ex-Factor", "artist": "Lauryn Hill", "energy": "low" },
+
+{ "title": "Killing Me Softly", "artist": "The Fugees", "energy": "low" },
+
+{ "title": "Groove Is in the Heart", "artist": "Deee-Lite", "energy": "high" },
+
+{ "title": "The Remedy (I Won't Worry)", "artist": "Jason Mraz", "energy": "medium" },
+
+{ "title": "Little Talks", "artist": "Of Monsters and Men", "energy": "high" },
+
+{ "title": "Valerie", "artist": "Amy Winehouse", "energy": "high" },
+{ "title": "Rehab", "artist": "Amy Winehouse", "energy": "medium" },
+{ "title": "Back to Black", "artist": "Amy Winehouse", "energy": "low" },
+
+{ "title": "You Got the Love", "artist": "Florence + The Machine", "energy": "high" },
+
+{ "title": "I'm Like a Bird", "artist": "Nelly Furtado", "energy": "medium" },
+
+{ "title": "Raise Your Glass", "artist": "P!nk", "energy": "high" },
+{ "title": "Perfect", "artist": "P!nk", "energy": "medium" },
+
+{ "title": "The Climb", "artist": "Miley Cyrus", "energy": "low" },
+{ "title": "Party in the U.S.A.", "artist": "Miley Cyrus", "energy": "high" },
+
+{ "title": "Potential Breakup Song", "artist": "Aly & AJ", "energy": "high" },
+
+{ "title": "Our Lips Are Sealed", "artist": "The Go-Go's", "energy": "high" },
+
+{ "title": "The Warrior", "artist": "Scandal", "energy": "high" },
+
+{ "title": "I Love Rock 'n' Roll", "artist": "Joan Jett", "energy": "high" },
+
+{ "title": "Cherry Bomb", "artist": "The Runaways", "energy": "high" },
+
+{ "title": "Barracuda", "artist": "Heart", "energy": "high" },
+{ "title": "Crazy on You", "artist": "Heart", "energy": "high" },
+
+{ "title": "These Boots Are Made for Walkin'", "artist": "Nancy Sinatra", "energy": "medium" },
+
+{ "title": "Son of a Preacher Man", "artist": "Dusty Springfield", "energy": "medium" },
+
+{ "title": "I Will Always Love You", "artist": "Whitney Houston", "energy": "low" },
+
+{ "title": "I'm Every Woman", "artist": "Whitney Houston", "energy": "high" },
+
+{ "title": "Te Boté (Remix)", "artist": "Nio García, Darell, Casper Mágico", "energy": "high" },
+
+{ "title": "Mayores", "artist": "Becky G ft. Bad Bunny", "energy": "high" },
+{ "title": "Sin Pijama", "artist": "Becky G ft. Natti Natasha", "energy": "high" },
+{ "title": "Mamiii", "artist": "Becky G ft. Karol G", "energy": "high" },
+
+{ "title": "Taki Taki", "artist": "DJ Snake ft. Selena Gomez, Ozuna, Cardi B", "energy": "high" },
+
+{ "title": "Como La Flor", "artist": "Selena", "energy": "medium" },
+{ "title": "Bidi Bidi Bom Bom", "artist": "Selena", "energy": "high" },
+{ "title": "Dreaming of You", "artist": "Selena", "energy": "low" },
+
+{ "title": "La Cumbia de la Cerveza", "artist": "Grupo Sonador", "energy": "high" },
+
+{ "title": "La Llama del Amor", "artist": "Natalia Oreiro", "energy": "high" },
+
+{ "title": "Bad Guy", "artist": "Billie Eilish", "energy": "medium" },
+{ "title": "Therefore I Am", "artist": "Billie Eilish", "energy": "high" },
+{ "title": "Happier Than Ever", "artist": "Billie Eilish", "energy": "medium" },
+{ "title": "Bellyache", "artist": "Billie Eilish", "energy": "low" },
+
+{ "title": "Ocean Eyes", "artist": "Billie Eilish", "energy": "low" },
+
+{ "title": "Blinding Lights", "artist": "The Weeknd", "energy": "high" },
+
+{ "title": "Physical", "artist": "Olivia Newton-John", "energy": "high" },
+
+{ "title": "Let's Get Physical", "artist": "Olivia Newton-John", "energy": "high" },
+
+{ "title": "Xanadu", "artist": "Olivia Newton-John", "energy": "medium" },
+
+{ "title": "All Night Long", "artist": "Lionel Richie", "energy": "high" },
+
+{ "title": "A Whole New World", "artist": "Peabo Bryson & Regina Belle", "energy": "low" },
+
+{ "title": "Beauty and the Beast", "artist": "Céline Dion & Peabo Bryson", "energy": "low" },
+
+{ "title": "Can You Feel the Love Tonight", "artist": "Elton John", "energy": "medium" },
+
+{ "title": "The Circle of Life", "artist": "Carmen Twillie", "energy": "high" },
+
+{ "title": "Reflection", "artist": "Lea Salonga", "energy": "low" },
+
+{ "title": "The Bitch Is Back", "artist": "Elton John", "energy": "high" },
+
+{ "title": "I'm Still Standing", "artist": "Elton John", "energy": "high" },
+
+{ "title": "Tiny Dancer", "artist": "Elton John", "energy": "medium" },
+
+{ "title": "Rocket Man", "artist": "Elton John", "energy": "medium" },
+
+{ "title": "Kiss", "artist": "Prince", "energy": "high" },
+
+{ "title": "Raspberry Beret", "artist": "Prince", "energy": "medium" },
+
+{ "title": "When Doves Cry", "artist": "Prince", "energy": "medium" },
+
+{ "title": "Purple Rain", "artist": "Prince", "energy": "low" },
+
+{ "title": "Nothing Compares 2 U", "artist": "Sinead O'Connor", "energy": "low" },
+
+{ "title": "Titanium", "artist": "Sia", "energy": "high" },
+{ "title": "Chandelier", "artist": "Sia", "energy": "medium" },
+{ "title": "Elastic Heart", "artist": "Sia", "energy": "medium" },
+{ "title": "Cheap Thrills", "artist": "Sia", "energy": "high" },
+
+{ "title": "Unstoppable", "artist": "Sia", "energy": "high" },
+
+{ "title": "Breathe Me", "artist": "Sia", "energy": "low" },
+
+{ "title": "Rather Be", "artist": "Clean Bandit ft. Jess Glynne", "energy": "high" },
+{ "title": "Rockabye", "artist": "Clean Bandit ft. Anne-Marie", "energy": "medium" },
+{ "title": "Symphony", "artist": "Clean Bandit ft. Zara Larsson", "energy": "high" },
+
+{ "title": "Never Forget You", "artist": "Zara Larsson", "energy": "medium" },
+{ "title": "Lush Life", "artist": "Zara Larsson", "energy": "high" },
+
+{ "title": "All About That Bass", "artist": "Meghan Trainor", "energy": "high" },
+{ "title": "Lips Are Movin", "artist": "Meghan Trainor", "energy": "high" },
+{ "title": "Dear Future Husband", "artist": "Meghan Trainor", "energy": "high" },
+
+{ "title": "Bang Bang", "artist": "Jessie J, Ariana Grande, Nicki Minaj", "energy": "high" },
+{ "title": "Domino", "artist": "Jessie J", "energy": "high" },
+{ "title": "Price Tag", "artist": "Jessie J", "energy": "medium" },
+
+{ "title": "I Love It", "artist": "Icona Pop", "energy": "high" },
+{ "title": "Girls", "artist": "Icona Pop", "energy": "high" },
+
+{ "title": "Dancing Queen", "artist": "ABBA", "energy": "high" },
+{ "title": "Mamma Mia", "artist": "ABBA", "energy": "high" },
+{ "title": "Gimme! Gimme! Gimme!", "artist": "ABBA", "energy": "high" },
+{ "title": "The Winner Takes It All", "artist": "ABBA", "energy": "low" },
+
+{ "title": "Voulez-Vous", "artist": "ABBA", "energy": "high" },
+
+{ "title": "Super Trouper", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Fernando", "artist": "ABBA", "energy": "low" },
+
+{ "title": "Chiquitita", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "I Have a Dream", "artist": "ABBA", "energy": "low" },
+
+{ "title": "The Day Before You Came", "artist": "ABBA", "energy": "low" },
+
+{ "title": "Angel Eyes", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Take a Chance on Me", "artist": "ABBA", "energy": "high" },
+
+{ "title": "Does Your Mother Know", "artist": "ABBA", "energy": "high" },
+
+{ "title": "SOS", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Waterloo", "artist": "ABBA", "energy": "high" },
+
+{ "title": "I Do, I Do, I Do", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Money, Money, Money", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Knowing Me, Knowing You", "artist": "ABBA", "energy": "low" },
+
+{ "title": "One of Us", "artist": "ABBA", "energy": "low" },
+
+{ "title": "The Name of the Game", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Angeleyes", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Eagle", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Summer Night City", "artist": "ABBA", "energy": "high" },
+
+{ "title": "Happy New Year", "artist": "ABBA", "energy": "low" },
+
+{ "title": "Head over Heels", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "The Visitors", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Soldiers", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Under Attack", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "I Still Have Faith in You", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Don't Shut Me Down", "artist": "ABBA", "energy": "high" },
+
+{ "title": "Just a Notion", "artist": "ABBA", "energy": "medium" },
+
+{ "title": "Little Things", "artist": "ABBA", "energy": "low" },
+
+{ "title": "No Doubt About It", "artist": "ABBA", "energy": "medium" },
+  { "title": "Malambo No. 1", "artist": "Yma Sumac", "energy": "high" },
+{ "title": "Bam Bam", "artist": "Sister Nancy", "energy": "high" },
+{ "title": "Maps", "artist": "Yeah Yeah Yeahs", "energy": "high" },
+{ "title": "Heads Will Roll", "artist": "Yeah Yeah Yeahs", "energy": "high" },
+{ "title": "Megitsune", "artist": "BABYMETAL", "energy": "high" },
+{ "title": "Gimme Chocolate!!", "artist": "BABYMETAL", "energy": "high" },
+{ "title": "Rhythm of the Night", "artist": "Corona", "energy": "high" },
+{ "title": "I Am What I Am", "artist": "Gloria Gaynor", "energy": "medium" },
+{ "title": "Over the Rainbow", "artist": "Judy Garland", "energy": "low" },
+{ "title": "Queen of the Night", "artist": "Mozart", "energy": "high" },
+{ "title": "Renai Circulation", "artist": "Kana Hanazawa", "energy": "medium" },
+{ "title": "Faraó", "artist": "Margareth Menezes", "energy": "high" },
+{ "title": "Swing da Cor", "artist": "Daniela Mercury", "energy": "high" },
+{ "title": "American", "artist": "RuPaul", "energy": "high" },
+{ "title": "Butch Queen", "artist": "RuPaul", "energy": "high" },
+{ "title": "When I Rule the World", "artist": "LIZ", "energy": "high" },
+{ "title": "Harder, Better, Faster, Stronger", "artist": "Daft Punk", "energy": "high" }
 ];
