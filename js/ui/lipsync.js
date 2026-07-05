@@ -417,19 +417,30 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The big emotional moment came and went, and nobody noticed.',
       'She reached for the song\'s soul and grabbed her own confusion.'
     ],
-    partial: [
+   partial: [
       'There were flashes of feeling, but the impact came and went.',
       'She found the emotion in places, though not enough to control the room.',
       'The vulnerability surfaced in moments, then dissolved just as quickly.',
       'She touched the heart of the song occasionally, but couldn\'t sustain it.',
-      'The emotion flickered like a candle in wind — promising, then fading.'
+      'The emotion flickered like a candle in wind — promising, then fading.',
+      'She served half a heartbreak—enough to make you look, but not enough to make you cry.',
+      'The face gave a glimpse of a soul, but the body kept checking the exit.',
+      'She cracked the door open to her feelings, but slammed it shut before the chorus.',
+      'The emotion arrived in waves, but left her stranded on the sand in between.',
+      'You could see the tears loading, but the connection kept buffering.',
+      'She gave just enough face to survive, but not enough to stay memorable.'
     ],
     strong: [
       'The emotion landed clearly and gave the song a beating heart.',
       'She made the judges feel the lyrics without forcing the moment.',
       'The vulnerability felt earned, and the room leaned in to watch.',
       'Every glance carried weight, and the song breathed through her.',
-      'She translated the lyrics into genuine feeling that reached the back of the room.'
+      'She translated the lyrics into genuine feeling that reached the back of the room.',
+      'She didn’t just look sad; she made the judges remember their own exes.',
+      'The vulnerability was palpable, grounding the entire stage in heavy reality.',
+      'Every heavy blink told a different chapter of the same tragic story.',
+      'She connected with the camera like a woman with nothing left to lose.',
+      'She held the room by the throat using nothing but a targeted stare.'
     ],
     outstanding: [
       'Every breath felt chosen, and the emotion built with precision.',
@@ -494,14 +505,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She caught some lines beautifully and let others pass by.',
       'The phrasing worked in parts, but the through-line got lost.',
       'She sold verses but lost the choruses to uncertainty.',
-      'The intention came in waves — some hit, some barely registered.'
+      'The intention came in waves — some hit, some barely registered.',
+      'She knew the words, but she didn’t quite look like she approved of them.',
+      'The verses were tight, but the bridge turned into a guessing game.',
+      'The mouth was moving at the right speed, but the eyes were reciting a grocery list.',
+      'She nailed the high notes but mumbled through the fine print.',
+      'A solid effort that proved she listened to the song in the car on the way over.'
     ],
     strong: [
       'The mouth, the eyes, the timing — all locked in.',
       'Every lyric had a purpose, and she made the song feel personal.',
       'She sold every word like it had been written about her life.',
       'The phrasing was sharp, and the face matched every syllable perfectly.',
-      'She turned the lyrics into a confession, and the room believed her.'
+      'She turned the lyrics into a confession, and the room believed her.',
+      'You could see every syllable clearly from the back row.',
+      'She chewed on the consonants and spat them out with venom.',
+      'Every word felt like it was being extracted directly from her diary.',
+      'The sync was so tight everyone would swear she was the one who went into the recording studio.',
+      'She matched the track breath for breath, selling the story without a single slip.'
     ],
     outstanding: [
       'She carved meaning into every word and caught every camera beat.',
@@ -566,14 +587,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She hit a few strong beats, then lost the thread between them.',
       'The movement worked in flashes but lacked consistent fire.',
       'She danced hard in moments, then lost the rhythm in transitions.',
-      'The stage saw effort, though the precision needed more work.'
+      'The stage saw effort, though the precision needed more work.',
+      'She gave rhythm, but it was on a slight time delay.',
+      'The upper body was ready for a club, but the heels were stuck in traffic.',
+      'She caught the major beats, but the moments in between looked like pacing.',
+      'The choreography started as a sprint and ended as a brisk walk.',
+      'The energy was high, but it looked more like panic than precision.'
     ],
     strong: [
       'She attacked the rhythm with confidence and filled the stage.',
       'The dancing pushed the song forward without swallowing the lip sync.',
       'Her movement elevated the performance and kept the energy high.',
       'She owned the space and made every step count.',
-      'The choreography enhanced the song instead of competing with it.'
+      'The choreography enhanced the song instead of competing with it.',
+      'She commanded the stage, making every stomp feel intentional.',
+      'Her body rhythm was infectious, forcing the judges to move with her.',
+      'She glided across the stage like she owned the floor plan.',
+      'The lines were clean, the energy was lethal, and the heels never faltered.',
+      'She gave a masterclass in hitting a beat without losing her breath.'
     ],
     outstanding: [
       'Every step hit hard, clean, and camera-ready.',
@@ -638,14 +669,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The stunts got attention, though not always for the right reasons.',
       'She hit a few impressive moments but lost control in between.',
       'The ambition was clear, but the execution stayed inconsistent.',
-      'The tricks earned gasps, though the rest of the performance struggled to keep up.'
+      'The tricks earned gasps, though the rest of the performance struggled to keep up.',
+      'She hit the split, but it took her a second to remember how to stand back up.',
+      'The stunt gave a thrill, but the transition after it looked clumsy.',
+      'She checked her spacing before the jump, giving away the surprise.',
+      'The cartwheel happened, but it looked like a negotiation with gravity.',
+      'She served acrobatics, but forgot she also needed to lip sync.'
     ],
     strong: [
       'The risks landed cleanly and raised the stakes.',
       'She used the tricks as punctuation instead of panic.',
       'Every stunt felt earned and added to the performance.',
       'She balanced danger with control, and it paid off.',
-      'The physicality elevated the song without overwhelming it.'
+      'The physicality elevated the song without overwhelming it.',
+      'She hit the floor like she had a personal vendetta against it.',
+      'The split landed exactly on the beat, sending a shockwave through the panel.',
+      'She tossed her body into the air with complete, terrifying confidence.',
+      'The stunts weren’t desperation; they were calculated strikes.',
+      'A flawlessly executed dip that proved she knows exactly where her center of gravity is.'
     ],
     outstanding: [
       'Every stunt arrived exactly where the song needed impact.',
@@ -705,19 +746,29 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She saved the reveal for so long that it expired.',
       'The reveal came off. So did her composure.'
     ],
-    partial: [
+   partial: [
       'The reveal worked, but hesitation kept it from becoming the moment.',
       'The timing was close, though the payoff needed more force.',
       'She built tension, but the release didn\'t match the build-up.',
       'The reveal landed, but the journey to it felt uneven.',
-      'She had the right idea, though the execution needed sharper instincts.'
+      'She had the right idea, though the execution needed sharper instincts.',
+      'The outfit changed, but the energy stayed exactly the same.',
+      'She unzipped the look, but it felt more like a wardrobe change than a twist.',
+      'The reveal was good, but she spent too long fiddling with the snaps.',
+      'The timing was slightly off, making the reveal feel accidental instead of tactical.',
+      'The look underneath was stunning, but the reveal itself lacked the "oomph".'
     ],
     strong: [
       'She saved the reveal for the right beat, and the room woke up.',
       'The climax gave her the opening, and she used it well.',
       'The build-up paid off with a reveal that felt earned.',
       'She timed it perfectly and turned the song on its head.',
-      'The wait made the moment land with satisfying force.'
+      'The wait made the moment land with satisfying force.',
+      'She dropped the fabric exactly when the bass dropped, blinding the judges.',
+      'The transformation changed the stakes of the entire lip sync.',
+      'She weaponized anticipation, keeping the judges waiting until the absolute perfect frame.',
+      'The reveal shifted her from a queen in danger to a queen in command.',
+      'She shed the outer layer with a snap that demanded full attention.'
     ],
     outstanding: [
       'The reveal arrived like a punchline and a victory lap at once.',
@@ -782,14 +833,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The opening shock worked; the rest needed more shape.',
       'She made a strong first impression but couldn\'t build on it.',
       'The early gamble paid off initially, then the performance plateaued.',
-      'She started with a bang and ended with a whimper.'
+      'She started with a bang and ended with a whimper.',
+      'She blew everyone\'s mind in the first ten seconds, then spent two minutes repeating herself.',
+      'The reveal was a hit, but it left her with no tricks for the finale.',
+      'She woke the room up early, but forgot to keep them entertained.',
+      'The early gag was great; the rest of the song was just fine.',
+      'She gave her best asset away before the first chorus even started.'
     ],
     strong: [
       'The early reveal hooked the room, and she kept enough control to ride it.',
       'She used the reveal as an entrance, not the whole performance.',
       'The shock worked, and she proved she had more to offer afterward.',
       'She opened strong and maintained the energy throughout.',
-      'The early surprise set the tone, and she delivered on its promise.'
+      'The early surprise set the tone, and she delivered on its promise.',
+      'She dropped the first look immediately, declaring war on her opponent.',
+      'The early reveal wasn\'t a peak; it was just the baseline for what was to come.',
+      'She established absolute dominance in the intro and spent the rest of the song gloating.',
+      'She shocked the panel out of their seats before the lyrics even kicked in.',
+      'An opening gambit so fierce that her opponent spent the whole song trying to catch up.'
     ],
     outstanding: [
       'The reveal hit immediately, then she kept raising the temperature.',
@@ -854,14 +915,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'A few surprises landed while others got in the way.',
       'The layers worked occasionally, though the execution felt uneven.',
       'She had the right idea, but the reveals needed better spacing.',
-      'Some moments hit, but the overall impact got lost in the chaos.'
+      'Some moments hit, but the overall impact got lost in the chaos.',
+      'She kept taking things off, but it felt more like frantic packing than a performance.',
+      'Two out of three reveals hit the mark, which isn\'t a terrible average.',
+      'The reveals kept coming, but they started to feel like a distraction from her mouth.',
+      'She changed looks three times, but the performance stayed in one place.',
+      'The concept was heavy, and she staggered slightly under the weight of her own clothing.'
     ],
     strong: [
       'The reveals built in a clear rhythm and kept the judges watching.',
       'She balanced spectacle with enough lip sync to make it work.',
       'Every reveal had purpose and contributed to the performance.',
       'She layered surprises effectively without overwhelming the song.',
-      'The multiple reveals created a dynamic, engaging performance.'
+      'The multiple reveals created a dynamic, engaging performance.',
+      'A Russian nesting doll of a performance, with each layer better than the last.',
+      'She paced her gags perfectly, giving the judges a new reason to look every thirty seconds.',
+      'Each reveal matched a shift in the music, showing high-level tactical thinking.',
+      'She peeled away her outfits like chapters in an incredibly expensive book.',
+      'She kept pulling rabbits out of hats until the entire panel was sold.'
     ],
     outstanding: [
       'Each reveal escalated the last without losing the song.',
@@ -926,14 +997,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She stayed clean, though the performance needed a stronger pulse.',
       'The control was there, though the spark never ignited.',
       'She avoided disaster but also avoided greatness.',
-      'The performance was solid, but solid doesn\'t win.'
+      'The performance was solid, but solid doesn\'t win.',
+      'She colored inside the lines, but forgot to use any bright colors.',
+      'It was a perfectly adequate performance that won’t make anyone mad, or excited.',
+      'She stood her ground, but she didn’t conquer any new territory.',
+      'The execution was mathematically correct, but emotionally vacant.',
+      'She did exactly what was required to not end up in a compilation video.'
     ],
     strong: [
       'The restraint worked because every detail was controlled.',
       'She kept it simple and made the choices count.',
       'The clean approach proved that less can be more.',
       'She stayed in control and delivered a focused, effective performance.',
-      'The simplicity worked because she executed every moment with precision.'
+      'The simplicity worked because she executed every moment with precision.',
+      'She didn\'t do a single stunt, and she didn\'t need to—the face was the stunt.',
+      'A masterclass in editing; she threw away the fluff and kept the meat.',
+      'She stayed rooted to the spot and forced the cameras to come to her.',
+      'No tricks, no gimmicks, just pure, unadulterated lip-sync precision.',
+      'She proved that standing still with confidence is louder than a sloppy cartwheel.'
     ],
     outstanding: [
       'No tricks, no panic — just precision, face, and total control.',
@@ -998,14 +1079,24 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The risk created tension, though not enough payoff.',
       'She had moments of control, but the approach felt uneven.',
       'She stole attention occasionally, though the performance lacked cohesion.',
-      'The overshadowing worked in parts but hurt the whole.'
+      'The overshadowing worked in parts but hurt the whole.',
+      'She blocked her opponent once or twice, but it looked accidental instead of dominant.',
+      'She tried to step in front, but her opponent just danced around her.',
+      'The aggression was there, but she didn’t have the choreography to back it up.',
+      'She tried to hog the camera, but the camera didn’t seem particularly interested.',
+      'She got in her opponent’s face, but the other queen just smiled through it.'
     ],
     strong: [
       'She stole the spotlight without losing the song, and her opponent visibly lost ground.',
       'She redirected the room toward herself and made the duel feel tilted.',
       'The aggression was controlled and effective.',
       'She took focus and never gave it back.',
-      'The tactic worked — her opponent faded while she rose.'
+      'The tactic worked — her opponent faded while she rose.',
+      'She locked her opponent in the background, treating her like an uncredited backup dancer.',
+      'Every time the other queen tried to stunt, she stepped into the frame and took the moment.',
+      'She didn’t just perform; she actively reduced her opponent to a footnote.',
+      'She cornered the stage, forcing the other queen into the dark spots of the lighting grid.',
+      'She hijacked the judges\' eyes, making it physically impossible to look at the other side of the stage.'
     ],
     outstanding: [
       'Every time her opponent found space, she took it back with nerve and timing.',
