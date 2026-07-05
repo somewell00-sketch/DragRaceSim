@@ -385,11 +385,11 @@ function resultTier(result){
 
 function lipSyncExecutionTier(score){
   const v=Number(score)||0;
-  if(v<=5) return 'failed';
-  if(v<7) return 'partial';
-  if(v<8.5) return 'strong';
-  if(v<9.5) return 'outstanding';
-  return 'legendary';
+   if (v < 5.4) return 'failed';        // ~15%
+    if (v < 6.8) return 'partial';       // ~35%
+    if (v < 7.7) return 'strong';        // ~30%
+    if (v < 8.4) return 'outstanding';   // ~15%
+    return 'legendary';      
 }
 
 const V20_LIPSYNC_EXECUTION_TEXT = {
