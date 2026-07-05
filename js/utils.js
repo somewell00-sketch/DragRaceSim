@@ -2,7 +2,17 @@ function clamp(value,min,max){return Math.max(min,Math.min(max,value));}
 function sample(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
 function rand(min,max){return Math.round((Math.random()*(max-min)+min)*10)/10;}
-function weightedAttributeScore(attributes,weights){return Object.entries(weights).reduce((t,[a,w])=>t+(attributes[a]||0)*10*w,0);}
+function weightedAttributeScore(attributes, weights) {
+  return Object.entries(weights).reduce((t, [a, w]) => {
+    const globalAttrMultiplier = {
+      cunt: 0.8,
+      runway: 1.15
+    };
+
+    const mult = globalAttrMultiplier[a] ?? 1;
+    return t + (attributes[a] || 0) * 10 * w * mult;
+  }, 0);
+}
 function riskRoll(risk){if(risk==='safe')return rand(-5,5); if(risk==='unexpected')return Math.random()>.5?rand(5,14):rand(-14,-5); return rand(-12,12);}
 function placementBadge(p, meta={}){const cls={WIN:'win',HIGH:'high',SAFE:'safe',CRITIQUE:'high',TOP2:'top2',LOW:'low',BTM:'bottom','LIPSYNC WIN':'bottom',ELIM:'elim',WINNER:'winner',RUNNERUP:'runnerup',FINALIST:'finalist'}[p]||'';const label=p==='LIPSYNC WIN'?'BTM':p;const strong=meta?.lipSyncWinner?' lip-sync-win':'';return `<span class="badge ${cls}${strong}">${label}</span>`;}
 function relationLabel(a,r){
@@ -11,10 +21,15 @@ function relationLabel(a,r){
 function relationshipEmojiFromScore(a=0,r=0){
   const score=(Number(a)||0)*0.65+(Number(r)||0)*0.35;
   const pick=(arr,seed=0)=>arr[Math.abs(Math.round(seed*13))%arr.length];
-  if(score<=-60)return pick(['🤮','😡','🤬'],score);
-  if(score<=-28)return pick(['😒','🤨','😠'],score);
-  if(score<18)return pick(['😐','😬','🙂'],score);
-  if(score<55)return pick(['😁','😊','😘'],score);
+
+  if(score<=-35)return pick(['🤮','😡','🤬'],score);
+
+  if(score<=-12)return pick(['😒','🤨','😠'],score);
+
+  if(score<12)return pick(['😐','😬','🙂'],score);
+
+  if(score<35)return pick(['😁','😊','😘'],score);
+
   return pick(['🥰','😍','🤩'],score);
 }
 function queenPersonalityName(q){
