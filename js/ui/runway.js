@@ -375,21 +375,22 @@ function fashionWarsBattleCards(ep, placements){
   if(!battles.length)return '';
   const byId=Object.fromEntries(placements.map(p=>[p.queenId,p]));
   const teamName=(id)=>{const team=(ep.teams||[]).find(t=>(t.queenIds||[]).includes(id)); return team?.name||'';};
-  const points=(ep.fashionWarsPoints||[]).map(t=>`<p><strong>${escapeHtml(t.name)}</strong>: ${t.points} point${t.points===1?'':'s'}</p>`).join('');
+  const isDuelMode=(ep.activeCount||0)===8;
+  const points=isDuelMode?'':(ep.fashionWarsPoints||[]).map(t=>`<p><strong>${escapeHtml(t.name)}</strong>: ${t.points} point${t.points===1?'':'s'}</p>`).join('');
   const cards=battles.map((battle,idx)=>{
     const rows=(battle.queenIds||[]).map(id=>{
       const p=byId[id];
       const q=gameState.queens.find(x=>x.id===id);
       const won=id===battle.winnerId;
       return `<div class="runway-look ${won?'runway-showstopper':''}">
-        <div class="runway-look-head">${q?queenPortraitHtml(q,won?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p?.name||'Queen')}</h4><p class="small">${escapeHtml(teamName(id))}</p>${won?'<p><strong>Wins this fashion battle.</strong></p>':'<p>Falls short in this battle.</p>'}</div></div>
+        <div class="runway-look-head">${q?queenPortraitHtml(q,won?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p?.name||'Queen')}</h4><p class="small">${escapeHtml(teamName(id))}</p>${won?`<p><strong>${isDuelMode?'Wins this duel.':'Wins this fashion battle.'}</strong></p>`:`<p>${isDuelMode?'Loses this duel.':'Falls short in this battle.'}</p>`}</div></div>
       </div>`;
     }).join('');
     return `<div class="card runway-card fashion-war-battle">
       ${runwayCategoryHeader(battle.title||`Fashion Battle ${idx+1}`)}
       <p>${escapeHtml(battle.prompt||'Create a winning design look.')}</p>
       <div class="runway-walk-list">${rows}</div>
-      ${battle.winnerId?`<div class="card subtle"><h3>Battle winner</h3><p><strong>${escapeHtml(qName(battle.winnerId))}</strong> scores a point for ${escapeHtml(teamName(battle.winnerId)||'her team')}.</p></div>`:''}
+      ${battle.winnerId?`<div class="card subtle"><h3>${isDuelMode?'Duel winner':'Battle winner'}</h3><p><strong>${escapeHtml(qName(battle.winnerId))}</strong>${isDuelMode?' wins this independent duel.':` scores a point for ${escapeHtml(teamName(battle.winnerId)||'her team')}.`}</p></div>`:''}
     </div>`;
   }).join('');
   return `${cards}${points?`<div class="card"><h3>Fashion Wars score</h3>${points}</div>`:''}`;

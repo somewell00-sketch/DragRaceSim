@@ -1397,7 +1397,7 @@ function finalizeCurrentEpisodeTeams(teams, autoChosen=false){
   ep.teams=teams||[];
   if(ep.teamFormation){ep.teamFormation.autoChosen=!!autoChosen; ep.teamFormation.pending=false;}
   if(ep.challengeType==='fashion_wars')assignFashionWarsBattles(ep);
-  ep.judgingMode=ep.challengeType==='fashion_wars'?'team':((ep.teams&&ep.teams.length)?pickTeamJudgingMode(ep.structure):'individual');
+  ep.judgingMode=(ep.challengeType==='fashion_wars' && (ep.activeCount||0)!==8)?'team':((ep.teams&&ep.teams.length && ep.challengeType!=='fashion_wars')?pickTeamJudgingMode(ep.structure):'individual');
   saveGame();
 }
 
@@ -1549,7 +1549,7 @@ function pickChallengeContent(challengeId){
       designCategory: category,
       fashionWars:true,
       challengeTitle:`The ${category.category || 'Design'} Fashion Wars`,
-      challengePrompt:'The queens face off in runway design battles.',
+      challengePrompt:activeCount===8?'Four independent head-to-head design duels. No houses, no score: each pair fights for an individual placement.':'The queens face off in runway design battles. Each battle scores one point for a fashion house.',
       mainTheme:category.category || 'Fashion Wars',
       battles
     };
@@ -1831,7 +1831,7 @@ function generateEpisode(){
     challengeContent.challengePrompt=`Host a sit-down interview with ${challengeContent.interviewGuest.name}. Keep it funny, sharp, and moving.`;
     challengeContent.mainTheme=`Interview with ${challengeContent.interviewGuest.name}`;
   }
-  const judgingMode=challenge.id==='fashion_wars'?'team':((teams&&teams.length)?pickTeamJudgingMode(structure):'individual');
+  const judgingMode=(challenge.id==='fashion_wars' && activeCount!==8)?'team':((teams&&teams.length && challenge.id!=='fashion_wars')?pickTeamJudgingMode(structure):'individual');
   const snatchCharacters=isSnatchGame?assignSnatchCharacters(active):[];
   gameState.currentEpisode={
     number,
