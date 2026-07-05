@@ -1422,7 +1422,7 @@ function resolveLipSync(playerMoves=null, options={}){
     survivorId=null;
     eliminatedQueenId=null;
     eliminatedQueenIds=results.map(r=>r.queenId);
-  } else if(results.length===2 && diff<1 && results[0].score10>=7 && results[1].score10>=7 && !gameState.season.doubleShantayUsed){
+  } else if(results.length===2 && diff<0.8 && results[0].score10>=7.5 && results[1].score10>=7.5 && !gameState.season.doubleShantayUsed){
     outcome='doubleShantay';
     gameState.season.doubleShantayUsed=true;
     survivorId=null;
