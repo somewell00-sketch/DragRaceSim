@@ -1217,6 +1217,182 @@ function pickEpisodeStructure(challengeId, activeCount){
   if(r<0.45)return options[0];
   return sample(options.slice(1));
 }
+
+
+// Team formation configuration. Change these weights to rebalance how often each method appears.
+const TEAM_FORMATION_METHOD_WEIGHTS={
+  mini_captains:45,
+  random:20,
+  free_choice:20,
+  previous_winner:15
+};
+
+function teamStructureTargetSizes(structure, active){
+  if(!structure || structure.id==='solo')return [];
+  let teamCount=2;
+  if(structure.id==='fashion_wars'){
+    const n=active.length;
+    teamCount=n===10?2:(n===9?3:4);
+  }else{
+    if(structure.id==='duos') teamCount=Math.floor(active.length/2);
+    if(structure.id==='teams3') teamCount=3;
+    if(structure.id==='teams2') teamCount=2;
+    while(teamCount>1 && active.length/teamCount<2)teamCount--;
+  }
+  const baseSize=Math.floor(active.length/teamCount);
+  const extra=active.length%teamCount;
+  return Array.from({length:teamCount},(_,i)=>baseSize+(i<extra?1:0));
+}
+function teamNameForStructure(structure, ids, i){
+  if(structure?.id==='fashion_wars'){
+    if((ids||[]).length===2)return `Duel ${i+1}`;
+    return `House ${i+1}`;
+  }
+  return structure?.id==='duos'?(ids.length===2?`Pair ${i+1}`:`Group ${i+1}`):`Team ${i+1}`;
+}
+function teamsFromIdGroups(groups, structure){
+  return (groups||[]).map((ids,i)=>({id:(structure?.id==='fashion_wars'?`fashion_team_${i+1}`:`team_${i+1}`),name:teamNameForStructure(structure,ids,i),queenIds:ids.slice()}));
+}
+function recentTrackRecordScore(q){
+  const h=(q?.episodeHistory||[]).slice(-3);
+  const map={WIN:14,TOP2:10,HIGH:8,SAFE:2,LOW:-5,BTM:-9,ELIM:-12};
+  return h.reduce((sum,x)=>sum+(map[String(x.placement||'').toUpperCase()]||0),0) + ((q?.statistics?.wins||0)*2) + ((q?.statistics?.highs||0)*0.8) - ((q?.statistics?.bottoms||0)*1.2);
+}
+function relationshipScoreBetween(aId,bId){
+  const a=gameState.relationships?.[aId]?.[bId]?.affinity||0;
+  const b=gameState.relationships?.[bId]?.[aId]?.affinity||0;
+  return (a+b)/2;
+}
+function autoPickTeamCaptain(chooserId, pool){
+  const chooser=gameState.queens.find(q=>q.id===chooserId);
+  return pool.slice().sort((a,b)=>{
+    const as=(chooser?relationshipScoreBetween(chooser.id,a.id):0)*0.45 + recentTrackRecordScore(a)*0.45 + rand(-8,8);
+    const bs=(chooser?relationshipScoreBetween(chooser.id,b.id):0)*0.45 + recentTrackRecordScore(b)*0.45 + rand(-8,8);
+    return bs-as;
+  })[0]||pool[0]||null;
+}
+function autoPickTeammate(captainId, teamIds, pool){
+  return pool.slice().sort((a,b)=>{
+    const score=(q)=>{
+      const capRel=captainId?relationshipScoreBetween(captainId,q.id):0;
+      const teamRel=teamIds.length?teamIds.reduce((s,id)=>s+relationshipScoreBetween(id,q.id),0)/teamIds.length:0;
+      return capRel*0.35 + teamRel*0.25 + recentTrackRecordScore(q)*0.35 + rand(-7,7);
+    };
+    return score(b)-score(a);
+  })[0]||pool[0]||null;
+}
+function lastEpisodeUniqueWinner(){
+  const last=(gameState.episodeHistory||[]).slice().reverse().find(e=>e?.placements?.length);
+  if(!last)return null;
+  const winners=(last.placements||[]).filter(p=>p.placement==='WIN');
+  if(winners.length!==1)return null;
+  return gameState.queens.find(q=>q.id===winners[0].queenId)||null;
+}
+function pickTeamFormationMethod(structure, active, miniWinner){
+  if(!structure || structure.id==='solo')return null;
+  const previousWinner=lastEpisodeUniqueWinner();
+  const lastFormation=(gameState.episodeHistory||[]).slice().reverse().find(e=>e?.teamFormation)?.teamFormation?.method;
+  const canPrevious=(gameState.episodeHistory||[]).length>=3 && previousWinner && lastFormation!=='previous_winner';
+  const weights={...TEAM_FORMATION_METHOD_WEIGHTS};
+  if(!miniWinner)weights.mini_captains=0;
+  if(!canPrevious)weights.previous_winner=0;
+  const entries=Object.entries(weights).filter(([,w])=>w>0);
+  const total=entries.reduce((s,[,w])=>s+w,0);
+  let r=Math.random()*total;
+  for(const [method,w] of entries){if((r-=w)<=0)return method;}
+  return entries[0]?.[0]||'random';
+}
+function autoAssignAllTeams(structure, active, method='random', options={}){
+  const targetSizes=teamStructureTargetSizes(structure, active);
+  if(!targetSizes.length)return [];
+  if(method==='random'){
+    const pool=shuffle(active).map(q=>q.id), groups=targetSizes.map(()=>[]);
+    targetSizes.forEach((size,i)=>{while(groups[i].length<size && pool.length)groups[i].push(pool.shift());});
+    return teamsFromIdGroups(groups,structure);
+  }
+  if(method==='mini_captains'){
+    const captainIds=(options.captainIds||[]).slice(0,2);
+    const groups=targetSizes.map(()=>[]);
+    captainIds.forEach((id,i)=>{if(groups[i])groups[i].push(id);});
+    let pool=active.filter(q=>!captainIds.includes(q.id));
+    let turn=0;
+    while(pool.length){
+      let idx=turn%groups.length;
+      let loops=0;
+      while(groups[idx].length>=targetSizes[idx] && loops<groups.length){idx=(idx+1)%groups.length; loops++;}
+      const captainId=groups[idx][0]||captainIds[idx%captainIds.length]||null;
+      const pick=autoPickTeammate(captainId,groups[idx],pool);
+      groups[idx].push(pick.id); pool=pool.filter(q=>q.id!==pick.id); turn=idx+1;
+    }
+    return teamsFromIdGroups(groups,structure);
+  }
+  const groups=targetSizes.map(()=>[]);
+  let pool=shuffle(active);
+  if(method==='previous_winner'){
+    const chooserId=options.chooserId;
+    while(pool.length){
+      const open=groups.map((g,i)=>({i,need:targetSizes[i]-g.length})).filter(x=>x.need>0).sort((a,b)=>b.need-a.need);
+      const idx=open[0].i;
+      const pick=autoPickTeammate(chooserId,groups[idx],pool);
+      groups[idx].push(pick.id); pool=pool.filter(q=>q.id!==pick.id);
+    }
+    return teamsFromIdGroups(groups,structure);
+  }
+  // free_choice: cluster queens by mutual affinity.
+  while(pool.length){
+    const open=groups.map((g,i)=>({i,need:targetSizes[i]-g.length})).filter(x=>x.need>0).sort((a,b)=>b.need-a.need);
+    const idx=open[0].i;
+    let pick;
+    if(!groups[idx].length)pick=pool.shift();
+    else{
+      pick=pool.slice().sort((a,b)=>{
+        const av=groups[idx].reduce((s,id)=>s+relationshipScoreBetween(id,a.id),0)/groups[idx].length + rand(-6,6);
+        const bv=groups[idx].reduce((s,id)=>s+relationshipScoreBetween(id,b.id),0)/groups[idx].length + rand(-6,6);
+        return bv-av;
+      })[0];
+      pool=pool.filter(q=>q.id!==pick.id);
+    }
+    groups[idx].push(pick.id);
+  }
+  return teamsFromIdGroups(groups,structure);
+}
+function teamFormationText(method, data={}){
+  const qName=id=>gameState.queens.find(q=>q.id===id)?.name||'a queen';
+  if(method==='mini_captains')return {title:'Mini-Challenge Winners / Team Captains',description:`${qName(data.captainIds?.[0])} won the mini-challenge and chose ${qName(data.captainIds?.[1])} as the opposing captain. The captains picked teams schoolyard style.`};
+  if(method==='random')return {title:'Random Assignment',description:'RuPaul and production assigned the teams randomly. No one gets to pick this week.'};
+  if(method==='free_choice')return {title:'Free Choice / Chaos',description:'RuPaul told the queens to divide themselves. Friendships, alliances, and messy room energy shaped the teams.'};
+  if(method==='previous_winner')return {title:'Previous Winner / Supreme Queen',description:`${qName(data.chooserId)} won the previous episode and received the power to form every team.`};
+  return {title:'Team Formation',description:'The teams were formed.'};
+}
+function buildTeamsForEpisodeWithFormation(structure, active, miniWinner){
+  if(!structure || structure.id==='solo')return {teams:[],teamFormation:null,needsPlayerFormation:false};
+  const method=pickTeamFormationMethod(structure,active,miniWinner);
+  let captainIds=[], chooserId=null, teams=[], needsPlayerFormation=false;
+  if(method==='mini_captains'){
+    const first=miniWinner;
+    const second=autoPickTeamCaptain(first?.id,active.filter(q=>q.id!==first?.id));
+    needsPlayerFormation=first?.id===gameState.playerQueenId;
+    captainIds=needsPlayerFormation?[first?.id].filter(Boolean):[first?.id,second?.id].filter(Boolean);
+    if(!needsPlayerFormation)teams=autoAssignAllTeams(structure,active,method,{captainIds});
+  }else if(method==='previous_winner'){
+    const prev=lastEpisodeUniqueWinner(); chooserId=prev?.id||null;
+    needsPlayerFormation=chooserId===gameState.playerQueenId;
+    if(!needsPlayerFormation)teams=autoAssignAllTeams(structure,active,method,{chooserId});
+  }else{
+    teams=autoAssignAllTeams(structure,active,method,{});
+  }
+  const txt=teamFormationText(method,{captainIds,chooserId});
+  return {teams,needsPlayerFormation,teamFormation:{method,title:txt.title,description:txt.description,captainIds,chooserId,autoChosen:false,pending:needsPlayerFormation,targetSizes:teamStructureTargetSizes(structure,active)}};
+}
+function finalizeCurrentEpisodeTeams(teams, autoChosen=false){
+  const ep=gameState.currentEpisode; if(!ep)return;
+  ep.teams=teams||[];
+  if(ep.teamFormation){ep.teamFormation.autoChosen=!!autoChosen; ep.teamFormation.pending=false;}
+  if(ep.challengeType==='fashion_wars')assignFashionWarsBattles(ep);
+  ep.judgingMode=ep.challengeType==='fashion_wars'?'team':((ep.teams&&ep.teams.length)?pickTeamJudgingMode(ep.structure):'individual');
+  saveGame();
+}
+
 function buildFashionWarsTeams(active){
   const pool=shuffle(active).map(q=>q.id);
   const activeCount=pool.length;
@@ -1630,7 +1806,9 @@ function generateEpisode(){
   let structure=pickEpisodeStructure(challenge.id, activeCount);
   // Talent Show and Makeover are always individual, including normal and double premieres.
   if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
-  const teams=buildTeamsForEpisode(structure, active);
+  const formationResult=buildTeamsForEpisodeWithFormation(structure, active, miniWinner);
+  const teams=formationResult.teams;
+  const teamFormation=formationResult.teamFormation;
   if(challenge.id==='fashion_wars')assignFashionWarsBattles({activeCount,teams,challengeContent});
   const guestJudge=pickGuestJudge();
   if(challenge.id==='interview'){
@@ -1659,6 +1837,7 @@ function generateEpisode(){
     guestJudge,
     structure,
     teams,
+    teamFormation,
     judgingMode,
     snatchCharacters,
     participantIds:active.map(q=>q.id),
