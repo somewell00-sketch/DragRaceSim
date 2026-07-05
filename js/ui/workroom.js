@@ -139,10 +139,63 @@ function renderLalaparuzaStrategyChoice(){
   }));
 }
 
+const TALENT_TYPE_CHOICES={
+  music:{label:'Music',description:'Serve a banger or go home.',icon:'🎵'},
+  vocals:{label:'Vocals',description:'Belt it or break it.',icon:'🎤'},
+  performance:{label:'Performance',description:'Death drop or death flop.',icon:'💃'},
+  stunt:{label:'Stunt',description:'Risk it for the biscuit.',icon:'🤸'},
+  comedy:{label:'Comedy',description:'Make us gag or get gagged.',icon:'😂'},
+  theatre:{label:'Theatre',description:'Give us drama, darling.',icon:'📖'},
+  variety:{label:'Variety',description:'Surprise us or bore us.',icon:'🎩'},
+  acting:{label:'Acting',description:'Emmy or flop? You decide.',icon:'🎭'},
+  camp:{label:'Camp',description:'Own the cringe or become it.',icon:'🏕️'},
+  runway:{label:'Runway',description:'Walk, pose, slay.',icon:'👠'},
+  weird:{label:'Weird',description:"Weird works... or doesn't.",icon:'✨'}
+};
+function talentTypeIcon(type){
+  return TALENT_TYPE_CHOICES[String(type||'performance').toLowerCase()]?.icon || '🌟';
+}
+function playerTalentEntry(ep){
+  const id=gameState.playerQueenId;
+  return (ep?.challengeContent?.talents||[]).find(t=>t.queenId===id);
+}
+function playerNeedsTalentChoice(ep){
+  return !!(ep?.challengeType==='talent' && (typeof isPlayerInCurrentEpisode==='function'?isPlayerInCurrentEpisode():true) && !ep.playerTalentLocked);
+}
 function talentContentBlock(ep){
   const talents=ep.challengeContent?.talents||[];
   if(!talents.length)return '';
-  return `<div class="card"><h3>Talent Show Lineup</h3><div class="talent-grid">${talents.map(t=>{const type=String(t.talent.type||'performance'); const icon={music:'🎵',acting:'🎭',weird:'✨',theatre:'📖',stunt:'🤸',vocals:'🎤',comedy:'😂',dance:'💃'}[type]||'🌟'; return `<article class="queen-item talent-card"><strong>${escapeHtml(t.queenName)}</strong><span class="talent-name">${icon} ${escapeHtml(t.talent.name||t.talent)}</span><span class="badge arc">${escapeHtml(type)}</span></article>`;}).join('')}</div></div>`;
+  return `<div class="card"><h3>Talent Show Lineup</h3><div class="talent-grid">${talents.map(t=>{const type=String(t.talent.type||'performance').toLowerCase(); const icon=talentTypeIcon(type); const isPlayer=t.queenId===gameState.playerQueenId; return `<article class="queen-item talent-card ${isPlayer?'player-card':''}"><strong>${escapeHtml(t.queenName)}${isPlayer?' <span class="player-crown" title="Your queen">👑</span>':''}</strong><span class="talent-name">${icon} ${escapeHtml(t.talent.name||t.talent)}</span><span class="badge arc">${escapeHtml(type)}</span></article>`;}).join('')}</div></div>`;
+}
+function lockPlayerTalentChoice(type){
+  const ep=gameState.currentEpisode;
+  if(!ep?.challengeContent)return;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const talent=(typeof pickTalentShowPerformanceByType==='function')?pickTalentShowPerformanceByType(type):{name:'Signature performance',type};
+  let talents=ep.challengeContent.talents||[];
+  const idx=talents.findIndex(t=>t.queenId===gameState.playerQueenId);
+  const entry={queenId:gameState.playerQueenId,queenName:player?.name||'Your queen',talent:{...talent,type:String(talent.type||type).toLowerCase()}};
+  if(idx>=0)talents[idx]=entry; else talents.unshift(entry);
+  ep.challengeContent.talents=talents;
+  ep.playerTalentType=entry.talent.type;
+  ep.playerTalentName=entry.talent.name;
+  ep.playerTalentLocked=true;
+  saveGame();
+}
+function renderTalentChoice(){
+  const ep=gameState.currentEpisode;
+  const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
+  const buttons=Object.entries(TALENT_TYPE_CHOICES).map(([id,o])=>`<button class="option" data-talent-type="${id}"><span class="choice-emoji" aria-hidden="true">${o.icon}</span><span class="choice-copy"><strong>${escapeHtml(o.label)}</strong><span class="small">${escapeHtml(o.description)}</span></span></button>`).join('');
+  setHTML(`<main class="layout"><section class="screen">
+    <div class="hero"><span class="badge">Episode ${ep.number}</span><h2>Choose Your Talent</h2><p>Before RuPaul announces the Talent Show lineup, decide what ${escapeHtml(player?.name||'your queen')} will perform.</p></div>
+    ${challengeContentBlock(ep)}
+    <div class="card decision-card"><h3>Your Talent Show category</h3><p>The game will randomly pull one act from <code>talentPerformances.js</code> using the type you choose.</p><div class="options">${buttons}</div></div>
+  </section>${queenSidebar()}</main>`);
+  bindCommon(()=>showHistory(renderTalentChoice));
+  document.querySelectorAll('[data-talent-type]').forEach(btn=>btn.addEventListener('click',()=>{
+    lockPlayerTalentChoice(btn.dataset.talentType);
+    renderWorkroom();
+  }));
 }
 function lalaparuzaIntroContext(){
   const ep=gameState.currentEpisode;
@@ -480,6 +533,7 @@ function renderWorkroom(){
   if(typeof isCurrentEpisodePremiereObserver==='function' && isCurrentEpisodePremiereObserver())return renderPremiereObserverWorkroom();
   if(ep.special==='tournament_bracket' && ep.participantIds && !ep.participantIds.includes(gameState.playerQueenId))return renderTournamentObserverWorkroom();
   if(isPlayerEliminatedSpectator())return renderSeasonObserverWorkroom();
+  if(playerNeedsTalentChoice(ep))return renderTalentChoice();
   ensureAllQueenV14Stats();
   applyWeeklyWearAndTear();
   generateWorkroomSocialEvents();
@@ -550,6 +604,7 @@ function bindSkipWorkroom(){
     if(!ep.workroomChoice)ep.workroomChoice='Stayed quiet';
     if(!ep.prepChoice)ep.prepChoice='No special preparation';
     if(!ep.challengeApproach)ep.challengeApproach='No clear approach';
+    if(ep.challengeType==='talent' && !ep.playerTalentLocked && typeof lockPlayerTalentChoice==='function')lockPlayerTalentChoice('performance');
     ep.workroomComplete=true;
     if(typeof applyPassiveWorkroomPenalty==='function') applyPassiveWorkroomPenalty();
     if(!ep.placements?.length){ep.playerChallengeRisk='safe'; calculateEpisodeResults({risk:'safe'});}
