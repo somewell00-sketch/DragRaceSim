@@ -317,39 +317,62 @@ function lipSyncSongCard(song){
 }
 function strategyButtonsForQueen(q,song,prefix){
   const strategies=(typeof lipSyncStrategies==='function'?lipSyncStrategies():[]);
-  return `<div class="strategy-pick" data-queen="${q.id}"><h4>${escapeHtml(q.name)}</h4><div class="options compact"><button class="option autoStrategy" data-prefix="${prefix}" data-qid="${q.id}"><strong>Choose Automatically</strong><span class="small">Let the system choose for this queen.</span></button>${strategies.map(st=>`<button class="option pickStrategy" data-prefix="${prefix}" data-qid="${q.id}" data-strategy="${st.id}"><strong>${escapeHtml(st.label)}</strong><span class="small">${escapeHtml(st.description||'')}</span></button>`).join('')}</div></div>`;
+  return `<div class="strategy-pick" data-queen="${q.id}"><h4>${escapeHtml(q.name)}</h4><div class="options compact"><button class="option autoStrategy" data-prefix="${prefix}" data-qid="${q.id}"><strong>Choose Automatically</strong><span class="small">Let the system choose for your queen.</span></button>${strategies.map(st=>`<button class="option pickStrategy" data-prefix="${prefix}" data-qid="${q.id}" data-strategy="${st.id}"><strong>${escapeHtml(st.label)}</strong><span class="small">${escapeHtml(st.description||'')}</span></button>`).join('')}</div></div>`;
+}
+function strategyRevealLine(q,song,strategyId){
+  const st=(typeof lipSyncStrategies==='function'?lipSyncStrategies():[]).find(x=>x.id===strategyId) || (typeof strategyObj==='function'?strategyObj(strategyId):null);
+  return `<p><strong>${escapeHtml(q?.name||'A queen')}</strong> chose <strong>${escapeHtml(st?.label||strategyId||'a strategy')}</strong>.</p>`;
+}
+function autoStrategyMapForDuel(queenIds,song){
+  const chosen={};
+  (queenIds||[]).forEach(id=>{
+    const q=gameState.queens.find(x=>x.id===id);
+    if(q) chosen[id]=autoLipSyncStrategy(q,song);
+  });
+  return chosen;
 }
 function renderLalaparuzaEpisode(){
   const ep=gameState.currentEpisode;
   const st=initLalaparuzaState(ep);
+  const playerId=gameState.playerQueenId;
   const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}`;
   const footer=`</section>${queenSidebar()}</main>`;
   const qById=id=>gameState.queens.find(q=>q.id===id);
   if(st.phase==='complete')return renderLalaparuzaResult(resolveLalaparuza());
   if(st.phase==='strategy' && st.currentDuel){
     const d=st.currentDuel, a=qById(d.callerId), b=qById(d.opponentId);
-    setHTML(`${header}<div class="card important"><h3>${d.isFinal?'Final Duel':`Round ${d.round}`}</h3><p><strong>${escapeHtml(qName(d.callerId))}</strong> called out <strong>${escapeHtml(qName(d.opponentId))}</strong>.</p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div><div class="card decision-card"><h3>Choose strategies</h3><p>Pick a strategy for each queen, or use automatic choices.</p>${a?strategyButtonsForQueen(a,d.song,'a'):''}${b?strategyButtonsForQueen(b,d.song,'b'):''}<button id="runCurrentLala" disabled>Run lip sync</button></div>${footer}`);
+    const queenIds=[d.callerId,d.opponentId];
+    const playerInDuel=queenIds.includes(playerId);
+    const autoChosen=autoStrategyMapForDuel(queenIds.filter(id=>id!==playerId),d.song);
+    const npcLines=queenIds.filter(id=>id!==playerId).map(id=>strategyRevealLine(qById(id),d.song,autoChosen[id])).join('');
+    const player=qById(playerId);
+    const playerPicker=(playerInDuel && player)?`<div class="card decision-card"><h3>Your lip sync strategy</h3><p>Choose only for ${escapeHtml(player.name)}. The other queen has already made her own choice.</p>${npcLines}${strategyButtonsForQueen(player,d.song,'player')}<button id="runCurrentLala" disabled>Run lip sync</button></div>`:`<div class="card decision-card"><h3>The queens choose their strategies</h3><p>You are watching this duel. The queens make their own choices.</p>${npcLines}<button id="runCurrentLala">Run lip sync</button></div>`;
+    setHTML(`${header}<div class="card important"><h3>${escapeHtml(d.stageLabel || (d.isFinal?'Final Duel':`Round ${d.round}`))}</h3><p><strong>${escapeHtml(qName(d.callerId))}</strong> was drawn and chose <strong>${escapeHtml(qName(d.opponentId))}</strong>.</p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div>${playerPicker}${footer}`);
     bindCommon(()=>showHistory(renderLalaparuzaEpisode));
-    const chosen={};
-    function refresh(){document.querySelector('#runCurrentLala').disabled=!(chosen[d.callerId]&&chosen[d.opponentId]);}
-    document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[btn.dataset.qid]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
-    document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(btn.dataset.qid); chosen[btn.dataset.qid]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
+    const chosen=Object.assign({},autoChosen);
+    if(playerInDuel){
+      document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentLala').disabled=false;}));
+      document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(playerId); chosen[playerId]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentLala').disabled=false;}));
+    }
     document.querySelector('#runCurrentLala')?.addEventListener('click',()=>{const res=completeLalaparuzaDuel(chosen); if(st.phase==='complete')renderLalaparuzaResult(resolveLalaparuza()); else renderLalaparuzaEpisode();});
     return;
   }
   const active=st.activeQueenIds.map(qById).filter(Boolean);
-  const isFinal=active.length===2;
-  const drawn=isFinal?active[0]:(st.drawnQueenId? qById(st.drawnQueenId):sample(active));
+  const isFinal=st.stage==='final';
+  const drawn=(st.drawnQueenId? qById(st.drawnQueenId):sample(active));
   st.drawnQueenId=drawn?.id;
   const opponents=active.filter(q=>q.id!==drawn?.id);
-  const history=(st.duels||[]).length?`<div class="card"><h3>History</h3>${st.duels.map(d=>`<p><strong>Round ${d.round}:</strong> ${escapeHtml(qName(d.winnerId))} won to ${escapeHtml(d.song?.title||'the song')}. ${d.isFinal?escapeHtml(qName(d.loserId))+' was eliminated.':escapeHtml(qName(d.loserId))+' stayed in danger.'}</p>`).join('')}</div>`:'';
+  const history=(st.duels||[]).length?`<div class="card"><h3>History</h3>${st.duels.map(d=>`<p><strong>${escapeHtml(d.stageLabel||('Round '+d.round))}:</strong> ${escapeHtml(qName(d.winnerId))} won to ${escapeHtml(d.song?.title||'the song')}. ${escapeHtml(d.resultText||'')}</p>`).join('')}</div>`:'';
   if(isFinal){
-    setHTML(`${header}${history}<div class="card important"><h3>Final duel</h3><p>Only two queens remain in danger. The last available song decides the elimination.</p><p><strong>${escapeHtml(active[0].name)}</strong> vs <strong>${escapeHtml(active[1].name)}</strong></p>${lipSyncSongCard(st.availableSongs[0])}<button id="beginFinalLala">Choose strategies</button></div>${footer}`);
-    bindCommon(()=>showHistory(renderLalaparuzaEpisode));
-    document.querySelector('#beginFinalLala')?.addEventListener('click',()=>{beginLalaparuzaDuel(active[0].id,active[1].id,0); renderLalaparuzaEpisode();});
-    return;
+    const finalCaller=drawn?.id || active[0]?.id;
+    const finalOpponent=active.find(q=>q.id!==finalCaller)?.id || active[1]?.id;
+    return renderLalaparuzaSongChoice(finalCaller,finalOpponent);
   }
-  setHTML(`${header}${history}<div class="card"><h3>Round ${st.duels.length+1}</h3><p>A queen was drawn: <strong>${escapeHtml(drawn?.name||'')}</strong></p><h4>Choose the opponent</h4><div class="options"><button class="option" id="autoOpponent"><strong>Choose Automatically</strong><span class="small">Use NPC callout logic.</span></button>${opponents.map(q=>`<button class="option pickOpponent" data-id="${q.id}">${queenPortraitHtml(q,'sm')}<strong>${escapeHtml(q.name)}</strong></button>`).join('')}</div></div>${footer}`);
+  if(drawn?.id!==playerId){
+    const opponentId=lalaparuzaAutoOpponent(drawn.id);
+    return renderLalaparuzaSongChoice(drawn.id,opponentId);
+  }
+  setHTML(`${header}${history}<div class="card"><h3>${escapeHtml((typeof lalaparuzaStageLabel==='function' ? lalaparuzaStageLabel(st.stage) : `Round ${st.duels.length+1}`))}</h3><p>A queen was drawn: <strong>${escapeHtml(drawn?.name||'')}</strong></p><h4>Choose your opponent</h4><div class="options"><button class="option" id="autoOpponent"><strong>Choose Automatically</strong><span class="small">Use NPC callout logic for your queen.</span></button>${opponents.map(q=>`<button class="option pickOpponent" data-id="${q.id}">${queenPortraitHtml(q,'sm')}<strong>${escapeHtml(q.name)}</strong></button>`).join('')}</div></div>${footer}`);
   bindCommon(()=>showHistory(renderLalaparuzaEpisode));
   const chooseOpponent=(opponentId)=>renderLalaparuzaSongChoice(drawn.id,opponentId);
   document.querySelector('#autoOpponent')?.addEventListener('click',()=>chooseOpponent(lalaparuzaAutoOpponent(drawn.id)));
@@ -357,7 +380,17 @@ function renderLalaparuzaEpisode(){
 }
 function renderLalaparuzaSongChoice(callerId,opponentId){
   const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
-  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(qName(callerId))} called out ${escapeHtml(qName(opponentId))}</h3><p>Choose the song, or let the chosen queen pick automatically.</p><div class="options"><button class="option" id="autoSong"><strong>Choose Automatically</strong><span class="small">Use NPC song-choice logic.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div></section>${queenSidebar()}</main>`);
+  const playerId=gameState.playerQueenId;
+  const caller=qName(callerId), opponent=qName(opponentId), stageLabel=(typeof lalaparuzaStageLabel==='function'?lalaparuzaStageLabel(st.stage):'Lalaparuza');
+  if(opponentId!==playerId){
+    const songIndex=lalaparuzaAutoSong(opponentId);
+    const song=st.availableSongs[songIndex] || st.availableSongs[0];
+    setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(stageLabel)}</h3><p><strong>${escapeHtml(caller)}</strong> was drawn and chose <strong>${escapeHtml(opponent)}</strong>.</p><p><strong>${escapeHtml(opponent)}</strong> chooses the song.</p>${lipSyncSongCard(song)}<button id="continueAutoSong">Continue</button></div></section>${queenSidebar()}</main>`);
+    bindCommon(()=>showHistory(renderLalaparuzaEpisode));
+    document.querySelector('#continueAutoSong')?.addEventListener('click',()=>{beginLalaparuzaDuel(callerId,opponentId,songIndex); renderLalaparuzaEpisode();});
+    return;
+  }
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(stageLabel)}</h3><p><strong>${escapeHtml(caller)}</strong> was drawn and chose you.</p><p>You were chosen, so choose your song.</p><div class="options"><button class="option" id="autoSong"><strong>Choose Automatically</strong><span class="small">Use song-choice logic for your queen.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderLalaparuzaEpisode));
   document.querySelector('#autoSong')?.addEventListener('click',()=>{beginLalaparuzaDuel(callerId,opponentId,lalaparuzaAutoSong(opponentId)); renderLalaparuzaEpisode();});
   document.querySelectorAll('.pickSong').forEach(btn=>btn.addEventListener('click',()=>{beginLalaparuzaDuel(callerId,opponentId,Number(btn.dataset.index)); renderLalaparuzaEpisode();}));
@@ -391,6 +424,7 @@ function renderLalaparuzaResult(result){
 function renderReturnSmackdownEpisode(){
   const ep=gameState.currentEpisode;
   const st=initReturnSmackdownState(ep);
+  const playerId=gameState.playerQueenId;
   const type=ep.returnSmackdownType || gameState.season?.returnTwist?.type || 'legacy_smackdown';
   const isGauntlet=type==='redemption_smackdown'||type==='boot_order_gauntlet'||type==='elimination_order_gauntlet';
   const title=isGauntlet?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return';
@@ -405,7 +439,16 @@ function renderReturnSmackdownEpisode(){
   const d=st.currentDuel;
   if(!d)return renderReturnSmackdownResult(resolveReturnSmackdown());
   if(st.phase==='song'){
-    setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><h4>Choose the song</h4><div class="options"><button class="option" id="autoReturnSong"><strong>Choose Automatically</strong><span class="small">Use NPC song-choice logic.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickReturnSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div>${footer}`);
+    const chooserId=d.queenIds[1];
+    if(chooserId!==playerId){
+      const idx=returnSmackdownAutoSong(chooserId);
+      const song=st.availableSongs[idx] || st.availableSongs[0];
+      setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><p><strong>${escapeHtml(qName(chooserId))}</strong> chooses the song.</p>${lipSyncSongCard(song)}<button id="continueReturnAutoSong">Continue</button></div>${footer}`);
+      bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
+      document.querySelector('#continueReturnAutoSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(idx); renderReturnSmackdownEpisode();});
+      return;
+    }
+    setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><h4>Choose your song</h4><div class="options"><button class="option" id="autoReturnSong"><strong>Choose Automatically</strong><span class="small">Use song-choice logic for your queen.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickReturnSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div>${footer}`);
     bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
     document.querySelector('#autoReturnSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(returnSmackdownAutoSong(d.queenIds[1])); renderReturnSmackdownEpisode();});
     document.querySelectorAll('.pickReturnSong').forEach(btn=>btn.addEventListener('click',()=>{beginReturnSmackdownDuel(Number(btn.dataset.index)); renderReturnSmackdownEpisode();}));
@@ -413,12 +456,18 @@ function renderReturnSmackdownEpisode(){
   }
   if(st.phase==='strategy'){
     const a=qById(d.queenIds[0]), b=qById(d.queenIds[1]);
-    setHTML(`${header}${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong></p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div><div class="card decision-card"><h3>Choose strategies</h3><p>Pick a strategy for both queens, or use automatic choices.</p>${a?strategyButtonsForQueen(a,d.song,'a'):''}${b?strategyButtonsForQueen(b,d.song,'b'):''}<button id="runCurrentReturn" disabled>Run lip sync</button></div>${footer}`);
+    const playerInDuel=d.queenIds.includes(playerId);
+    const autoChosen=autoStrategyMapForDuel(d.queenIds.filter(id=>id!==playerId),d.song);
+    const npcLines=d.queenIds.filter(id=>id!==playerId).map(id=>strategyRevealLine(qById(id),d.song,autoChosen[id])).join('');
+    const player=qById(playerId);
+    const picker=(playerInDuel && player)?`<div class="card decision-card"><h3>Your lip sync strategy</h3><p>Choose only for ${escapeHtml(player.name)}. The other queen has already made her own choice.</p>${npcLines}${strategyButtonsForQueen(player,d.song,'player')}<button id="runCurrentReturn" disabled>Run lip sync</button></div>`:`<div class="card decision-card"><h3>The queens choose their strategies</h3><p>You are watching this duel. The queens make their own choices.</p>${npcLines}<button id="runCurrentReturn">Run lip sync</button></div>`;
+    setHTML(`${header}${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong></p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div>${picker}${footer}`);
     bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
-    const chosen={};
-    function refresh(){document.querySelector('#runCurrentReturn').disabled=!(chosen[d.queenIds[0]]&&chosen[d.queenIds[1]]);}
-    document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[btn.dataset.qid]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
-    document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(btn.dataset.qid); chosen[btn.dataset.qid]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
+    const chosen=Object.assign({},autoChosen);
+    if(playerInDuel){
+      document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentReturn').disabled=false;}));
+      document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(playerId); chosen[playerId]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentReturn').disabled=false;}));
+    }
     document.querySelector('#runCurrentReturn')?.addEventListener('click',()=>{const result=completeReturnSmackdownDuel(chosen); if(st.phase==='complete')renderReturnSmackdownResult(result||ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown); else renderReturnSmackdownEpisode();});
     return;
   }

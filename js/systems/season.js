@@ -2264,15 +2264,36 @@ function initLalaparuzaState(ep){
   if(ep.lalaparuzaState)return ep.lalaparuzaState;
   const active=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const duelCount=Math.max(1,active.length-1);
-  ep.lalaparuzaState={mode:ep.lalaparuzaMode||'callout_song_choice',phase:'draw',activeQueenIds:active.map(q=>q.id),safeQueenIds:[],availableSongs:pickLipSyncSongs(duelCount),usedSongs:[],duels:[],currentDuel:null,finalDuel:null};
+  ep.lalaparuzaState={
+    mode:ep.lalaparuzaMode||'callout_song_choice',
+    format:'eight_queen_survival_bracket',
+    phase:'draw',
+    stage:'first',
+    activeQueenIds:shuffle(active.map(q=>q.id)),
+    safeQueenIds:[],
+    dangerQueenIds:[],
+    lowQueenIds:[],
+    bottomQueenIds:[],
+    availableSongs:pickLipSyncSongs(duelCount),
+    usedSongs:[],
+    duels:[],
+    currentDuel:null,
+    finalDuel:null
+  };
   saveGame();
   return ep.lalaparuzaState;
+}
+function lalaparuzaStageLabel(stage){
+  if(stage==='second')return 'Round 2: The danger bracket';
+  if(stage==='final')return 'Final Bottom Lip Sync';
+  return 'Round 1: First bracket';
 }
 function lalaparuzaAutoOpponent(callerId){
   const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
   const caller=gameState.queens.find(q=>q.id===callerId);
   const pool=st.activeQueenIds.filter(id=>id!==callerId).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   if(!pool.length)return null;
+  if(pool.length===1)return pool[0].id;
   return pool.sort((a,b)=>{
     const relA=(caller.relationships?.[a.id]?.affinity||0)+(caller.relationships?.[a.id]?.respect||0);
     const relB=(caller.relationships?.[b.id]?.affinity||0)+(caller.relationships?.[b.id]?.respect||0);
@@ -2291,26 +2312,62 @@ function beginLalaparuzaDuel(callerId,opponentId,songIndex){
   const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
   callerId=callerId||sample(st.activeQueenIds);
   opponentId=opponentId||lalaparuzaAutoOpponent(callerId);
-  const isFinal=st.activeQueenIds.length===2;
-  if(isFinal){callerId=st.activeQueenIds[0]; opponentId=st.activeQueenIds[1];}
+  const isFinal=st.stage==='final';
+  if(isFinal && st.activeQueenIds.length===2 && (!callerId || !opponentId)){callerId=st.activeQueenIds[0]; opponentId=st.activeQueenIds[1];}
   if(songIndex===undefined || songIndex===null) songIndex=lalaparuzaAutoSong(opponentId);
   const song=st.availableSongs.splice(Math.max(0,Number(songIndex)||0),1)[0] || pickLipSyncSongs(1)[0];
-  st.currentDuel={round:st.duels.length+1,callerId,opponentId,song,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal};
+  st.currentDuel={round:st.duels.length+1,stage:st.stage,stageLabel:lalaparuzaStageLabel(st.stage),callerId,opponentId,song,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal};
   st.phase='strategy';
+  delete st.drawnQueenId;
   saveGame();
   return st.currentDuel;
+}
+function advanceLalaparuzaBracketAfterDuel(st,cd){
+  const removeDuelists=()=>{st.activeQueenIds=st.activeQueenIds.filter(id=>id!==cd.winnerId && id!==cd.loserId);};
+  if(cd.isFinal){
+    st.finalDuel=cd;
+    st.phase='complete';
+    st.activeQueenIds=[];
+    return;
+  }
+  if(cd.stage==='first'){
+    st.safeQueenIds.push(cd.winnerId);
+    st.dangerQueenIds.push(cd.loserId);
+    removeDuelists();
+    if(st.activeQueenIds.length<=0){
+      st.stage='second';
+      st.activeQueenIds=shuffle(st.dangerQueenIds.slice());
+      st.dangerQueenIds=[];
+    }
+    st.phase='draw';
+    return;
+  }
+  if(cd.stage==='second'){
+    st.lowQueenIds.push(cd.winnerId);
+    st.bottomQueenIds.push(cd.loserId);
+    removeDuelists();
+    if(st.activeQueenIds.length<=0){
+      st.stage='final';
+      st.activeQueenIds=shuffle(st.bottomQueenIds.slice());
+    }
+    st.phase='draw';
+    return;
+  }
+  st.phase='draw';
 }
 function completeLalaparuzaDuel(strategyByQueenId={}){
   const ep=gameState.currentEpisode, st=initLalaparuzaState(ep), cd=st.currentDuel;
   if(!cd)return null;
   cd.strategyByQueenId=Object.assign({},strategyByQueenId);
   const a=gameState.queens.find(q=>q.id===cd.callerId), b=gameState.queens.find(q=>q.id===cd.opponentId);
-  const d=runLipSyncDuelNoStats(a,b,cd.isFinal?'Final bottom lip sync':`Round ${cd.round}`,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'lalaparuza'});
-  Object.assign(cd,{queenIds:d.queenIds,scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins. ${cd.isFinal?qName(d.loserId)+' sashays away.':qName(d.loserId)+' remains in danger.'}`});
+  const d=runLipSyncDuelNoStats(a,b,cd.isFinal?'Final bottom lip sync':cd.stageLabel,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'lalaparuza'});
+  const loserText=cd.isFinal
+    ? `${qName(d.loserId)} sashays away.`
+    : (cd.stage==='first' ? `${qName(d.loserId)} loses and enters the danger bracket.` : `${qName(d.loserId)} loses and becomes Bottom 2.`);
+  Object.assign(cd,{queenIds:d.queenIds,scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins. ${loserText}`});
   st.usedSongs.push(cd.song);
   st.duels.push(cd);
-  if(cd.isFinal){st.finalDuel=cd; st.phase='complete';}
-  else{st.safeQueenIds.push(cd.winnerId); st.activeQueenIds=st.activeQueenIds.filter(id=>id!==cd.winnerId); st.phase='draw';}
+  advanceLalaparuzaBracketAfterDuel(st,cd);
   st.currentDuel=null;
   saveGame();
   if(st.phase==='complete')return resolveLalaparuza();
@@ -2320,11 +2377,11 @@ function resolveLalaparuza(){
   const ep=gameState.currentEpisode;
   if(ep.lalaparuzaResult)return ep.lalaparuzaResult;
   if(ep.lalaparuzaState?.phase!=='complete'){
-    let current=gameState.queens.filter(q=>!q.isEliminated);
     const st=initLalaparuzaState(ep);
     while(st.phase!=='complete'){
       const caller=sample(st.activeQueenIds);
-      beginLalaparuzaDuel(caller,lalaparuzaAutoOpponent(caller),lalaparuzaAutoSong(caller));
+      const opponent=lalaparuzaAutoOpponent(caller);
+      beginLalaparuzaDuel(caller,opponent,lalaparuzaAutoSong(opponent));
       const cd=st.currentDuel;
       completeLalaparuzaDuel({[cd.callerId]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===cd.callerId),cd.song),[cd.opponentId]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===cd.opponentId),cd.song)});
     }
@@ -2333,14 +2390,20 @@ function resolveLalaparuza(){
   const final=st.finalDuel;
   const eliminated=gameState.queens.find(q=>q.id===final.loserId);
   const survivor=gameState.queens.find(q=>q.id===final.winnerId);
-  const rounds=st.duels.filter(d=>!d.isFinal).map(d=>({round:d.round,duels:[d],byeId:null,advancedLoserIds:[d.loserId]}));
-  ep.lalaparuzaResult={mode:st.mode,rounds,duels:st.duels,final,eliminatedQueenId:eliminated.id,survivorId:survivor.id,safeQueenIds:st.safeQueenIds,usedSongs:st.usedSongs};
+  const firstDuels=st.duels.filter(d=>d.stage==='first');
+  const secondDuels=st.duels.filter(d=>d.stage==='second');
+  const rounds=[];
+  firstDuels.forEach((d,i)=>rounds.push({round:i+1,stage:'first',title:`Chave ${i+1}`,duels:[d],byeId:null,advancedLoserIds:[d.loserId]}));
+  if(secondDuels.length)rounds.push({round:5,stage:'second',title:'Segunda parte: Danger bracket',duels:secondDuels,byeId:null,advancedLoserIds:secondDuels.map(d=>d.loserId)});
+  ep.lalaparuzaResult={mode:st.mode,format:st.format,rounds,duels:st.duels,final,eliminatedQueenId:eliminated.id,survivorId:survivor.id,safeQueenIds:st.safeQueenIds,lowQueenIds:st.lowQueenIds,bottomQueenIds:st.bottomQueenIds,usedSongs:st.usedSongs};
   ep.eliminatedQueenId=eliminated.id;
   const activeBeforeElim=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const safeIds=new Set(st.safeQueenIds||[]);
+  const lowIds=new Set(st.lowQueenIds||[]);
   function lalaparuzaPlacementFor(q){
     if(q.id===eliminated.id)return 'ELIM';
     if(q.id===survivor.id)return 'BTM';
+    if(lowIds.has(q.id))return 'LOW';
     if(safeIds.has(q.id))return 'SAFE';
     return 'LOW';
   }
