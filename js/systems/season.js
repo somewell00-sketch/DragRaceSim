@@ -1661,7 +1661,14 @@ function assignSnatchCharacters(active){
 function pickTalentShowPerformance(q){
   const pool=gameState.data.talentPerformances||['Original song performance','Lip sync dance number','Live singing','Comedy monologue'];
   const perf=sample(pool);
-  return typeof perf==='string'?{name:perf,type:'performance'}:perf;
+  return typeof perf==='string'?{name:perf,type:'performance'}:{...perf};
+}
+function pickTalentShowPerformanceByType(type){
+  const wanted=String(type||'performance').toLowerCase();
+  const all=gameState.data.talentPerformances||['Original song performance','Lip sync dance number','Live singing','Comedy monologue'];
+  const normalized=all.map(perf=>typeof perf==='string'?{name:perf,type:'performance'}:{...perf});
+  const pool=normalized.filter(perf=>String(perf.type||'performance').toLowerCase()===wanted);
+  return sample(pool.length?pool:normalized) || {name:'Signature performance',type:wanted};
 }
 function choosePremiereFormat(castSize){
   if(castSize<12) return Math.random()<0.35?'normal_no_elim':'normal';
