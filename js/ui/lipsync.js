@@ -270,10 +270,10 @@ function getLipSyncQualityKey(results){
   const scores=results.map(r=>r.score10);
   const low=Math.min(...scores);
   const high=Math.max(...scores);
-  if(low>=9.0) return 'legendary';
+  if(low>=8) return 'legendary';
   if(high>=8.5) return 'iconic';
-  if(high<5) return 'terrible';
-  if(high<6.5) return 'forgettable';
+  if(high<6) return 'terrible';
+  if(high<6.8) return 'forgettable';
   if(high<7.5) return 'warm';
   return 'irregular';
 }
@@ -384,12 +384,13 @@ function resultTier(result){
 
 
 function lipSyncExecutionTier(score){
-  const v=Number(score)||0;
-   if (v < 5.4) return 'failed';        // ~15%
-    if (v < 6.8) return 'partial';       // ~35%
-    if (v < 7.7) return 'strong';        // ~30%
-    if (v < 8.4) return 'outstanding';   // ~15%
-    return 'legendary';      
+  const v = Number(score) || 0;
+
+  if (v < 6.0) return 'failed';
+  if (v < 7.0) return 'partial';
+  if (v < 7.7) return 'strong';
+  if (v < 8.4) return 'outstanding';
+  return 'legendary';
 }
 
 const V20_LIPSYNC_EXECUTION_TEXT = {
