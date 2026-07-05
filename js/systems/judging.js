@@ -317,66 +317,30 @@ function assignTeamPlacements(scored, ep){
   const teams=(ep.teams||[]).map(team=>({team,score:teamGroupScore(team,scored,ep)})).sort((a,b)=>b.score-a.score);
   ep.teamScores=teams.map(t=>({teamId:t.team.id,name:t.team.name,score:t.score,chemistry:Math.round((typeof teamChemistryBonus==='function'?teamChemistryBonus(t.team,ep):0)*10)/10,queenIds:t.team.queenIds}));
   if(!teams.length){assignIndividualPlacements(scored); return;}
+
+  // When the episode is judged as groups/pairs, placement is assigned to the TEAM,
+  // not to individual members. This prevents one queen in the same judged team from
+  // winning while her partner/team mate lands in the bottom.
+  const setTeamPlacement=(teamRow, placement)=>{
+    if(!teamRow?.team?.queenIds?.length)return;
+    scored
+      .filter(s=>teamRow.team.queenIds.includes(s.queenId))
+      .forEach(s=>{ s.placement=placement; });
+  };
+
   const best=teams[0];
   const worst=teams[teams.length-1];
-  const bestMembers=scored.filter(s=>best.team.queenIds.includes(s.queenId)).sort((a,b)=>b.individualScore-a.individualScore);
-  const worstMembers=scored.filter(s=>worst.team.queenIds.includes(s.queenId)).sort((a,b)=>a.individualScore-b.individualScore);
-  const isDuoEpisode=teams.every(t=>t.team.queenIds.length===2);
+  setTeamPlacement(best,'WIN');
+  if(worst && worst.team.id!==best.team.id)setTeamPlacement(worst,'BTM');
 
-  // Duo episodes with casts with 13+ queens can have a fuller spread. Casts with 12 or fewer queens keep
-  // the critique group tighter so Top 8 episodes do not call four queens as tops/bottoms.
-  if(isDuoEpisode && teams.length>=4){
-    bestMembers.forEach(s=>s.placement='WIN');
-    if(scored.length>=13){
-      const secondBest=teams[1];
-      if(secondBest){
-        scored.filter(s=>secondBest.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='HIGH');
-      }
-      const secondWorst=teams[teams.length-2];
-      if(secondWorst && secondWorst.team.id!==best.team.id){
-        scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).forEach(s=>s.placement='LOW');
-      }
-    }
-    worstMembers.forEach(s=>s.placement='BTM');
-    normalizeCritiqueSpread(scored, scored.length);
-    return;
-  }
-
-  if(best.team.queenIds.length===2){
-    bestMembers.forEach(s=>s.placement='WIN');
-  }else if(best.team.queenIds.length>=5){
-    // Large teams can win/lose as teams, but critiques stay focused. Only the standouts
-    // from the strongest group are called as tops. The rest of the team is safe.
-    if(bestMembers[0])bestMembers[0].placement='WIN';
-    bestMembers.slice(1,Math.min(3,bestMembers.length)).forEach(s=>s.placement='HIGH');
-  }else{
-    if(bestMembers[0])bestMembers[0].placement='WIN';
-    bestMembers.slice(1).forEach(s=>s.placement='HIGH');
-  }
-
-  if(worst.team.queenIds.length>=5){
-    // Same principle for large losing groups: only the weakest queens from the weakest
-    // group receive critiques. The rest of the group may be safe even though the group lost.
-    if(worstMembers[0])worstMembers[0].placement='BTM';
-    if(worstMembers[1])worstMembers[1].placement='BTM';
-    worstMembers.slice(2,Math.min(4,worstMembers.length)).forEach(s=>s.placement='LOW');
-  }else{
-    worstMembers.forEach(s=>s.placement='LOW');
-    if(worstMembers[0])worstMembers[0].placement='BTM';
-    if(worstMembers[1])worstMembers[1].placement='BTM';
-  }
-
-  // Keep middle teams safe unless their group score is almost tied with the worst.
-  // Do not add extra lows in four-duo episodes, because those already have a clean spread.
-  if(scored.length>=13 && teams.length>2 && !isDuoEpisode){
+  // With a large cast, call one additional whole team as HIGH/LOW.
+  // Still never split members inside the same judged group.
+  if(scored.length>=13 && teams.length>=4){
+    const secondBest=teams[1];
+    if(secondBest && ![best.team.id,worst.team.id].includes(secondBest.team.id))setTeamPlacement(secondBest,'HIGH');
     const secondWorst=teams[teams.length-2];
-    if(secondWorst && secondWorst.score<=worst.score+1.6){
-      const swMembers=scored.filter(s=>secondWorst.team.queenIds.includes(s.queenId)).sort((a,b)=>a.individualScore-b.individualScore);
-      if(swMembers[0] && swMembers[0].placement==='SAFE')swMembers[0].placement='LOW';
-      if(swMembers[1] && swMembers.length>=4 && secondWorst.score<=worst.score+0.9 && swMembers[1].placement==='SAFE')swMembers[1].placement='LOW';
-    }
+    if(secondWorst && ![best.team.id,worst.team.id,secondBest?.team?.id].includes(secondWorst.team.id))setTeamPlacement(secondWorst,'LOW');
   }
-  normalizeCritiqueSpread(scored, scored.length);
 }
 function applyPassiveWinCap(scored, ep){
   if(!(ep.passiveWorkroom || ep.canPlayerWin===false))return;
@@ -1066,9 +1030,15 @@ if (q.id === gameState.playerQueenId) {
   // before the lip sync has happened. The two best queens remain TOP2 until
   // resolveLipSync() promotes only the lip sync winner to WIN.
   if(!['premiere_no_elim','tournament_bracket'].includes(ep.special) && !['legacy','assassin','all_winners'].includes(getSeasonFormat())){
-    applyPassiveWinCap(scored,ep);
-    applyWinThrottles(scored,ep);
-    softenFrontrunnerHighsToSafe(scored,ep);
+    // Do not run individual win/high balancing on team-judged episodes, because it
+    // can split a judged group after assignTeamPlacements() has made the team result.
+    if(ep.judgingMode==='team'){
+      applyPassiveWinCap(scored,ep);
+    }else{
+      applyPassiveWinCap(scored,ep);
+      applyWinThrottles(scored,ep);
+      softenFrontrunnerHighsToSafe(scored,ep);
+    }
   }
   scored.sort((a,b)=>{
     const order={WIN:0,TOP2:0,HIGH:1,CRITIQUE:2,SAFE:3,LOW:4,BTM:5};
