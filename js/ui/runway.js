@@ -307,7 +307,8 @@ function runwayStarCount(p, placements){
 function runwayTagMarkup(tags){
   return tags.map(t=>`<span class="runway-label">${t.icon} ${escapeHtml(t.label)}</span>`).join('');
 }
-function playerRunwayEventMarkup(p){
+function playerRunwayEventMarkup(p, opts={}){
+  if(opts.suppressRunwayEvent)return '';
   if(!p || p.queenId!==gameState.playerQueenId)return '';
   const event=p.runwayEvent || gameState.currentEpisode?.runwayEvents?.[p.queenId];
   if(!event?.text)return '';
@@ -327,7 +328,7 @@ function runwayWalkCard(p, placements, momentMap, opts={}){
   return `<article class="runway-look runway-${moment}">
     <div class="runway-tags">${runwayTagMarkup(tags)}</div>
     <div class="runway-look-head">${q?queenPortraitHtml(q,moment==='showstopper'?'lg':'md'):''}<div><h4>${q?queenTeamNameHtml(q):escapeHtml(p.name)}</h4>
-    <p>${escapeHtml(runwayTone(p,placements))}</p>${playerRunwayEventMarkup(p)}</div></div>
+    <p>${escapeHtml(runwayTone(p,placements))}</p>${playerRunwayEventMarkup(p, opts)}</div></div>
   </article>`;
 }
 
@@ -409,7 +410,11 @@ function runwayCategoryCards(ep, placements, runwayOrder){
       const topTootQueenId=isLast ? [...categoryPlacements].sort((a,b)=>runwayTootBootMetric(b)-runwayTootBootMetric(a))[0]?.queenId : null;
       const note=isLast?'<p class="small">This final category was constructed in the workroom, so sewing carries more weight.</p>':'<p class="small">This category was brought from home, so styling and presentation carry more weight.</p>';
       const weightNote=categoryWeightNote(placements,idx,isLast);
-      const walks=categoryOrder.map(p=>runwayWalkCard(p,categoryPlacements,momentMap,{allowTopToot:isLast,topTootQueenId})).join('');
+      const walks=categoryOrder.map(p=>runwayWalkCard(p,categoryPlacements,momentMap,{
+  allowTopToot:isLast,
+  topTootQueenId,
+  suppressRunwayEvent:!isLast
+})).join('');
       return `<div class="card runway-card">${runwayCategoryHeader(cat)}${note}${weightNote}<div class="runway-walk-list">${walks}</div></div>`;
     }).join('');
   }
