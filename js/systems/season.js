@@ -1364,8 +1364,8 @@ function pickChallengeContent(challengeId){
     return {
       designCategory: category,
       fashionWars:true,
-      challengeTitle:`The Fashion Wars: ${category.category || 'Design'}`,
-      challengePrompt:'The queens face off in runway design battles. Each battle awards a point, and the judges use those victories to decide the tops and bottoms.',
+      challengeTitle:`The ${category.category || 'Design'} Fashion Wars`,
+      challengePrompt:'The queens face off in runway design battles.',
       mainTheme:category.category || 'Fashion Wars',
       battles
     };
