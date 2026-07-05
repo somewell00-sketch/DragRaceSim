@@ -389,7 +389,7 @@ function lipSyncExecutionTier(score){
   if (v < 6.0) return 'failed';
   if (v < 7.0) return 'partial';
   if (v < 7.7) return 'strong';
-  if (v < 8.4) return 'outstanding';
+  if (v < 8.6) return 'outstanding';
   return 'legendary';
 }
 
