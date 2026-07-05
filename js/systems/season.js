@@ -1086,7 +1086,7 @@ function challengeFamily(id){
   if(['comedy','roast','snatchgame','snatch game'].includes(key))return 'comedy';
   if(['branding','advertisement','commercial'].includes(key))return 'branding';
   if(['interview','hosting','podcast'].includes(key))return 'hosting';
-  if(['design','ball','makeover'].includes(key))return 'fashion';
+  if(['design','fashion_wars','ball','makeover'].includes(key))return 'fashion';
   return key;
 }
 function createSeasonChallengePlan(startCount=14, finaleSize=4){
@@ -1139,7 +1139,7 @@ function isUniqueSeasonChallenge(challengeOrId){
   // These are special-format challenges: maximum once per season, except when a double premiere repeats
   // the same selected challenge for both premiere groups.
   return [
-    'talent','snatchgame','makeover','roast','rusical','branding','rumix','ball','political','debate'
+    'talent','snatchgame','makeover','roast','rusical','branding','rumix','ball','fashion_wars','political','debate'
   ].some(key=>id.includes(key)||name.includes(key));
 }
 function requiredChallengeForActiveCount(activeCount){
@@ -1170,6 +1170,7 @@ function pickChallengeByRules(activeCount){
     if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
     if(getSeasonFormat()==='all_winners' && c.id==='talent' && upcomingEpisodeNumber!==11)return false;
     if(c.id==='rumix' && activeCount!==finaleSize+1)return false;
+    if(c.id==='fashion_wars' && ![8,9,10].includes(activeCount))return false;
     if(c.minQueens && activeCount<c.minQueens)return false;
     if(c.maxQueens && activeCount>c.maxQueens)return false;
     if(c.id==='rusical'&&activeCount>10)return false;
@@ -1183,6 +1184,7 @@ function pickChallengeByRules(activeCount){
   if(!available.length){
     available=challenges.filter(c=>{
       if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
+      if(c.id==='fashion_wars' && ![8,9,10].includes(activeCount))return false;
       if(c.minQueens && activeCount<c.minQueens)return false;
       if(c.maxQueens && activeCount>c.maxQueens)return false;
       if(c.id==='rusical'&&activeCount>10)return false;
@@ -1200,6 +1202,7 @@ function pickChallengeByRules(activeCount){
 
 function challengeStructures(challengeId, activeCount){
   const solo=['talent','design','ball','comedy','roast','snatchgame','interview','rumix','political_debate','makeover'];
+  if(challengeId==='fashion_wars') return [{id:'fashion_wars',label:activeCount===10?'Two fashion houses':activeCount===9?'Three fashion houses':'Fashion duels'}];
   if(solo.includes(challengeId)) return [{id:'solo',label:'Solo challenge'}];
   const list=[{id:'solo',label:'Solo challenge'}];
   if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
@@ -1214,7 +1217,36 @@ function pickEpisodeStructure(challengeId, activeCount){
   if(r<0.45)return options[0];
   return sample(options.slice(1));
 }
+function buildFashionWarsTeams(active){
+  const pool=shuffle(active).map(q=>q.id);
+  const activeCount=pool.length;
+  const teamCount=activeCount===10?2:(activeCount===9?3:4);
+  const teamSize=activeCount===10?5:(activeCount===9?3:2);
+  const names=activeCount===8?['Duel 1','Duel 2','Duel 3','Duel 4']:Array.from({length:teamCount},(_,i)=>`House ${i+1}`);
+  return Array.from({length:teamCount},(_,i)=>({
+    id:`fashion_team_${i+1}`,
+    name:names[i],
+    queenIds:pool.slice(i*teamSize,(i+1)*teamSize)
+  }));
+}
+
+function assignFashionWarsBattles(ep){
+  const battles=ep?.challengeContent?.battles||[];
+  const teams=ep?.teams||[];
+  if(!battles.length || !teams.length)return;
+  const activeCount=ep.activeCount || teams.reduce((n,t)=>n+(t.queenIds?.length||0),0);
+  battles.forEach((battle,idx)=>{
+    if(activeCount===8){
+      battle.queenIds=(teams[idx]?.queenIds||[]).slice(0,2);
+    }else{
+      // Top 10: one queen from each of the two houses. Top 9: one queen from each of the three houses.
+      battle.queenIds=teams.map(t=>t.queenIds[idx]).filter(Boolean);
+    }
+  });
+}
+
 function buildTeamsForEpisode(structure, active){
+  if(structure?.id==='fashion_wars')return buildFashionWarsTeams(active);
   if(!structure || structure.id==='solo')return [];
   let teamCount=2;
   if(structure.id==='duos') teamCount=Math.floor(active.length/2);
@@ -1312,6 +1344,32 @@ function pickChallengeContent(challengeId){
       mainTheme: ball?.mainTheme || ball?.title || 'Ball'
     };
   }
+  if(challengeId==='fashion_wars'){
+    const categories=shuffle(data.designChallenges || []);
+    const category=categories[0] || {category:'Design', challenges:[]};
+    const duelThemes=shuffle(category.challenges || []);
+    const fallback=[
+      {title:'Couture Combat', prompt:'Create a fashion-forward garment strong enough to win a runway duel.'},
+      {title:'Needle and Nerve', prompt:'Turn fabric, styling, and attitude into a decisive fashion victory.'},
+      {title:'Runway Warfare', prompt:'Build a look with enough concept and execution to defeat the queen across from you.'},
+      {title:'Fashion Face-Off', prompt:'Make a garment that reads clearly, photographs beautifully, and beats the assignment.'},
+      {title:'Eleganza Duel', prompt:'Serve construction, silhouette, and taste in a head-to-head design battle.'}
+    ];
+    const activeCount=gameState.queens.filter(q=>!q.isEliminated).length;
+    const duelCount=activeCount===10?5:(activeCount===9?3:4);
+    const battles=Array.from({length:duelCount},(_,i)=>{
+      const theme=duelThemes[i%Math.max(1,duelThemes.length)] || fallback[i%fallback.length];
+      return {id:`fashion_war_${i+1}`, title:theme.title, prompt:theme.prompt, queenIds:[], winnerId:null, winnerTeamId:null};
+    });
+    return {
+      designCategory: category,
+      fashionWars:true,
+      challengeTitle:`The Fashion Wars: ${category.category || 'Design'}`,
+      challengePrompt:'The queens face off in runway design battles. Each battle awards a point, and the judges use those victories to decide the tops and bottoms.',
+      mainTheme:category.category || 'Fashion Wars',
+      battles
+    };
+  }
   if(challengeId==='design'){
   const category = sample(data.designChallenges || []);
   const design = sample(category?.challenges || []);
@@ -1403,7 +1461,8 @@ function episodeDisplayNotes(challenge, theme, content, isSnatchGame){
 }
 function episodeRunwayForChallenge(challengeId, theme, content){
   if(challengeId==='ball')return (content?.runwayCategories?.[content.runwayCategories.length-1] || content?.mainTheme || 'Ball Eleganza');
-  return content?.designTheme?.title || 'Design';
+  if(challengeId==='fashion_wars')return content?.challengeTitle || 'The Fashion Wars';
+  if(challengeId==='design')return content?.designTheme?.title || 'Design';
   if(challengeId==='makeover')return 'Family Resemblance';
   const pool=(theme?.runway?.length?theme.runway:(gameState.data.runways||[]).map(r=>r.name));
   return sample(pool)||'Best Drag';
@@ -1561,7 +1620,7 @@ function generateEpisode(){
     challengeContent.mainTheme='Talent Show';
     challengeContent.talents=buildSpecialTalentContent(active);
   }
-  const theme=(isSnatchGame || challenge.id==='talent' || ['ball','design','makeover','roast','interview'].includes(challenge.id))?null:sample(gameState.data.themes);
+  const theme=(isSnatchGame || challenge.id==='talent' || ['ball','design','fashion_wars','makeover','roast','interview'].includes(challenge.id))?null:sample(gameState.data.themes);
   const runway=episodeRunwayForChallenge(challenge.id, theme, challengeContent);
   const runwayCategories=challengeContent.runwayCategories || [runway];
   const song=sample(gameState.data.songs);
@@ -1572,13 +1631,14 @@ function generateEpisode(){
   // Talent Show and Makeover are always individual, including normal and double premieres.
   if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
   const teams=buildTeamsForEpisode(structure, active);
+  if(challenge.id==='fashion_wars')assignFashionWarsBattles({activeCount,teams,challengeContent});
   const guestJudge=pickGuestJudge();
   if(challenge.id==='interview'){
     challengeContent.interviewGuest={name:guestJudge?.name||'the guest judge', vibe:guestJudge?.note||'ready for a sit-down'};
     challengeContent.challengePrompt=`Host a sit-down interview with ${challengeContent.interviewGuest.name}. Keep it funny, sharp, and moving.`;
     challengeContent.mainTheme=`Interview with ${challengeContent.interviewGuest.name}`;
   }
-  const judgingMode=(teams&&teams.length)?pickTeamJudgingMode(structure):'individual';
+  const judgingMode=challenge.id==='fashion_wars'?'team':((teams&&teams.length)?pickTeamJudgingMode(structure):'individual');
   const snatchCharacters=isSnatchGame?assignSnatchCharacters(active):[];
   gameState.currentEpisode={
     number,

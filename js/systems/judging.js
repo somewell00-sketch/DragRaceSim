@@ -357,6 +357,87 @@ function assignTeamPlacements(scored, ep){
     if(secondWorst && ![best.team.id,worst.team.id,secondBest?.team?.id].includes(secondWorst.team.id))setTeamPlacement(secondWorst,'LOW');
   }
 }
+
+function teamForQueenIdInEpisode(qId, ep){
+  return (ep?.teams||[]).find(t=>(t.queenIds||[]).includes(qId)) || null;
+}
+function resolveFashionWarsBattles(scored, ep){
+  const battles=ep?.challengeContent?.battles||[];
+  const byId=Object.fromEntries(scored.map(s=>[s.queenId,s]));
+  const teamPoints={};
+  const teamTotals={};
+  (ep.teams||[]).forEach(t=>{teamPoints[t.id]=0; teamTotals[t.id]=0;});
+  battles.forEach(battle=>{
+    const entrants=(battle.queenIds||[]).map(id=>byId[id]).filter(Boolean).sort((a,b)=>b.score-a.score);
+    const winner=entrants[0];
+    const winnerTeam=winner?teamForQueenIdInEpisode(winner.queenId,ep):null;
+    battle.winnerId=winner?.queenId||null;
+    battle.winnerTeamId=winnerTeam?.id||null;
+    if(winnerTeam)teamPoints[winnerTeam.id]=(teamPoints[winnerTeam.id]||0)+1;
+    entrants.forEach(row=>{
+      const team=teamForQueenIdInEpisode(row.queenId,ep);
+      if(team)teamTotals[team.id]=(teamTotals[team.id]||0)+row.score;
+    });
+  });
+  ep.fashionWarsPoints=(ep.teams||[]).map(team=>({
+    teamId:team.id,
+    name:team.name,
+    points:teamPoints[team.id]||0,
+    total:Math.round((teamTotals[team.id]||0)*10)/10,
+    queenIds:team.queenIds
+  })).sort((a,b)=>(b.points-a.points)||(b.total-a.total));
+  return ep.fashionWarsPoints;
+}
+function assignFashionWarsPlacements(scored, ep){
+  scored.forEach(s=>s.placement='SAFE');
+  const standings=resolveFashionWarsBattles(scored,ep);
+  if(!standings.length){assignIndividualPlacements(scored); return;}
+  const byTeamId=Object.fromEntries((ep.teams||[]).map(t=>[t.id,t]));
+  const activeCount=ep.activeCount || scored.length;
+  const format=(typeof getSeasonFormat==='function'?getSeasonFormat():'regular');
+  const winCount=(format==='all_winners'||format==='legacy'||format==='assassin')?2:1;
+  const bottomCount=(format==='all_winners')?0:(activeCount<=8?2:3);
+  const bestTeam=standings[0];
+  const worstTeam=standings[standings.length-1];
+  ep.fashionWarsWinningTeamId=bestTeam?.teamId||null;
+  ep.fashionWarsLosingTeamId=worstTeam?.teamId||null;
+
+  const markRows=(ids, placement)=>scored.filter(s=>ids.includes(s.queenId)).forEach(s=>{s.placement=placement;});
+  const sortedTeamRows=(teamId, asc=false)=>scored
+    .filter(s=>(byTeamId[teamId]?.queenIds||[]).includes(s.queenId))
+    .sort((a,b)=>asc?a.score-b.score:b.score-a.score);
+
+  if(activeCount===10){
+    const bestRows=sortedTeamRows(bestTeam.teamId,false);
+    const worstRows=sortedTeamRows(worstTeam.teamId,true);
+    markRows(bestRows.slice(0,3).map(s=>s.queenId),'HIGH');
+    markRows(worstRows.slice(0,3).map(s=>s.queenId),'BTM');
+    bestRows.slice(0,winCount).forEach(s=>{s.placement='WIN';});
+    worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+    worstRows.slice(bottomCount,3).forEach(s=>{s.placement='LOW';});
+    return;
+  }
+
+  if(activeCount===9){
+    const bestRows=sortedTeamRows(bestTeam.teamId,false);
+    const worstRows=sortedTeamRows(worstTeam.teamId,true);
+    markRows(bestRows.map(s=>s.queenId),'HIGH');
+    markRows(worstRows.map(s=>s.queenId),'BTM');
+    bestRows.slice(0,winCount).forEach(s=>{s.placement='WIN';});
+    worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+    worstRows.slice(bottomCount).forEach(s=>{s.placement='LOW';});
+    return;
+  }
+
+  const battleWinnerIds=new Set((ep.challengeContent?.battles||[]).map(b=>b.winnerId).filter(Boolean));
+  const winners=scored.filter(s=>battleWinnerIds.has(s.queenId)).sort((a,b)=>b.score-a.score);
+  const losers=scored.filter(s=>!battleWinnerIds.has(s.queenId)).sort((a,b)=>a.score-b.score);
+  winners.slice(0,3).forEach(s=>{s.placement='HIGH';});
+  losers.slice(0,3).forEach(s=>{s.placement='LOW';});
+  winners.slice(0,winCount).forEach(s=>{s.placement='WIN';});
+  losers.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+}
+
 function applyPassiveWinCap(scored, ep){
   if(!(ep.passiveWorkroom || ep.canPlayerWin===false))return;
   const playerScore=scored.find(s=>s.queenId===gameState.playerQueenId);
@@ -1002,7 +1083,8 @@ if (q.id === gameState.playerQueenId) {
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
     return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,runwayEventBonus:Math.round(runwayEventBonus*10)/10,runwayEvent,judgingEventBonus:Math.round(judgingEventBonus*10)/10,judgingEvent,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
-  if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
+  if(ep.challengeType==='fashion_wars')assignFashionWarsPlacements(scored,ep);
+  else if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
 
   const useSnatchGameOfLove=isSnatchGameOfLoveEpisode(ep);
