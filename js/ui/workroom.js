@@ -240,11 +240,16 @@ const workroomPulse = [
 function teamFormationBlock(ep){
   if(!ep?.teams?.length || !ep.teamFormation)return '';
   const tf=ep.teamFormation;
+  const q=id=>gameState.queens.find(x=>x.id===id);
+  const caption=tf.autoChosen?'<p class="small">Teams were completed automatically.</p>':'';
   const captainLine=(tf.method==='mini_captains' && tf.captainIds?.length)
-    ? `<p><strong>Captains:</strong> ${tf.captainIds.map(id=>queenTeamNameHtml(gameState.queens.find(q=>q.id===id))).join(' vs ')}</p>` : '';
+    ? `<p><strong>Captains:</strong> ${tf.captainIds.map(id=>queenTeamNameHtml(q(id))).join(' vs ')}</p>` : '';
   const chooserLine=(tf.method==='previous_winner' && tf.chooserId)
-    ? `<p><strong>Supreme Queen:</strong> ${queenTeamNameHtml(gameState.queens.find(q=>q.id===tf.chooserId))}</p>` : '';
-  return `<div class="card"><h3>Team Formation</h3><h4>${escapeHtml(tf.title||'Team Formation')}</h4><p>${escapeHtml(tf.description||'')}</p>${captainLine}${chooserLine}${tf.autoChosen?'<p class="small">You chose to let the game form the teams automatically.</p>':''}</div>`;
+    ? `<p><strong>Power:</strong> ${queenTeamNameHtml(q(tf.chooserId))}</p>` : '';
+  const draft=(tf.method==='mini_captains' && Array.isArray(tf.pickOrder) && tf.pickOrder.length)
+    ? `<h4>Draft order</h4><ol class="draft-order">${tf.pickOrder.map(p=>`<li>${queenTeamNameHtml(q(p.captainId))} picked ${queenTeamNameHtml(q(p.queenId))}</li>`).join('')}</ol>` : '';
+  const finalTeams=`<h4>Final teams</h4><div class="team-preview">${(ep.teams||[]).map(t=>`<p><strong>${escapeHtml(t.name)}</strong>: ${(t.queenIds||[]).map(id=>queenTeamNameHtml(q(id))).join(', ')}</p>`).join('')}</div>`;
+  return `<div class="card"><h3>${escapeHtml(tf.title||'Team Formation')}</h3><p>${escapeHtml(tf.description||'')}</p>${captainLine}${chooserLine}${draft}${finalTeams}${caption}</div>`;
 }
 function renderTeamFormationStep(){
   const ep=gameState.currentEpisode;
@@ -262,8 +267,8 @@ function renderTeamFormationStep(){
       const candidates=active.filter(q=>q.id!==gameState.playerQueenId);
       setHTML(`${header}<div class="card"><h3>Choose the other captain</h3><p>You won the mini-challenge. Pick the queen who will lead the opposing team.</p><div class="options">${candidates.map(q=>`<button class="option pickCaptain" data-id="${q.id}">${queenPortraitHtml(q,'sm')}<strong>${escapeHtml(q.name)}</strong></button>`).join('')}${autoButton}</div></div>${footer}`);
       bindCommon(()=>showHistory(renderTeamFormationStep));
-      document.querySelectorAll('.pickCaptain').forEach(btn=>btn.addEventListener('click',()=>{tf.captainIds=[gameState.playerQueenId,btn.dataset.id]; saveGame(); renderTeamFormationStep();}));
-      document.querySelector('#autoFormation')?.addEventListener('click',()=>{const second=autoPickTeamCaptain(gameState.playerQueenId,candidates); tf.captainIds=[gameState.playerQueenId,second?.id].filter(Boolean); saveGame(); renderTeamFormationStep();});
+      document.querySelectorAll('.pickCaptain').forEach(btn=>btn.addEventListener('click',()=>{tf.captainIds=[gameState.playerQueenId,btn.dataset.id]; tf.pickOrder=[]; saveGame(); renderTeamFormationStep();}));
+      document.querySelector('#autoFormation')?.addEventListener('click',()=>{const second=autoPickTeamCaptain(gameState.playerQueenId,candidates); tf.captainIds=[gameState.playerQueenId,second?.id].filter(Boolean); tf.pickOrder=[]; saveGame(); renderTeamFormationStep();});
       return;
     }
     const teams=[ [captainIds[0]], [captainIds[1]] ];
@@ -280,14 +285,14 @@ function renderTeamFormationStep(){
     if(!isPlayerTurn){
       const pool=active.filter(q=>!groups.flat().includes(q.id));
       const pick=autoPickTeammate(groups[currentIdx][0],groups[currentIdx],pool);
-      if(pick)groups[currentIdx].push(pick.id);
+      if(pick){groups[currentIdx].push(pick.id); tf.pickOrder=tf.pickOrder||[]; tf.pickOrder.push({captainId:groups[currentIdx][0],teamIndex:currentIdx,queenId:pick.id,auto:true});}
       tf.playerGroups=groups; saveGame(); return renderTeamFormationStep();
     }
     const pool=active.filter(q=>!groups.flat().includes(q.id));
     setHTML(`${header}<div class="card"><h3>Schoolyard Pick</h3><p>${escapeHtml(qName(captainIds[0]))} and ${escapeHtml(qName(captainIds[1]))} are captains. Choose your next teammate.</p><div class="team-preview">${groups.map((g,i)=>`<p><strong>${escapeHtml(teamNameForStructure(ep.structure,g,i))}</strong>: ${g.map(id=>queenTeamNameHtml(gameState.queens.find(q=>q.id===id))).join(', ')}</p>`).join('')}</div><div class="options">${pool.map(q=>`<button class="option pickMate" data-id="${q.id}">${queenPortraitHtml(q,'sm')}<strong>${escapeHtml(q.name)}</strong></button>`).join('')}${autoButton}</div></div>${footer}`);
     bindCommon(()=>showHistory(renderTeamFormationStep));
-    document.querySelectorAll('.pickMate').forEach(btn=>btn.addEventListener('click',()=>{groups[currentIdx].push(btn.dataset.id); tf.playerGroups=groups; saveGame(); renderTeamFormationStep();}));
-    document.querySelector('#autoFormation')?.addEventListener('click',()=>{const teams=autoAssignAllTeams(ep.structure,active,'mini_captains',{captainIds}); finalizeCurrentEpisodeTeams(teams,true); renderWorkroom();});
+    document.querySelectorAll('.pickMate').forEach(btn=>btn.addEventListener('click',()=>{groups[currentIdx].push(btn.dataset.id); tf.pickOrder=tf.pickOrder||[]; tf.pickOrder.push({captainId:groups[currentIdx][0],teamIndex:currentIdx,queenId:btn.dataset.id,auto:false}); tf.playerGroups=groups; saveGame(); renderTeamFormationStep();}));
+    document.querySelector('#autoFormation')?.addEventListener('click',()=>{const pickOrder=[]; const teams=autoAssignAllTeams(ep.structure,active,'mini_captains',{captainIds,pickOrder}); tf.pickOrder=pickOrder; finalizeCurrentEpisodeTeams(teams,true); renderWorkroom();});
     return;
   }
   if(tf.method==='previous_winner'){

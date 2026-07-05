@@ -1268,6 +1268,23 @@ function impactQueenCard(q, label, line, variant='default', extra=''){
   </div>`;
 }
 function standardLsfylDecisionCards(result){
+  if(result.outcome==='tripleBottom'){
+    const ordered=[...result.results];
+    const shantay=gameState.queens.find(q=>q.id===ordered[0]?.queenId);
+    const safe=gameState.queens.find(q=>q.id===ordered[1]?.queenId);
+    const out=gameState.queens.find(q=>q.id===ordered[2]?.queenId);
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>${escapeHtml(shantay?.name||'One queen')}, shantay, you stay.</strong></p><p><strong>${escapeHtml(safe?.name||'Another queen')}</strong>, you are safe.</p><p><strong>${escapeHtml(out?.name||'My dear')}</strong>, sashay away.</p></div>`
+      + impactQueenCard(shantay,'SHANTAY','Shantay, you stay.','shantay','<p>You led the lip sync.</p>')
+      + impactQueenCard(safe,'SAFE','You are safe.','safe','<p>You survived the triple lip sync.</p>')
+      + impactQueenCard(out,'SASHAY AWAY','Sashay away.','sashay',`<p>${escapeHtml(ruFarewellThanks(out))}</p><blockquote>${escapeHtml(queenExitQuote(out))}</blockquote>`);
+  }
+  if(result.outcome==='tripleDoubleSashay'){
+    const survivor=gameState.queens.find(q=>q.id===result.survivorId);
+    const outs=(result.eliminatedQueenIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>${escapeHtml(survivor?.name||'One queen')}, shantay, you stay.</strong></p><p><strong>Double elimination.</strong> Two queens leave tonight.</p></div>`
+      + impactQueenCard(survivor,'SHANTAY','Shantay, you stay.','shantay','<p>You survived the triple lip sync.</p>')
+      + outs.map(q=>impactQueenCard(q,'SASHAY AWAY','Sashay away.','sashay',`<p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote>`)).join('');
+  }
   if(result.outcome==='doubleShantay'){
     const queens=[...result.results].map(r=>gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
     return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p></div>` + queens.map(q=>impactQueenCard(q,'DOUBLE SHANTAY','You both stay.','shantay')).join('');
@@ -1465,7 +1482,10 @@ function renderLipSyncResult(result){
   const isTournament=ep.special==='tournament_bracket';
   const isAllWinners=getSeasonFormat()==='all_winners';
   const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
-  const intro=(ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'Two top queens stand before me.':'Two queens stand before me.';
+  const lipSyncCount=(result?.results||[]).length;
+  const intro=(ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)
+    ? `${lipSyncCount===3?'Three top queens':'Two top queens'} stand before me.`
+    : `${lipSyncCount===3?'Three queens':'Two queens'} stand before me.`;
   const prompt=isAllWinners
     ? "Ladies, this is your chance to become the Top All Star of the week and block one queen. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : isTournament
@@ -1474,7 +1494,9 @@ function renderLipSyncResult(result){
     ? "Ladies, this is your chance to win the lip sync and reveal your lipstick. The time has come... to lip sync for your legacy! Good luck... and don't fuck it up."
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
-      : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."));
+      : (lipSyncCount===3
+        ? "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... for all three of you to lip sync for your lives! Good luck... and don't fuck it up."
+        : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
   const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', (isAllWinners||isTournament||isLegacy)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue"  style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>

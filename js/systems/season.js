@@ -1294,7 +1294,7 @@ function pickTeamFormationMethod(structure, active, miniWinner){
   const lastFormation=(gameState.episodeHistory||[]).slice().reverse().find(e=>e?.teamFormation)?.teamFormation?.method;
   const canPrevious=(gameState.episodeHistory||[]).length>=3 && previousWinner && lastFormation!=='previous_winner';
   const weights={...TEAM_FORMATION_METHOD_WEIGHTS};
-  if(!miniWinner)weights.mini_captains=0;
+  if(!miniWinner || teamStructureTargetSizes(structure, active).length!==2)weights.mini_captains=0;
   if(!canPrevious)weights.previous_winner=0;
   const entries=Object.entries(weights).filter(([,w])=>w>0);
   const total=entries.reduce((s,[,w])=>s+w,0);
@@ -1304,6 +1304,7 @@ function pickTeamFormationMethod(structure, active, miniWinner){
 }
 function autoAssignAllTeams(structure, active, method='random', options={}){
   const targetSizes=teamStructureTargetSizes(structure, active);
+  const pickOrder=Array.isArray(options.pickOrder)?options.pickOrder:null;
   if(!targetSizes.length)return [];
   if(method==='random'){
     const pool=shuffle(active).map(q=>q.id), groups=targetSizes.map(()=>[]);
@@ -1322,7 +1323,12 @@ function autoAssignAllTeams(structure, active, method='random', options={}){
       while(groups[idx].length>=targetSizes[idx] && loops<groups.length){idx=(idx+1)%groups.length; loops++;}
       const captainId=groups[idx][0]||captainIds[idx%captainIds.length]||null;
       const pick=autoPickTeammate(captainId,groups[idx],pool);
-      groups[idx].push(pick.id); pool=pool.filter(q=>q.id!==pick.id); turn=idx+1;
+      if(pick){
+        if(pickOrder)pickOrder.push({captainId,teamIndex:idx,queenId:pick.id,auto:true});
+        groups[idx].push(pick.id);
+        pool=pool.filter(q=>q.id!==pick.id);
+      }
+      turn=idx+1;
     }
     return teamsFromIdGroups(groups,structure);
   }
@@ -1358,10 +1364,10 @@ function autoAssignAllTeams(structure, active, method='random', options={}){
 }
 function teamFormationText(method, data={}){
   const qName=id=>gameState.queens.find(q=>q.id===id)?.name||'a queen';
-  if(method==='mini_captains')return {title:'Mini-Challenge Winners / Team Captains',description:`${qName(data.captainIds?.[0])} won the mini-challenge and chose ${qName(data.captainIds?.[1])} as the opposing captain. The captains picked teams schoolyard style.`};
-  if(method==='random')return {title:'Random Assignment',description:'RuPaul and production assigned the teams randomly. No one gets to pick this week.'};
-  if(method==='free_choice')return {title:'Free Choice / Chaos',description:'RuPaul told the queens to divide themselves. Friendships, alliances, and messy room energy shaped the teams.'};
-  if(method==='previous_winner')return {title:'Previous Winner / Supreme Queen',description:`${qName(data.chooserId)} won the previous episode and received the power to form every team.`};
+  if(method==='mini_captains')return {title:'Mini-Challenge Captains',description:`${qName(data.captainIds?.[0])} chose ${qName(data.captainIds?.[1])} as the opposing captain.`};
+  if(method==='random')return {title:'Random Assignment',description:'Production assigned the teams randomly.'};
+  if(method==='free_choice')return {title:'Free Choice',description:'The queens divided themselves by alliances, friendships, and room energy.'};
+  if(method==='previous_winner')return {title:'Supreme Queen Power',description:`${qName(data.chooserId)} formed the teams.`};
   return {title:'Team Formation',description:'The teams were formed.'};
 }
 function buildTeamsForEpisodeWithFormation(structure, active, miniWinner){
@@ -1373,7 +1379,9 @@ function buildTeamsForEpisodeWithFormation(structure, active, miniWinner){
     const second=autoPickTeamCaptain(first?.id,active.filter(q=>q.id!==first?.id));
     needsPlayerFormation=first?.id===gameState.playerQueenId;
     captainIds=needsPlayerFormation?[first?.id].filter(Boolean):[first?.id,second?.id].filter(Boolean);
-    if(!needsPlayerFormation)teams=autoAssignAllTeams(structure,active,method,{captainIds});
+    const pickOrder=[];
+    if(!needsPlayerFormation)teams=autoAssignAllTeams(structure,active,method,{captainIds,pickOrder});
+    var formationPickOrder=pickOrder;
   }else if(method==='previous_winner'){
     const prev=lastEpisodeUniqueWinner(); chooserId=prev?.id||null;
     needsPlayerFormation=chooserId===gameState.playerQueenId;
@@ -1382,7 +1390,7 @@ function buildTeamsForEpisodeWithFormation(structure, active, miniWinner){
     teams=autoAssignAllTeams(structure,active,method,{});
   }
   const txt=teamFormationText(method,{captainIds,chooserId});
-  return {teams,needsPlayerFormation,teamFormation:{method,title:txt.title,description:txt.description,captainIds,chooserId,autoChosen:false,pending:needsPlayerFormation,targetSizes:teamStructureTargetSizes(structure,active)}};
+  return {teams,needsPlayerFormation,teamFormation:{method,title:txt.title,description:txt.description,captainIds,chooserId,pickOrder:formationPickOrder||[],autoChosen:false,pending:needsPlayerFormation,targetSizes:teamStructureTargetSizes(structure,active)}};
 }
 function finalizeCurrentEpisodeTeams(teams, autoChosen=false){
   const ep=gameState.currentEpisode; if(!ep)return;

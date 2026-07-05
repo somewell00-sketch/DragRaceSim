@@ -1503,6 +1503,15 @@ if (lip <= 5)
   let survivorId=survivor.queenId;
   let eliminatedQueenId=eliminated.queenId;
   let eliminatedQueenIds=[eliminated.queenId];
+  if(results.length===3){
+    const bottomTwo=results.slice(1);
+    if(bottomTwo.every(r=>r.score10<6) && !gameState.season.doubleSashayUsed){
+      outcome='tripleDoubleSashay';
+      gameState.season.doubleSashayUsed=true;
+      eliminatedQueenId=null;
+      eliminatedQueenIds=bottomTwo.map(r=>r.queenId);
+    }
+  }
 
   if(results.length===2 && results[0].score10<6 && results[1].score10<6 && !gameState.season.doubleSashayUsed){
     outcome='doubleSashay';
@@ -1637,7 +1646,9 @@ function applyEpisodeStats(){
       ep.eliminatedQueenId=null;
     } else if(ep.lipSyncResult.outcome==='doubleShantay'){
       ep.lipSyncResult.results.forEach(r=>{const q=gameState.queens.find(x=>x.id===r.queenId); if(q){q.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:q,note:'Double shantay lip sync survival.',source:'lip-sync-result',save:false});}});
-    } else if(ep.lipSyncResult.outcome==='doubleSashay'){
+    } else if(ep.lipSyncResult.outcome==='doubleSashay' || ep.lipSyncResult.outcome==='tripleDoubleSashay'){
+      const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
+      if(win){win.statistics.lipSyncWins++; applyChoiceEffects({momentum:1,fans:2,production:0.7},{queen:win,note:'Lip sync survival.',source:'lip-sync-result',save:false});}
       ep.lipSyncResult.eliminatedQueenIds.forEach(id=>{const out=gameState.queens.find(q=>q.id===id); if(!out)return; out.statistics.lipSyncLosses++; out.isEliminated=true; const last=out.episodeHistory[out.episodeHistory.length-1]; if(last)last.placement='ELIM'; if(!gameState.eliminatedQueens.some(q=>q.id===out.id))gameState.eliminatedQueens.push(out);});
     } else {
       const win=gameState.queens.find(q=>q.id===ep.lipSyncResult.survivorId);
