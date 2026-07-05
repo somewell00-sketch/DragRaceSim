@@ -267,15 +267,15 @@ function moveLabel(kind,value){
 function fillTemplate(text, values={}){return String(text||'').replace(/\{(\w+)\}/g,(_,key)=>values[key]??'');}
 function pickLipSyncComment(path, fallback=''){let node=gameState.data.lipSyncComments; for(const key of path){node=node?.[key];} if(Array.isArray(node)) return sample(node)||fallback; return fallback;}
 function getLipSyncQualityKey(results){
-  const scores=results.map(r=>r.score10);
-  const low=Math.min(...scores);
-  const high=Math.max(...scores);
-  if(low>=8) return 'legendary';
-  if(high>=8.5) return 'iconic';
-  if(high<6) return 'terrible';
-  if(high<6.8) return 'forgettable';
-  if(high<7.5) return 'warm';
-  return 'irregular';
+  const scores = results.map(r => r.score10);
+  const avg = scores.reduce((a,b) => a + b, 0) / scores.length;
+
+  if(avg >= 8.25) return 'legendary';
+  if(avg >= 7.75) return 'iconic';
+  if(avg >= 7.15) return 'irregular';
+  if(avg >= 6.5) return 'warm';
+  if(avg >= 5.85) return 'forgettable';
+  return 'terrible';
 }
 
 function shortPick(list,fallback=''){
@@ -376,10 +376,10 @@ function resultTier(result){
   if(result.outcome==='top2Win' || result.outcome==='tournamentPoints' || result.outcome==='allWinnersTopAllStar') return 'top2Win';
   const diff=result.difference ?? Math.abs((result.results?.[0]?.score10||0)-(result.results?.[1]?.score10||0));
   const high=Math.max(...result.results.map(r=>r.score10));
-  if(high<6.5) return 'weak';
-  if(diff<0.6) return 'close';
-  if(diff<1.8) return 'clear';
-  return 'dominant';
+ if(high < 6.9) return 'weak';
+if(diff < 1.0) return 'close';
+if(diff < 2.5) return 'clear';
+return 'dominant';
 }
 
 
