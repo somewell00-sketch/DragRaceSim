@@ -72,6 +72,23 @@ window.GAME_DATA.challenges = [
 }
   },
   {
+    "id": "fashion_wars",
+    "name": "The Fashion Wars",
+    "structures": [
+      "fashion_wars"
+    ],
+    "runwayWeight": 0.35,
+    "weights": {
+      "sewing": 0.6,
+      "runway": 0.25,
+      "makeup": 0.1,
+      "cunt": 0.05
+    },
+    "uniqueSeason": true,
+    "minQueens": 8,
+    "maxQueens": 10
+  },
+  {
     "id": "ball",
     "name": "Ball",
     "runwayWeight": 0.4,
