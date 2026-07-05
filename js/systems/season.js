@@ -495,7 +495,7 @@ function initializeReturnTwist(format){
     return base;
   }
   if(format==='legacy' || format==='assassin'){
-    base.type=sample(['legacy_smackdown','redemption_smackdown']);
+    base.type=sample(['legacy_smackdown','redemption_smackdown','boot_order_gauntlet']);
     return base;
   }
   return base;
@@ -595,7 +595,7 @@ function resolveReturnSmackdown(){
   if(eliminated.length<2)return null;
   let rounds=[];
   let winnerId=null;
-  if(type==='redemption_smackdown'){
+  if(type==='redemption_smackdown' || type==='boot_order_gauntlet' || type==='elimination_order_gauntlet'){
     let current=eliminated[0];
     for(let i=1;i<eliminated.length;i++){
       const duel=runLipSyncDuelNoStats(current,eliminated[i],`Redemption Round ${i}`);
@@ -1783,7 +1783,7 @@ function generateEpisode(){
   const fullActiveCount=fullActive.length;
   const number=gameState.episodeHistory.length+1;
   if(!premiereIds && shouldTriggerLalaparuza(fullActiveCount)){
-    gameState.currentEpisode={number,activeCount:fullActiveCount,challengeType:'lalaparuza',challengeName:'Lalaparuza',themeId:'lalaparuza',themeName:'Lalaparuza Smackdown',themeNotes:'The queens lip sync in brackets. Lose and you move forward. Keep losing and you risk elimination.',runwayCategory:'Lip Sync Survival',runwayCategories:['Lip Sync Survival'],song:sample(gameState.data.songs),events: shuffle((gameState.data.events||[]).filter(e=>e && !['runway','judging'].includes(e.type))).slice(0, 2),guestJudge:pickGuestJudge(),structure:{id:'smackdown',label:'Lip Sync Smackdown'},teams:[],judgingMode:'individual',placements:[],bottomQueens:[],eliminatedQueenId:null,lipSyncResult:null,special:'lalaparuza',participantIds:fullActive.map(q=>q.id),socialEvents:[]}; saveGame(); return gameState.currentEpisode;
+    gameState.currentEpisode={number,activeCount:fullActiveCount,challengeType:'lalaparuza',challengeName:'Lalaparuza',themeId:'lalaparuza',themeName:'Lalaparuza Smackdown',themeNotes:'The queens lip sync in brackets. Lose and you move forward. Keep losing and you risk elimination.',runwayCategory:'Lip Sync Survival',runwayCategories:['Lip Sync Survival'],song:sample(gameState.data.songs),events: shuffle((gameState.data.events||[]).filter(e=>e && !['runway','judging'].includes(e.type))).slice(0, 2),guestJudge:pickGuestJudge(),structure:{id:'smackdown',label:'Lip Sync Smackdown'},teams:[],judgingMode:'individual',placements:[],bottomQueens:[],eliminatedQueenId:null,lipSyncResult:null,special:'lalaparuza',lalaparuzaMode:'callout_song_choice',participantIds:fullActive.map(q=>q.id),socialEvents:[]}; saveGame(); return gameState.currentEpisode;
   }
   const tournamentFinalFirstEpisode=isTournamentFormat(getSeasonFormat()) && gameState.season?.brackets?.stage==='final' && !(gameState.episodeHistory||[]).some(h=>h.special!=='tournament_bracket');
   let challenge=inTournamentGroups?pickTournamentBracketChallenge():(tournamentFinalFirstEpisode?makeTalentChallenge():pickChallengeByRules(fullActiveCount));
@@ -2108,26 +2108,71 @@ function crownWinner(){
 }
 
 
-function simpleLipSyncScoreFor(q){
-  const song=sample(gameState.data.songs)||{energy:'high'};
-  let oldStrategy=null;
-  const smackStrategy=gameState.currentEpisode?.playerSmackdownStrategy || gameState.season?.reunionPlayerStrategy || null;
-  if(q.id===gameState.playerQueenId && smackStrategy){
-    oldStrategy=gameState.season.playerFinaleStrategy||null;
-    gameState.season.playerFinaleStrategy=smackStrategy;
-  }
-  const perf=finalLipPerformance(q,song);
-  if(q.id===gameState.playerQueenId && smackStrategy){
-    if(oldStrategy) gameState.season.playerFinaleStrategy=oldStrategy;
-    else delete gameState.season.playerFinaleStrategy;
-  }
-  return {queenId:q.id,name:q.name,score:perf.score,song,strategy:perf.strategy};
+const LALA_LIP_SYNC_STRATEGIES=[
+  {id:'sell_lyrics',label:'Sell the Lyrics',description:'Focus on emotion, face, timing and storytelling.',bonusTags:['vocals','emotional','ballad']},
+  {id:'dance',label:'Dance the House Down',description:'Go for choreography, energy and stage presence.',bonusTags:['dance','pop','high']},
+  {id:'stunts',label:'Stunts & Tricks',description:'Take risks with drops, splits and reveals.',bonusTags:['stunt','performance'],risk:true},
+  {id:'camp',label:'Camp It Up',description:'Use comedy, character and absurd choices.',bonusTags:['camp','comedy','weird']},
+  {id:'reveal',label:'Big Reveal',description:'Bet on a reveal moment. High reward, but can flop.',bonusTags:['reveal','performance'],risk:true},
+  {id:'play_safe',label:'Play It Safe',description:'Avoid mistakes and deliver a clean performance.',bonusTags:['safe'],risk:false}
+];
+function lipSyncStrategies(){return LALA_LIP_SYNC_STRATEGIES;}
+function pickLipSyncSongs(count){
+  const base=(gameState.data.lipSyncSongs&&gameState.data.lipSyncSongs.length?gameState.data.lipSyncSongs:gameState.data.songs)||[];
+  const pool=shuffle(base.map(s=>Object.assign({},s,{tags:s.tags||[s.mood,s.energy].filter(Boolean),icons:s.icons||['🎤']})));
+  const songs=[];
+  for(let i=0;i<count;i++)songs.push(pool[i%Math.max(1,pool.length)]||{title:'Lip Sync Song',artist:'Unknown Artist',energy:'high',mood:'pop',icons:['🎤'],tags:['performance']});
+  return songs;
 }
-function runLipSyncDuelNoStats(a,b,label){
-  const sa=simpleLipSyncScoreFor(a), sb=simpleLipSyncScoreFor(b);
+function strategyObj(id){return LALA_LIP_SYNC_STRATEGIES.find(s=>s.id===id)||LALA_LIP_SYNC_STRATEGIES[0];}
+function autoLipSyncStrategy(q,song){
+  const tags=[...(song?.tags||[]),song?.energy,song?.mood].map(x=>String(x||'').toLowerCase());
+  const attrs=q.attributes||{};
+  let best=LALA_LIP_SYNC_STRATEGIES[0], bestScore=-999;
+  LALA_LIP_SYNC_STRATEGIES.forEach(st=>{
+    let score=rand(0,2);
+    (st.bonusTags||[]).forEach(t=>{if(tags.includes(String(t).toLowerCase()))score+=2;});
+    if(st.id==='dance')score+=(attrs.dance||attrs.lipSync||5)/2;
+    if(st.id==='stunts')score+=(attrs.lipSync||5)/2+(attrs.cunt||0)/4;
+    if(st.id==='sell_lyrics')score+=(attrs.acting||5)/3+(attrs.lipSync||5)/3;
+    if(st.id==='camp')score+=(attrs.comedy||5)/2;
+    if(st.id==='reveal')score+=(q.inventory?.reveals||0)?4:0;
+    if(st.id==='play_safe')score+=q.stress>60?3:0;
+    if(st.risk && q.stress>70)score-=2;
+    if(score>bestScore){bestScore=score; best=st;}
+  });
+  return best.id;
+}
+function simpleLipSyncScoreFor(q,opts={}){
+  const song=opts.song || sample(gameState.data.lipSyncSongs||gameState.data.songs)||{energy:'high'};
+  let oldStrategy=null;
+  const strategyId=opts.strategy || gameState.currentEpisode?.playerSmackdownStrategy || gameState.season?.reunionPlayerStrategy || null;
+  if(strategyId){oldStrategy=gameState.season.playerFinaleStrategy||null; gameState.season.playerFinaleStrategy=strategyId;}
+  const perf=finalLipPerformance(q,song);
+  if(strategyId){if(oldStrategy) gameState.season.playerFinaleStrategy=oldStrategy; else delete gameState.season.playerFinaleStrategy;}
+  const st=strategyObj(strategyId||perf.strategy);
+  const songTags=[...(song?.tags||[]),song?.energy,song?.mood].map(x=>String(x||'').toLowerCase());
+  let score=perf.score;
+  let strategyBonus=0;
+  (st.bonusTags||[]).forEach(t=>{if(songTags.includes(String(t).toLowerCase()))strategyBonus+=0.65;});
+  if(st.id==='dance')strategyBonus+=(q.attributes?.dance||q.attributes?.lipSync||5)*0.08;
+  if(st.id==='stunts')strategyBonus+=(q.attributes?.lipSync||5)*0.1;
+  if(st.id==='sell_lyrics')strategyBonus+=(q.attributes?.acting||q.attributes?.lipSync||5)*0.07;
+  if(st.id==='camp')strategyBonus+=(q.attributes?.comedy||5)*0.1;
+  if(st.id==='reveal')strategyBonus+=(q.inventory?.reveals||0)?1.2:-0.4;
+  if(st.id==='play_safe')strategyBonus= Math.min(strategyBonus+0.4,0.9);
+  if(st.risk && Math.random()<0.22)strategyBonus-=rand(0.6,1.8);
+  score+=strategyBonus;
+  if(st.id==='play_safe')score=Math.min(score,8.6);
+  return {queenId:q.id,name:q.name,score,song,strategy:st.id,strategyLabel:st.label,strategyBonus};
+}
+function runLipSyncDuelNoStats(a,b,label,opts={}){
+  const song=opts.song || opts.songOverride || sample(gameState.data.lipSyncSongs||gameState.data.songs)||{energy:'high'};
+  const strategyByQueenId=opts.strategyByQueenId||{};
+  const sa=simpleLipSyncScoreFor(a,{song,strategy:strategyByQueenId[a.id]||autoLipSyncStrategy(a,song)}), sb=simpleLipSyncScoreFor(b,{song,strategy:strategyByQueenId[b.id]||autoLipSyncStrategy(b,song)});
   const winner=sa.score>=sb.score?a:b;
   const loser=winner.id===a.id?b:a;
-  return {label,queenIds:[a.id,b.id],scores:{[a.id]:sa.score,[b.id]:sb.score},winnerId:winner.id,loserId:loser.id,song:sa.song,strategy:{[a.id]:sa.strategy,[b.id]:sb.strategy}};
+  return {label,queenIds:[a.id,b.id],scores:{[a.id]:sa.score,[b.id]:sb.score},winnerId:winner.id,loserId:loser.id,song,strategy:{[a.id]:sa.strategy,[b.id]:sb.strategy},strategyLabels:{[a.id]:sa.strategyLabel,[b.id]:sb.strategyLabel},context:opts.context||null};
 }
 function makePairs(list){
   const pool=shuffle(list);
@@ -2136,52 +2181,94 @@ function makePairs(list){
   const bye=pool.shift()||null;
   return {pairs,bye};
 }
+function initLalaparuzaState(ep){
+  if(ep.lalaparuzaState)return ep.lalaparuzaState;
+  const active=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  const duelCount=Math.max(1,active.length-1);
+  ep.lalaparuzaState={mode:ep.lalaparuzaMode||'callout_song_choice',phase:'draw',activeQueenIds:active.map(q=>q.id),safeQueenIds:[],availableSongs:pickLipSyncSongs(duelCount),usedSongs:[],duels:[],currentDuel:null,finalDuel:null};
+  saveGame();
+  return ep.lalaparuzaState;
+}
+function lalaparuzaAutoOpponent(callerId){
+  const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
+  const caller=gameState.queens.find(q=>q.id===callerId);
+  const pool=st.activeQueenIds.filter(id=>id!==callerId).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  if(!pool.length)return null;
+  return pool.sort((a,b)=>{
+    const relA=(caller.relationships?.[a.id]?.affinity||0)+(caller.relationships?.[a.id]?.respect||0);
+    const relB=(caller.relationships?.[b.id]?.affinity||0)+(caller.relationships?.[b.id]?.respect||0);
+    const threatA=(a.statistics?.wins||0)*2+(a.statistics?.highs||0)+(a.attributes?.lipSync||5);
+    const threatB=(b.statistics?.wins||0)*2+(b.statistics?.highs||0)+(b.attributes?.lipSync||5);
+    return (relA-threatA+rand(-2,2))-(relB-threatB+rand(-2,2));
+  })[0]?.id||pool[0].id;
+}
+function lalaparuzaAutoSong(chooserId){
+  const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
+  const q=gameState.queens.find(x=>x.id===chooserId);
+  if(!st.availableSongs.length)return null;
+  return st.availableSongs.map((song,i)=>({song,i,score:strategyObj(autoLipSyncStrategy(q,song)).bonusTags.filter(t=>(song.tags||[]).includes(t)||song.energy===t||song.mood===t).length+Math.random()})).sort((a,b)=>b.score-a.score)[0].i;
+}
+function beginLalaparuzaDuel(callerId,opponentId,songIndex){
+  const ep=gameState.currentEpisode, st=initLalaparuzaState(ep);
+  callerId=callerId||sample(st.activeQueenIds);
+  opponentId=opponentId||lalaparuzaAutoOpponent(callerId);
+  const isFinal=st.activeQueenIds.length===2;
+  if(isFinal){callerId=st.activeQueenIds[0]; opponentId=st.activeQueenIds[1];}
+  if(songIndex===undefined || songIndex===null) songIndex=lalaparuzaAutoSong(opponentId);
+  const song=st.availableSongs.splice(Math.max(0,Number(songIndex)||0),1)[0] || pickLipSyncSongs(1)[0];
+  st.currentDuel={round:st.duels.length+1,callerId,opponentId,song,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal};
+  st.phase='strategy';
+  saveGame();
+  return st.currentDuel;
+}
+function completeLalaparuzaDuel(strategyByQueenId={}){
+  const ep=gameState.currentEpisode, st=initLalaparuzaState(ep), cd=st.currentDuel;
+  if(!cd)return null;
+  cd.strategyByQueenId=Object.assign({},strategyByQueenId);
+  const a=gameState.queens.find(q=>q.id===cd.callerId), b=gameState.queens.find(q=>q.id===cd.opponentId);
+  const d=runLipSyncDuelNoStats(a,b,cd.isFinal?'Final bottom lip sync':`Round ${cd.round}`,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'lalaparuza'});
+  Object.assign(cd,{queenIds:d.queenIds,scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins. ${cd.isFinal?qName(d.loserId)+' sashays away.':qName(d.loserId)+' remains in danger.'}`});
+  st.usedSongs.push(cd.song);
+  st.duels.push(cd);
+  if(cd.isFinal){st.finalDuel=cd; st.phase='complete';}
+  else{st.safeQueenIds.push(cd.winnerId); st.activeQueenIds=st.activeQueenIds.filter(id=>id!==cd.winnerId); st.phase='draw';}
+  st.currentDuel=null;
+  saveGame();
+  if(st.phase==='complete')return resolveLalaparuza();
+  return cd;
+}
 function resolveLalaparuza(){
   const ep=gameState.currentEpisode;
   if(ep.lalaparuzaResult)return ep.lalaparuzaResult;
-  let current=gameState.queens.filter(q=>!q.isEliminated);
-  const rounds=[];
-  let round=1;
-  while(current.length>2){
-    const {pairs,bye}=makePairs(current);
-    const losers=[];
-    const duels=[];
-    if(bye) losers.push(bye); // in a lose-to-advance format, a bye keeps you in danger
-    pairs.forEach(pair=>{
-      const d=runLipSyncDuelNoStats(pair[0],pair[1],`Round ${round}`);
-      duels.push(d);
-      losers.push(gameState.queens.find(q=>q.id===d.loserId));
-    });
-    rounds.push({round,duels,byeId:bye?.id||null,advancedLoserIds:losers.map(q=>q.id)});
-    current=losers;
-    round++;
+  if(ep.lalaparuzaState?.phase!=='complete'){
+    let current=gameState.queens.filter(q=>!q.isEliminated);
+    const st=initLalaparuzaState(ep);
+    while(st.phase!=='complete'){
+      const caller=sample(st.activeQueenIds);
+      beginLalaparuzaDuel(caller,lalaparuzaAutoOpponent(caller),lalaparuzaAutoSong(caller));
+      const cd=st.currentDuel;
+      completeLalaparuzaDuel({[cd.callerId]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===cd.callerId),cd.song),[cd.opponentId]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===cd.opponentId),cd.song)});
+    }
   }
-  const final=runLipSyncDuelNoStats(current[0],current[1],'Final bottom lip sync');
+  const st=ep.lalaparuzaState;
+  const final=st.finalDuel;
   const eliminated=gameState.queens.find(q=>q.id===final.loserId);
   const survivor=gameState.queens.find(q=>q.id===final.winnerId);
-  ep.lalaparuzaResult={rounds,final,eliminatedQueenId:eliminated.id,survivorId:survivor.id};
+  const rounds=st.duels.filter(d=>!d.isFinal).map(d=>({round:d.round,duels:[d],byeId:null,advancedLoserIds:[d.loserId]}));
+  ep.lalaparuzaResult={mode:st.mode,rounds,duels:st.duels,final,eliminatedQueenId:eliminated.id,survivorId:survivor.id,safeQueenIds:st.safeQueenIds,usedSongs:st.usedSongs};
   ep.eliminatedQueenId=eliminated.id;
-  const activeBeforeElim=gameState.queens.filter(q=>!q.isEliminated);
-  const firstRoundWinners=new Set((rounds[0]?.duels||[]).map(d=>d.winnerId));
-  const laterRoundWinners=new Set(rounds.slice(1).flatMap(r=>(r.duels||[]).map(d=>d.winnerId)));
-  const finalIds=new Set(final.queenIds||[]);
+  const activeBeforeElim=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  const safeIds=new Set(st.safeQueenIds||[]);
   function lalaparuzaPlacementFor(q){
-    // Lalaparuza track record convention:
-    // - first round winners are SAFE;
-    // - queens who lose round 1 but win a later lip sync are LOW;
-    // - the final lip sync winner is still marked BTM, not LIPSYNC WIN;
-    // - the final loser is ELIM.
     if(q.id===eliminated.id)return 'ELIM';
     if(q.id===survivor.id)return 'BTM';
-    if(firstRoundWinners.has(q.id) && !laterRoundWinners.has(q.id) && !finalIds.has(q.id))return 'SAFE';
+    if(safeIds.has(q.id))return 'SAFE';
     return 'LOW';
   }
   ep.placements=activeBeforeElim.map(q=>({queenId:q.id,name:q.name,placement:lalaparuzaPlacementFor(q),score:0,riskLabel:'Lip sync'}));
   activeBeforeElim.forEach(q=>{
     const placement=lalaparuzaPlacementFor(q);
-    if(!(q.episodeHistory||[]).some(h=>String(h.episode)===String(ep.number))){
-      q.episodeHistory.push({episode:ep.number,challenge:'Lalaparuza',placement,score:0,lipSync:placement!=='SAFE'});
-    }
+    if(!(q.episodeHistory||[]).some(h=>String(h.episode)===String(ep.number)))q.episodeHistory.push({episode:ep.number,challenge:'Lalaparuza',placement,score:0,lipSync:placement!=='SAFE'});
     q.statistics.episodesCompeted=(q.statistics.episodesCompeted||0)+1;
     if(placement==='SAFE')q.statistics.safes=(q.statistics.safes||0)+1;
     if(placement==='LOW')q.statistics.lows=(q.statistics.lows||0)+1;
