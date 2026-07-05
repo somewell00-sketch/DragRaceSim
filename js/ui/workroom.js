@@ -390,27 +390,38 @@ function renderLalaparuzaResult(result){
 
 function renderReturnSmackdownEpisode(){
   const ep=gameState.currentEpisode;
+  const st=initReturnSmackdownState(ep);
   const type=ep.returnSmackdownType || gameState.season?.returnTwist?.type || 'legacy_smackdown';
-  const isRedemption=type==='redemption_smackdown'||type==='boot_order_gauntlet'||type==='elimination_order_gauntlet';
-  const title=isRedemption?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return';
-  const participants=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
-  const playerInSmackdown=(ep.participantIds||[]).includes(gameState.playerQueenId);
-  const playerNeedsStrategy=playerInSmackdown && !ep.playerSmackdownStrategy;
+  const isGauntlet=type==='redemption_smackdown'||type==='boot_order_gauntlet'||type==='elimination_order_gauntlet';
+  const title=isGauntlet?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return';
+  const qById=id=>gameState.queens.find(q=>q.id===id);
+  const participants=(ep.participantIds||[]).map(qById).filter(Boolean);
   const names=participants.map(q=>escapeHtml(q.name)).join(', ');
-  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','One eliminated queen can fight her way back into the competition.')}</div><div class="card"><h3>The eliminated queens return</h3><p>${isRedemption?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${playerNeedsStrategy?`<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>You were eliminated, so choose how you will fight for your return.</p>${smackdownStrategyOptionsHtml()}</div>`:`<button id="startReturnSmackdown">Start the return smackdown</button>`}</section>${queenSidebar()}</main>`);
-  bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
-  if(playerNeedsStrategy){
-    document.querySelectorAll('[data-smack-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
-      ep.playerSmackdownStrategy=btn.dataset.smackStrategy;
-      const result=resolveReturnSmackdown();
-      renderReturnSmackdownResult(result);
-    }));
+  const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','One eliminated queen can fight her way back into the competition.')}</div>`;
+  const footer=`</section>${queenSidebar()}</main>`;
+  const history=(st.rounds||[]).length?`<div class="card"><h3>Duel history</h3>${st.rounds.map(r=>{const d=(r.duels||[])[0]; return d?`<p><strong>Round ${r.round}:</strong> ${escapeHtml(qName(d.winnerId))} defeated ${escapeHtml(qName(d.loserId))} to ${escapeHtml(d.song?.title||'the song')}.</p>`:'';}).join('')}</div>`:'';
+  if(st.phase==='complete')return renderReturnSmackdownResult(ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown||resolveReturnSmackdown());
+  if(st.phase==='draw')beginReturnSmackdownDuel();
+  const d=st.currentDuel;
+  if(!d)return renderReturnSmackdownResult(resolveReturnSmackdown());
+  if(st.phase==='song'){
+    setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><h4>Choose the song</h4><div class="options"><button class="option" id="autoReturnSong"><strong>Choose Automatically</strong><span class="small">Use NPC song-choice logic.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickReturnSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div>${footer}`);
+    bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
+    document.querySelector('#autoReturnSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(returnSmackdownAutoSong(d.queenIds[1])); renderReturnSmackdownEpisode();});
+    document.querySelectorAll('.pickReturnSong').forEach(btn=>btn.addEventListener('click',()=>{beginReturnSmackdownDuel(Number(btn.dataset.index)); renderReturnSmackdownEpisode();}));
     return;
   }
-  document.querySelector('#startReturnSmackdown')?.addEventListener('click',()=>{
-    const result=resolveReturnSmackdown();
-    renderReturnSmackdownResult(result);
-  });
+  if(st.phase==='strategy'){
+    const a=qById(d.queenIds[0]), b=qById(d.queenIds[1]);
+    setHTML(`${header}${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong></p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div><div class="card decision-card"><h3>Choose strategies</h3><p>Pick a strategy for both queens, or use automatic choices.</p>${a?strategyButtonsForQueen(a,d.song,'a'):''}${b?strategyButtonsForQueen(b,d.song,'b'):''}<button id="runCurrentReturn" disabled>Run lip sync</button></div>${footer}`);
+    bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
+    const chosen={};
+    function refresh(){document.querySelector('#runCurrentReturn').disabled=!(chosen[d.queenIds[0]]&&chosen[d.queenIds[1]]);}
+    document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[btn.dataset.qid]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
+    document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(btn.dataset.qid); chosen[btn.dataset.qid]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); refresh();}));
+    document.querySelector('#runCurrentReturn')?.addEventListener('click',()=>{const result=completeReturnSmackdownDuel(chosen); if(st.phase==='complete')renderReturnSmackdownResult(result||ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown); else renderReturnSmackdownEpisode();});
+    return;
+  }
 }
 function renderReturnSmackdownResult(result){
   if(!result){generateEpisode(); return renderWorkroom();}

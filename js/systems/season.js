@@ -580,8 +580,76 @@ function getBestEliminatedProductionDarling(){
   const tied=scored.filter(x=>x.score===max).map(x=>x.q);
   return sample(tied)?.id||null;
 }
+function initReturnSmackdownState(ep){
+  if(ep.returnSmackdownState)return ep.returnSmackdownState;
+  const participants=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
+  const type=ep.returnSmackdownType || gameState.season?.returnTwist?.type || 'legacy_smackdown';
+  const ordered=(type==='legacy_smackdown') ? shuffle(participants).map(q=>q.id) : participants.map(q=>q.id);
+  ep.returnSmackdownState={
+    type,
+    mode:(type==='boot_order_gauntlet'||type==='elimination_order_gauntlet'||type==='redemption_smackdown')?'boot_order_gauntlet':'legacy_bracket',
+    phase:'draw',
+    queueIds:[...ordered],
+    currentChampionId:null,
+    availableSongs:pickLipSyncSongs(Math.max(1,participants.length-1)),
+    usedSongs:[],
+    rounds:[],
+    currentDuel:null,
+    winnerId:null
+  };
+  saveGame();
+  return ep.returnSmackdownState;
+}
+function beginReturnSmackdownDuel(songIndex){
+  const ep=gameState.currentEpisode, st=initReturnSmackdownState(ep);
+  if(st.phase==='complete')return null;
+  if(!st.currentDuel){
+    if(!st.currentChampionId)st.currentChampionId=st.queueIds.shift()||null;
+    const opponentId=st.queueIds.shift()||null;
+    if(!st.currentChampionId || !opponentId){
+      st.winnerId=st.currentChampionId || opponentId || null;
+      st.phase='complete';
+      saveGame();
+      return null;
+    }
+    st.currentDuel={round:st.rounds.length+1,queenIds:[st.currentChampionId,opponentId],song:null,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal:st.queueIds.length===0};
+    st.phase='song';
+  }
+  if(songIndex!==undefined && songIndex!==null){
+    const idx=Math.max(0,Math.min(st.availableSongs.length-1,Number(songIndex)||0));
+    st.currentDuel.song=st.availableSongs.splice(idx,1)[0] || pickLipSyncSongs(1)[0];
+    st.phase='strategy';
+  }
+  saveGame();
+  return st.currentDuel;
+}
+function returnSmackdownAutoSong(chooserId){
+  const ep=gameState.currentEpisode, st=initReturnSmackdownState(ep);
+  const q=gameState.queens.find(x=>x.id===chooserId);
+  if(!st.availableSongs.length)return 0;
+  return st.availableSongs.map((song,i)=>({i,score:strategyObj(autoLipSyncStrategy(q,song)).bonusTags.filter(t=>(song.tags||[]).includes(t)||song.energy===t||song.mood===t).length+Math.random()})).sort((a,b)=>b.score-a.score)[0].i;
+}
+function completeReturnSmackdownDuel(strategyByQueenId={}){
+  const ep=gameState.currentEpisode, st=initReturnSmackdownState(ep), cd=st.currentDuel;
+  if(!cd)return null;
+  cd.strategyByQueenId=Object.assign({},strategyByQueenId);
+  const a=gameState.queens.find(q=>q.id===cd.queenIds[0]), b=gameState.queens.find(q=>q.id===cd.queenIds[1]);
+  const d=runLipSyncDuelNoStats(a,b,`Return Round ${cd.round}`,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'return_smackdown'});
+  Object.assign(cd,{scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins and keeps fighting. ${qName(d.loserId)} is out.`});
+  st.usedSongs.push(cd.song);
+  st.rounds.push({round:cd.round,duels:[cd],winnerIds:[cd.winnerId]});
+  st.currentChampionId=cd.winnerId;
+  st.currentDuel=null;
+  st.phase=st.queueIds.length?'draw':'complete';
+  if(st.phase==='complete')st.winnerId=cd.winnerId;
+  saveGame();
+  if(st.phase==='complete')return resolveReturnSmackdown();
+  return cd;
+}
 function resolveReturnSmackdown(){
-  if(!hasReturnTwistAvailable())return null;
+  const ep=gameState.currentEpisode;
+  if(ep?.returnSmackdownResult)return ep.returnSmackdownResult;
+  if(!hasReturnTwistAvailable())return gameState.season?.returnAnnouncement?.smackdown||null;
   const eliminated=[...getEliminatedQueens()];
   const type=gameState.season.returnTwist.type;
   if(eliminated.length===1){
@@ -589,37 +657,42 @@ function resolveReturnSmackdown(){
     returnQueenToCompetition(winnerId,type);
     const result={type,rounds:[],winnerId};
     gameState.season.returnAnnouncement.smackdown=result;
+    if(ep)ep.returnSmackdownResult=result;
     saveGame();
     return result;
   }
   if(eliminated.length<2)return null;
-  let rounds=[];
-  let winnerId=null;
-  if(type==='redemption_smackdown' || type==='boot_order_gauntlet' || type==='elimination_order_gauntlet'){
-    let current=eliminated[0];
-    for(let i=1;i<eliminated.length;i++){
-      const duel=runLipSyncDuelNoStats(current,eliminated[i],`Redemption Round ${i}`);
-      rounds.push({round:i,duels:[duel],winnerIds:[duel.winnerId]});
-      current=gameState.queens.find(q=>q.id===duel.winnerId);
+  if(ep && ep.special==='return_smackdown'){
+    const st=initReturnSmackdownState(ep);
+    while(st.phase!=='complete'){
+      if(st.phase==='draw')beginReturnSmackdownDuel();
+      if(st.phase==='song')beginReturnSmackdownDuel(returnSmackdownAutoSong(st.currentDuel?.queenIds?.[1]||st.currentChampionId));
+      if(st.phase==='strategy' && st.currentDuel){
+        const ids=st.currentDuel.queenIds||[];
+        completeReturnSmackdownDuel({
+          [ids[0]]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===ids[0]),st.currentDuel.song),
+          [ids[1]]:autoLipSyncStrategy(gameState.queens.find(q=>q.id===ids[1]),st.currentDuel.song)
+        });
+      }
     }
-    winnerId=current?.id||null;
-  } else {
-    let pool=shuffle(eliminated);
-    let round=1;
-    while(pool.length>1){
-      const {pairs,bye}=makePairs(pool);
-      const winners=bye?[bye]:[];
-      const duels=[];
-      pairs.forEach(pair=>{
-        const d=runLipSyncDuelNoStats(pair[0],pair[1],`Return Round ${round}`);
-        duels.push(d);
-        winners.push(gameState.queens.find(q=>q.id===d.winnerId));
-      });
-      rounds.push({round,duels,byeId:bye?.id||null,winnerIds:winners.map(q=>q.id)});
-      pool=winners; round++;
+    if(st.winnerId){
+      returnQueenToCompetition(st.winnerId,type);
+      const result={type,mode:st.mode,rounds:st.rounds,winnerId:st.winnerId,usedSongs:st.usedSongs};
+      ep.returnSmackdownResult=result;
+      gameState.season.returnAnnouncement.smackdown=result;
+      saveGame();
+      return result;
     }
-    winnerId=pool[0]?.id||null;
   }
+  let current=eliminated[0];
+  const rounds=[];
+  for(let i=1;i<eliminated.length;i++){
+    const song=pickLipSyncSongs(1)[0];
+    const duel=runLipSyncDuelNoStats(current,eliminated[i],`Redemption Round ${i}`,{song,context:'return_smackdown'});
+    rounds.push({round:i,duels:[duel],winnerIds:[duel.winnerId]});
+    current=gameState.queens.find(q=>q.id===duel.winnerId);
+  }
+  const winnerId=current?.id||null;
   if(winnerId){
     returnQueenToCompetition(winnerId,type);
     const result={type,rounds,winnerId};
@@ -678,7 +751,7 @@ function processReturnTwistsBeforeEpisode(){
     if(id)returnQueenToCompetition(id,'production_return');
     return null;
   }
-  if((twist.type==='legacy_smackdown' || twist.type==='redemption_smackdown') && (getSeasonFormat()==='legacy' || getSeasonFormat()==='assassin') && activeCount===5){
+  if((twist.type==='legacy_smackdown' || twist.type==='redemption_smackdown' || twist.type==='boot_order_gauntlet' || twist.type==='elimination_order_gauntlet') && (getSeasonFormat()==='legacy' || getSeasonFormat()==='assassin') && activeCount===5){
     return buildReturnSmackdownEpisode(twist.type);
   }
   return null;
@@ -2118,7 +2191,7 @@ const LALA_LIP_SYNC_STRATEGIES=[
 ];
 function lipSyncStrategies(){return LALA_LIP_SYNC_STRATEGIES;}
 function pickLipSyncSongs(count){
-  const base=(gameState.data.lipSyncSongs&&gameState.data.lipSyncSongs.length?gameState.data.lipSyncSongs:gameState.data.songs)||[];
+  const base=(gameState.data.songs)||[];
   const pool=shuffle(base.map(s=>Object.assign({},s,{tags:s.tags||[s.mood,s.energy].filter(Boolean),icons:s.icons||['🎤']})));
   const songs=[];
   for(let i=0;i<count;i++)songs.push(pool[i%Math.max(1,pool.length)]||{title:'Lip Sync Song',artist:'Unknown Artist',energy:'high',mood:'pop',icons:['🎤'],tags:['performance']});
@@ -2144,7 +2217,7 @@ function autoLipSyncStrategy(q,song){
   return best.id;
 }
 function simpleLipSyncScoreFor(q,opts={}){
-  const song=opts.song || sample(gameState.data.lipSyncSongs||gameState.data.songs)||{energy:'high'};
+  const song=opts.song || sample(gameState.data.songs)||{energy:'high'};
   let oldStrategy=null;
   const strategyId=opts.strategy || gameState.currentEpisode?.playerSmackdownStrategy || gameState.season?.reunionPlayerStrategy || null;
   if(strategyId){oldStrategy=gameState.season.playerFinaleStrategy||null; gameState.season.playerFinaleStrategy=strategyId;}
@@ -2167,7 +2240,7 @@ function simpleLipSyncScoreFor(q,opts={}){
   return {queenId:q.id,name:q.name,score,song,strategy:st.id,strategyLabel:st.label,strategyBonus};
 }
 function runLipSyncDuelNoStats(a,b,label,opts={}){
-  const song=opts.song || opts.songOverride || sample(gameState.data.lipSyncSongs||gameState.data.songs)||{energy:'high'};
+  const song=opts.song || opts.songOverride || sample(gameState.data.songs)||{energy:'high'};
   const strategyByQueenId=opts.strategyByQueenId||{};
   const sa=simpleLipSyncScoreFor(a,{song,strategy:strategyByQueenId[a.id]||autoLipSyncStrategy(a,song)}), sb=simpleLipSyncScoreFor(b,{song,strategy:strategyByQueenId[b.id]||autoLipSyncStrategy(b,song)});
   const winner=sa.score>=sb.score?a:b;
