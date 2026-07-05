@@ -11,10 +11,10 @@ function receptionTier(value, tiers){
 }
 function fanReceptionTier(fans){
   return receptionTier(fans,[
-    {min:45,label:'Season Icon',tone:'Fans will be quoting you, debating you, and asking for more.'},
-    {min:30,label:'Fan Favorite',tone:'The audience rooted for you hard, even when the competition got messy.'},
-    {min:19,label:'Cult Favorite',tone:'A loyal part of the fandom held onto your run.'},
-    {min:9,label:'Well Received',tone:'Fans appreciated your journey without turning it into a coronation.'},
+    {min:30,label:'Season Icon',tone:'Fans will be quoting you, debating you, and asking for more.'},
+    {min:24,label:'Fan Favorite',tone:'The audience rooted for you hard, even when the competition got messy.'},
+    {min:17,label:'Cult Favorite',tone:'A loyal part of the fandom held onto your run.'},
+    {min:10,label:'Well Received',tone:'Fans appreciated your journey without turning it into a coronation.'},
     {min:-4,label:'Mixed Reception',tone:'You made an impression, but opinions stayed split.'},
     {min:-19,label:'Polarizing Contestant',tone:'The audience debated your choices more than they simply embraced them.'},
     {min:-999,label:'Fan Backlash',tone:'Your run sparked more criticism than affection from the audience.'}
@@ -22,10 +22,10 @@ function fanReceptionTier(fans){
 }
 function productionReceptionTier(prod){
   return receptionTier(prod,[
-    {min:38,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
-    {min:26,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
-    {min:16,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
-    {min:5,label:'Useful Television',tone:'Production enjoyed having you on the show, but did not build everything around you.'},
+    {min:24,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
+    {min:18,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
+    {min:12,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
+    {min:6,label:'Useful Television',tone:'Production enjoyed having you on the show, but did not build everything around you.'},
     {min:-14,label:'Professional Relationship',tone:'Production could use you when needed, but the relationship stayed mostly neutral.'},
     {min:-29,label:'Hard to Center',tone:'The edit rarely made you central to the episode.'},
     {min:-999,label:'Hard to Edit',tone:'Production struggled to turn your run into a clear story.'}
