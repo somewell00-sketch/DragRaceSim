@@ -1403,7 +1403,7 @@ function episodeDisplayNotes(challenge, theme, content, isSnatchGame){
 }
 function episodeRunwayForChallenge(challengeId, theme, content){
   if(challengeId==='ball')return (content?.runwayCategories?.[content.runwayCategories.length-1] || content?.mainTheme || 'Ball Eleganza');
-  if(challengeId==='design')return `${content?.mainTheme || 'Design'} Eleganza`;
+  return content?.designTheme?.title || 'Design';
   if(challengeId==='makeover')return 'Family Resemblance';
   const pool=(theme?.runway?.length?theme.runway:(gameState.data.runways||[]).map(r=>r.name));
   return sample(pool)||'Best Drag';
