@@ -1627,16 +1627,16 @@ function pickChallengeContent(challengeId){
       battles
     };
   }
-  if(challengeId==='design'){
+if(challengeId==='design'){
   const category = sample(data.designChallenges || []);
   const design = sample(category?.challenges || []);
 
   return {
     designCategory: category,
     designTheme: design,
-    challengeTitle: `${design?.title || 'Unconventional'} Design Challenge`,
+    challengeTitle: design?.title || 'Design Challenge',
     challengePrompt: design?.prompt || 'Create one original runway look using the assigned materials.',
-    mainTheme: design?.title || category?.category || 'Design'
+    mainTheme: design?.title || 'Design'
   };
 }
   if(challengeId==='makeover'){
