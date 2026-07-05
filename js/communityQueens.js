@@ -151,6 +151,8 @@ function communityQueenPayload(queen) {
     acting: Number(attrs.acting ?? queen.acting ?? 0) || 0,
     location: normalizeCommunityLocation(queen.location || queen.country || ''),
     game_version: window.GAME_VERSION || 'dragracesim-v1'
+        winner: !!queen.winner
+
   };
 }
 
