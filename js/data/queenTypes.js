@@ -235,10 +235,10 @@ window.GAME_DATA.queenTypes = [
     "attributes": {
       "cunt": 8,
       "lipSync": 8,
-      "makeup": 7,
+      "makeup": 6,
       "sewing": 4,
       "runway": 9,
-      "acting": 5
+      "acting": 4
     }
   },
   {
