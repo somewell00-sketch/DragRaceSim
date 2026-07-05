@@ -2167,6 +2167,13 @@ function crownWinner(){
   const finale=prepareFinale();
   gameState.season.status='finished';
   gameState.season.winnerId=finale.winnerId;
+  const winnerQueen = gameState.queens.find(q => q.id === finale.winnerId);
+if (winnerQueen) {
+  winnerQueen.winner = true;
+  if (typeof saveCommunityQueen === 'function') {
+    saveCommunityQueen(winnerQueen).catch(console.warn);
+  }
+}
   const allFinalists=gameState.queens.filter(q=>finale.finalistIds.includes(q.id));
   allFinalists.forEach(q=>{
     if(q.episodeHistory.some(h=>h.episode==='Finale'))return;
