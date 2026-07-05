@@ -28,11 +28,11 @@ window.GAME_DATA.challenges = [
     ],
     "runwayWeight": 0.15,
     "weights": {
-      "acting": 0.5,
-      "cunt": 0.25,
-      "runway": 0.15,
-      "lipSync": 0.1
-    }
+  "acting": 0.45,
+  "cunt": 0.2,
+  "runway": 0.2,
+  "lipSync": 0.15
+}
   },
   {
     "id": "comedy",
@@ -91,12 +91,12 @@ window.GAME_DATA.challenges = [
       "teams2"
     ],
     "runwayWeight": 0.2,
-    "weights": {
-      "cunt": 0.45,
-      "acting": 0.3,
-      "runway": 0.15,
-      "makeup": 0.1
-    },
+   "weights": {
+  "cunt": 0.35,
+  "acting": 0.25,
+  "runway": 0.2,
+  "makeup": 0.2
+},
     "uniqueSeason": true
   },
   {
@@ -106,12 +106,12 @@ window.GAME_DATA.challenges = [
       "solo"
     ],
     "runwayWeight": 0.1,
-    "weights": {
-      "cunt": 0.45,
-      "acting": 0.35,
-      "runway": 0.1,
-      "makeup": 0.1
-    }
+   "weights": {
+  "cunt": 0.35,
+  "acting": 0.3,
+  "runway": 0.2,
+  "makeup": 0.15
+}
   },
   {
     "id": "rusical",
