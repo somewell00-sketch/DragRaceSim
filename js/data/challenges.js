@@ -9,12 +9,12 @@ window.GAME_DATA.challenges = [
     ],
     "runwayWeight": 0.1,
     "weights": {
-      "cunt": 0.3,
-      "lipSync": 0.3,
-      "acting": 0.2,
-      "runway": 0.1,
-      "makeup": 0.1
-    },
+  "cunt": 0.3,
+  "lipSync": 0.25,
+  "acting": 0.15,
+  "runway": 0.15,
+  "makeup": 0.15
+},
     "uniqueSeason": true
   },
   {
@@ -92,10 +92,11 @@ window.GAME_DATA.challenges = [
     ],
     "runwayWeight": 0.2,
  "weights": {
-  "cunt": 0.4,
-  "acting": 0.2,
+  "cunt": 0.35,
+  "acting": 0.15,
   "runway": 0.2,
-  "makeup": 0.2
+  "makeup": 0.2,
+  "sewing": 0.1
 },
     "uniqueSeason": true
   },
@@ -106,11 +107,11 @@ window.GAME_DATA.challenges = [
       "solo"
     ],
     "runwayWeight": 0.1,
-   "weights": {
+  "weights": {
   "cunt": 0.4,
-  "acting": 0.25,
+  "acting": 0.2,
   "runway": 0.2,
-  "makeup": 0.15
+  "makeup": 0.2
 }
   },
   {
@@ -156,11 +157,11 @@ window.GAME_DATA.challenges = [
     "id": "makeover",
     "name": "Makeover",
     "runwayWeight": 0.35,
-   "weights": {
-  "runway": 0.35,
-  "makeup": 0.25,
-  "sewing": 0.25,
-  "cunt": 0.15
+  "weights": {
+  "runway": 0.3,
+  "makeup": 0.3,
+  "sewing": 0.3,
+  "cunt": 0.1
 },
     "uniqueSeason": true
   },
@@ -174,12 +175,12 @@ window.GAME_DATA.challenges = [
     "minQueens": 4,
     "maxQueens": 5,
     "weights": {
-      "lipSync": 0.4,
-      "cunt": 0.25,
-      "acting": 0.15,
-      "runway": 0.15,
-      "makeup": 0.05
-    },
+  "lipSync": 0.35,
+  "cunt": 0.25,
+  "acting": 0.1,
+  "runway": 0.2,
+  "makeup": 0.1
+},
     "uniqueSeason": true
   },
   {
