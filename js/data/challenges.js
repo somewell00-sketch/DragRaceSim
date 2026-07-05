@@ -9,10 +9,10 @@ window.GAME_DATA.challenges = [
     ],
     "runwayWeight": 0.1,
     "weights": {
-  "cunt": 0.3,
+  "cunt": 0.35,
   "lipSync": 0.25,
   "acting": 0.15,
-  "runway": 0.15,
+  "runway": 0.1,
   "makeup": 0.15
 },
     "uniqueSeason": true
@@ -76,8 +76,8 @@ window.GAME_DATA.challenges = [
     "name": "Ball",
     "runwayWeight": 0.4,
     "weights": {
-  "runway": 0.45,
-  "sewing": 0.35,
+  "runway": 0.40,
+  "sewing": 0.30,
   "makeup": 0.15,
   "cunt": 0.05
 }
@@ -158,10 +158,10 @@ window.GAME_DATA.challenges = [
     "name": "Makeover",
     "runwayWeight": 0.35,
   "weights": {
-  "runway": 0.3,
-  "makeup": 0.3,
-  "sewing": 0.3,
-  "cunt": 0.1
+  "runway": 0.25,
+"makeup": 0.35,
+"sewing": 0.30,
+"cunt": 0.1
 },
     "uniqueSeason": true
   },
@@ -175,10 +175,10 @@ window.GAME_DATA.challenges = [
     "minQueens": 4,
     "maxQueens": 5,
     "weights": {
-  "lipSync": 0.35,
+  "lipSync": 0.4,
   "cunt": 0.25,
   "acting": 0.1,
-  "runway": 0.2,
+  "runway": 0.15,
   "makeup": 0.1
 },
     "uniqueSeason": true
