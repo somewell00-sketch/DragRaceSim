@@ -137,8 +137,8 @@ window.GAME_DATA.queenTypes = [
     "name": "Sewing Queen",
     "description": "Builds the fantasy from scratch.",
     "attributes": {
-      "cunt": 6,
-      "lipSync": 4,
+      "cunt": 7,
+      "lipSync": 6,
       "makeup": 8,
       "sewing": 10,
       "runway": 8,
