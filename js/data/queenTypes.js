@@ -30,8 +30,8 @@ window.GAME_DATA.queenTypes = [
     "description": "Lives for punchlines, timing, and confessionals.",
     "attributes": {
       "cunt": 9,
-      "lipSync": 4,
-      "makeup": 5,
+      "lipSync": 6,
+      "makeup": 6,
       "sewing": 3,
       "runway": 5,
       "acting": 9
@@ -150,7 +150,7 @@ window.GAME_DATA.queenTypes = [
     "description": "A character queen with timing and range.",
     "attributes": {
       "cunt": 7,
-      "lipSync": 5,
+      "lipSync": 7,
       "makeup": 6,
       "sewing": 4,
       "runway": 6,
