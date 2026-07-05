@@ -1,3 +1,5 @@
+window.GAME_DATA = window.GAME_DATA || {};
+
 window.GAME_DATA.designChallenges = [
   {
     category: "Unconventional Materials",
