@@ -1101,21 +1101,23 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
   const reservedCounts=[rumixCount, ballFallbackCount].filter(n=>counts.includes(n));
 
   const inRange=(min,max)=>counts.filter(n=>n<=max&&n>=min&&!reservedCounts.includes(n));
-  const snatchOptions=inRange(7,10);
-  const makeoverOptions=inRange(5,6);
-  const roastOptions=inRange(5,7);
-  const rusicalOptions=inRange(5,10);
-  const required=['snatchgame','makeover','roast','rusical'];
+ const designOptions=inRange(8,14);
+const snatchOptions=inRange(7,10);
+const makeoverOptions=inRange(5,6);
+const roastOptions=inRange(5,7);
+const rusicalOptions=inRange(5,10);
+const required=['design','snatchgame','makeover','roast','rusical'];
   let best={};
   for(let attempt=0; attempt<300; attempt++){
     const plan={};
     if(counts.includes(rumixCount))plan[rumixCount]='rumix';
     if(counts.includes(ballFallbackCount))plan[ballFallbackCount]='ball';
 
-    const snatch=sample(snatchOptions); if(!snatch)continue; plan[snatch]='snatchgame';
-    const makeover=sample(makeoverOptions.filter(n=>!plan[n])); if(!makeover)continue; plan[makeover]='makeover';
-    const roast=sample(roastOptions.filter(n=>!plan[n])); if(!roast)continue; plan[roast]='roast';
-    const rusical=sample(rusicalOptions.filter(n=>!plan[n])); if(!rusical)continue; plan[rusical]='rusical';
+    const design=sample(designOptions.filter(n=>!plan[n])); if(!design)continue; plan[design]='design';
+const snatch=sample(snatchOptions.filter(n=>!plan[n])); if(!snatch)continue; plan[snatch]='snatchgame';
+const makeover=sample(makeoverOptions.filter(n=>!plan[n])); if(!makeover)continue; plan[makeover]='makeover';
+const roast=sample(roastOptions.filter(n=>!plan[n])); if(!roast)continue; plan[roast]='roast';
+const rusical=sample(rusicalOptions.filter(n=>!plan[n])); if(!rusical)continue; plan[rusical]='rusical';
     const planned=Object.values(plan);
     if(!required.every(id=>planned.includes(id)))continue;
     const ordered=counts.filter(n=>plan[n]).sort((a,b)=>b-a);
