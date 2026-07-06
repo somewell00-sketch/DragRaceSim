@@ -1111,11 +1111,20 @@ const choiceBonus =
   ) / 10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
-    const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+judgingEventBonus+choiceBonus+energyStressMod;
-    const winThrottlePenalty=getWinThrottlePenalty(q);
+const attrTotal = Object.values(q.attributes || {}).reduce((sum, v) => sum + (Number(v) || 0), 0);
+
+let maxBuildPenalty = 0;
+if (q.id === gameState.playerQueenId) {
+  if (attrTotal >= 45) maxBuildPenalty = -1.0;
+  else if (attrTotal >= 44) maxBuildPenalty = -0.75;
+  else if (attrTotal >= 42) maxBuildPenalty = -0.45;
+  else if (attrTotal >= 40) maxBuildPenalty = -0.25;
+}
+
+const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+judgingEventBonus+choiceBonus+energyStressMod+maxBuildPenalty;    const winThrottlePenalty=getWinThrottlePenalty(q);
     const total=individualScore+teamBonus+winThrottlePenalty;
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
-    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,runwayEventBonus:Math.round(runwayEventBonus*10)/10,runwayEvent,judgingEventBonus:Math.round(judgingEventBonus*10)/10,judgingEvent,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
+    return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,runwayEventBonus:Math.round(runwayEventBonus*10)/10,runwayEvent,judgingEventBonus:Math.round(judgingEventBonus*10)/10,judgingEvent,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,maxBuildPenalty,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
   if(ep.challengeType==='fashion_wars')assignFashionWarsPlacements(scored,ep);
   else if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
