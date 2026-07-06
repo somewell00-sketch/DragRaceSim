@@ -1095,7 +1095,11 @@ if (q.id === gameState.playerQueenId) {
   eventBonus = eventLuck.finalScore;
 }
     const playerEffects=(q.id===gameState.playerQueenId && ep.playerEffects)?ep.playerEffects:{};
-    const energyStressMod=queenEnergyStressMod(q);
+let energyStressMod=queenEnergyStressMod(q);
+
+if (q.id === gameState.playerQueenId) {
+  energyStressMod = Math.min(energyStressMod, 1.5);
+}
     const effectSource=q.id===gameState.playerQueenId?playerEffects:qEffects;
     // Player/NPC choices are deliberate episode decisions, so runway choice effects
     // should be felt directly. The runway attribute itself is still weighted by the
@@ -1115,10 +1119,10 @@ const attrTotal = Object.values(q.attributes || {}).reduce((sum, v) => sum + (Nu
 
 let maxBuildPenalty = 0;
 if (q.id === gameState.playerQueenId) {
-  if (attrTotal >= 45) maxBuildPenalty = -1.0;
-  else if (attrTotal >= 44) maxBuildPenalty = -0.75;
-  else if (attrTotal >= 42) maxBuildPenalty = -0.45;
-  else if (attrTotal >= 40) maxBuildPenalty = -0.25;
+  if (attrTotal >= 45) maxBuildPenalty = -4.0;
+  else if (attrTotal >= 44) maxBuildPenalty = -3;
+  else if (attrTotal >= 42) maxBuildPenalty = -2;
+  else if (attrTotal >= 40) maxBuildPenalty = -1;
 }
 
 const individualScore=challengeCore+production+momentum+episodeForm.score+fatigue+legacyPressure+allWinnersBalance+vulnerabilityPressure+frontrunnerVolatility+riskBonus+miniBonus+eventBonus+judgingEventBonus+choiceBonus+energyStressMod+maxBuildPenalty;    const winThrottlePenalty=getWinThrottlePenalty(q);
