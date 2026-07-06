@@ -499,7 +499,7 @@ function generateWorkroomSocialEvents(){
   for(let i=0;i<count;i++){
     const guestVisitLocation = Math.random() < 0.3 ? 'untucked' : 'workroom';
     const ev=sample(SOCIAL_EVENTS);
-    const others=shuffle(active.filter(q=>q.id!==player.id));
+    const others=shuffle(active.filter(q=>!player || q.id!==player.id));
     const involvesPlayer=isPlayerInCurrentEpisode() && Math.random()<0.45;
     let a=others[0]||player, b=others[1]||player;
     let text='';

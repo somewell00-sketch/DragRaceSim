@@ -311,17 +311,144 @@ function renderTeamFormationStep(){
   renderWorkroom();
 }
 
+function lalaparuzaSongIcons(song){
+  if(typeof lipSyncEnergyLabel==='function')return lipSyncEnergyLabel(song);
+  const energy=String(song?.energy||'').toLowerCase();
+  if(energy==='high')return '🔥 🔥 🔥 🔥 🔥';
+  if(energy==='medium')return '✨ ✨ ✨';
+  if(energy==='low')return '🕯️';
+  return '';
+}
 function lipSyncSongCard(song){
   if(!song)return '';
-  return `<div class="song-card"><h4>${(song.icons||['🎤']).join(' ')} ${escapeHtml(song.title||'Lip Sync Song')}</h4><p><strong>${escapeHtml(song.artist||'Unknown Artist')}</strong></p><p class="small">Energy: ${escapeHtml(song.energy||'—')} · Mood: ${escapeHtml(song.mood||'—')}</p>${(song.tags||[]).length?`<p>${song.tags.map(t=>`<span class="badge arc">${escapeHtml(t)}</span>`).join(' ')}</p>`:''}</div>`;
+  const icons=lalaparuzaSongIcons(song);
+  const title=escapeHtml(song.title||'Lip Sync Song');
+  const artist=song.artist?` by ${escapeHtml(song.artist)}`:'';
+  return `<div class="song-card compact-song-card"><h4>${title}${artist}</h4>${icons?`<p class="song-icons" aria-label="Song intensity">${icons}</p>`:''}</div>`;
+}
+function smackdownResultObjectFromDuel(d){
+  if(!d)return {outcome:'bottomElimination',results:[],survivorId:null,eliminatedQueenId:null,song:null,difference:0,lalaparuzaDuel:null};
+  const results=(d.queenIds||[]).map(id=>{
+    const q=gameState.queens.find(x=>x.id===id)||{id,name:qName(id)};
+    const strategy=d.strategy?.[id] || d.strategyByQueenId?.[id] || 'sell_lyrics';
+    const score=Number(d.scores?.[id]||0);
+    return {
+      queenId:id,
+      name:q.name||qName(id),
+      score10:Math.round(score*10)/10,
+      score:Math.round(score*10)/10,
+      moves:(typeof lipSyncMovesFromStrategy==='function')?lipSyncMovesFromStrategy(strategy,d.song):{strategy},
+      strategy,
+      strategyLabel:(typeof lipSyncStrategyLabel==='function')?lipSyncStrategyLabel(strategy):(d.strategyLabels?.[id]||strategy),
+      weeklyPerformance:Math.round(score*10)/10,
+      executionQuality:Math.round(score*10)/10
+    };
+  }).sort((a,b)=>b.score10-a.score10);
+  const diff=results.length>=2?Math.abs(results[0].score10-results[1].score10):0;
+  return {
+    outcome:'bottomElimination',
+    results,
+    survivorId:d.winnerId,
+    eliminatedQueenId:d.loserId,
+    song:d.song,
+    difference:diff,
+    lalaparuzaDuel:d
+  };
+}
+function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false}={}){
+  if(!d)return '<div class="card important"><p>The lip sync result is no longer available.</p></div>';
+  const result=smackdownResultObjectFromDuel(d);
+  const oldSong=gameState.currentEpisode?.song;
+  if(gameState.currentEpisode)gameState.currentEpisode.song=d.song;
+  const songTitle=escapeHtml(d.song?.title||'Lip Sync Song');
+  const artist=d.song?.artist?`by ${escapeHtml(d.song.artist)}`:'';
+  const hero=`<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', final?'LIP SYNC FOR YOUR LIFE':'LIP SYNC SMACKDOWN', final?'danger':'win')}<h2>${songTitle}</h2>${artist?`<p style="text-align:center !important; max-width:100%;">${artist}</p>`:''}<h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lalaparuzaSongIcons(d.song)} 💡 💡</h3></div>`;
+  const battle=`<div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lalaparuzaSongIcons(d.song)} 💡 💡</h3>${typeof lipSyncResultPortraits==='function'?lipSyncResultPortraits(result):''}<div class="commentary-block">${typeof lipSyncNarrative==='function'?lipSyncNarrative(result):`<p>${escapeHtml(d.resultText||'The lip sync is decided.')}</p>`}</div></div>`;
+  let decision='';
+  if(final){
+    decision=(typeof lipSyncDecisionCards==='function'?lipSyncDecisionCards(result):`<div class="card important"><p><strong>${escapeHtml(qName(d.winnerId))}</strong>, shantay you stay.</p><p><strong>${escapeHtml(qName(d.loserId))}</strong>, sashay away.</p></div>`)
+      +(typeof finalAmenCard==='function'?finalAmenCard():'');
+  }else{
+    const winner=gameState.queens.find(q=>q.id===d.winnerId);
+    const loser=gameState.queens.find(q=>q.id===d.loserId);
+    const loserLine=returnSmackdown?'You are out of the smackdown.':'I’m sorry, my dear. You will have to lip sync again for your life.';
+    decision=`<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${typeof rupaulDecisionIntro==='function'?escapeHtml(rupaulDecisionIntro()):'I made my decision...'}</p></div>
+      ${typeof impactQueenCard==='function'?impactQueenCard(winner,returnSmackdown?'ADVANCE':'SAFE',returnSmackdown?'Condragulations!':'You are safe.',returnSmackdown?'shantay':'shantay',returnSmackdown?'<p>You advance to the next round.</p>':'<p>You won this lip sync.</p>'):`<div class="card important"><p><strong>${escapeHtml(qName(d.winnerId))}</strong> ${returnSmackdown?'advances.':'is safe.'}</p></div>`}
+      ${typeof impactQueenCard==='function'?impactQueenCard(loser,returnSmackdown?'OUT':'STILL IN DANGER',returnSmackdown?"I'm sorry my dear.":loserLine,returnSmackdown?'sashay':'safe',returnSmackdown?'<p>This is not your moment, now sashay away.</p>':''):`<div class="card"><p><strong>${escapeHtml(qName(d.loserId))}</strong> ${escapeHtml(returnSmackdown?"I'm sorry my dear. This is not your moment, now sashay away.":loserLine)}</p></div>`}`;
+  }
+  if(gameState.currentEpisode)gameState.currentEpisode.song=oldSong;
+  return hero+battle+decision;
+}
+function renderLalaparuzaDuelResult(d){
+  const result=initLalaparuzaState(gameState.currentEpisode);
+  const isComplete=result.phase==='complete';
+  setHTML(`<main class="layout"><section class="screen">${smackdownLipSyncResultCard(d,{final:!!d.isFinal})}<button id="continueAfterDuel">${d.isFinal?'See all Lalaparuza results':'Continue Lalaparuza'}</button></section>${queenSidebar()}</main>`);
+  bindCommon(()=>showHistory(()=>renderLalaparuzaDuelResult(d)));
+  document.querySelector('#continueAfterDuel')?.addEventListener('click',()=>{ if(isComplete)renderLalaparuzaResult(resolveLalaparuza()); else renderLalaparuzaEpisode(); });
+}
+function latestReturnSmackdownDuelFrom(value){
+  if(value?.queenIds?.length)return value;
+  const rounds=value?.rounds || gameState.currentEpisode?.returnSmackdownResult?.rounds || gameState.season?.returnAnnouncement?.smackdown?.rounds || gameState.currentEpisode?.returnSmackdownState?.rounds || [];
+  for(let i=rounds.length-1;i>=0;i--){
+    const duels=rounds[i]?.duels || [];
+    for(let j=duels.length-1;j>=0;j--){
+      if(duels[j]?.queenIds?.length)return duels[j];
+    }
+  }
+  return null;
+}
+function currentReturnSmackdownFinalResult(fallback=null){
+  const ep=gameState.currentEpisode;
+  if(ep?.returnSmackdownResult)return ep.returnSmackdownResult;
+  if(gameState.season?.returnAnnouncement?.smackdown)return gameState.season.returnAnnouncement.smackdown;
+  const st=ep?.returnSmackdownState;
+  if(st?.phase==='complete' && st.winnerId){
+    const result={type:st.type,mode:st.mode,rounds:st.rounds||[],winnerId:st.winnerId,usedSongs:st.usedSongs||[]};
+    ep.returnSmackdownResult=result;
+    gameState.season.returnAnnouncement=gameState.season.returnAnnouncement||{};
+    gameState.season.returnAnnouncement.smackdown=result;
+    saveGame();
+    return result;
+  }
+  return fallback?.rounds ? fallback : resolveReturnSmackdown();
+}
+function completeReturnSmackdownAndShow(chosen){
+  const outcome=completeReturnSmackdownDuel(chosen);
+  const duel=latestReturnSmackdownDuelFrom(outcome);
+  if(duel)return renderReturnSmackdownDuelResult(duel);
+  return renderReturnSmackdownResult(currentReturnSmackdownFinalResult(outcome));
+}
+function renderReturnSmackdownDuelResult(d){
+  const st=initReturnSmackdownState(gameState.currentEpisode);
+  const isComplete=st.phase==='complete';
+  const safeDuel=d || latestReturnSmackdownDuelFrom(null);
+  setHTML(`<main class="layout"><section class="screen">${smackdownLipSyncResultCard(safeDuel,{returnSmackdown:true})}<button id="continueAfterReturnDuel">${isComplete?'See Smackdown result':'Continue Smackdown'}</button></section>${queenSidebar()}</main>`);
+  bindCommon(()=>showHistory(()=>renderReturnSmackdownDuelResult(safeDuel)));
+  document.querySelector('#continueAfterReturnDuel')?.addEventListener('click',()=>{ if(isComplete)renderReturnSmackdownResult(currentReturnSmackdownFinalResult()); else renderReturnSmackdownEpisode(); });
+}
+function autoAdvanceSmackdownStep(fn,delay=900){
+  window.setTimeout(()=>{ try{ fn(); }catch(e){ console.error(e); } },delay);
 }
 function strategyButtonsForQueen(q,song,prefix){
-  const strategies=(typeof lipSyncStrategies==='function'?lipSyncStrategies():[]);
-  return `<div class="strategy-pick" data-queen="${q.id}"><h4>${escapeHtml(q.name)}</h4><div class="options compact"><button class="option autoStrategy" data-prefix="${prefix}" data-qid="${q.id}"><strong>Choose Automatically</strong><span class="small">Let the system choose for your queen.</span></button>${strategies.map(st=>`<button class="option pickStrategy" data-prefix="${prefix}" data-qid="${q.id}" data-strategy="${st.id}"><strong>${escapeHtml(st.label)}</strong><span class="small">${escapeHtml(st.description||'')}</span></button>`).join('')}</div></div>`;
+  const reveals=q?.inventory?.reveals||0;
+  const strategies=[
+    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
+    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
+    ['dance','Dance the House Down','Attack the rhythm and try to own the whole stage.'],
+    ['stunts','🤸 Stunts & Tricks','Go for big physical moments. It could be iconic or messy.'],
+    ['save_reveal','👗 Save the Reveal for the Climax','Hold the reveal until the song hits its biggest moment.'],
+    ['reveal_early','✨ Reveal Early','Shock the judges quickly and hope the energy carries through.'],
+    ['multiple_reveals','💎 Multiple Reveals','Throw everything at the wall and pray it sticks.'],
+    ['overshadow','⚠️ Overshadow Your Opponent','High risk: steal the spotlight. If it lands, you gain score and your opponent loses score. If it fails, production clocks you as desperate.'],
+    ['play_safe','😌 Play It Safe','Keep it clean and controlled, but risk being forgettable.']
+  ];
+  return `<div class="strategy-pick" data-queen="${q.id}"><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
+    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
+    return choiceButtonHtml({id,attr:'data-strategy',label,desc,disabled});
+  }).join('')}</div></div>`;
 }
 function strategyRevealLine(q,song,strategyId){
-  const st=(typeof lipSyncStrategies==='function'?lipSyncStrategies():[]).find(x=>x.id===strategyId) || (typeof strategyObj==='function'?strategyObj(strategyId):null);
-  return `<p><strong>${escapeHtml(q?.name||'A queen')}</strong> chose <strong>${escapeHtml(st?.label||strategyId||'a strategy')}</strong>.</p>`;
+  return '';
 }
 function autoStrategyMapForDuel(queenIds,song){
   const chosen={};
@@ -335,7 +462,8 @@ function renderLalaparuzaEpisode(){
   const ep=gameState.currentEpisode;
   const st=initLalaparuzaState(ep);
   const playerId=gameState.playerQueenId;
-  const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}`;
+  const showIntro=st.phase==='draw' && (st.duels||[]).length===0;
+  const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${showIntro?lalaparuzaIntroContext():''}`;
   const footer=`</section>${queenSidebar()}</main>`;
   const qById=id=>gameState.queens.find(q=>q.id===id);
   if(st.phase==='complete')return renderLalaparuzaResult(resolveLalaparuza());
@@ -344,17 +472,20 @@ function renderLalaparuzaEpisode(){
     const queenIds=[d.callerId,d.opponentId];
     const playerInDuel=queenIds.includes(playerId);
     const autoChosen=autoStrategyMapForDuel(queenIds.filter(id=>id!==playerId),d.song);
-    const npcLines=queenIds.filter(id=>id!==playerId).map(id=>strategyRevealLine(qById(id),d.song,autoChosen[id])).join('');
+    const npcLines='';
     const player=qById(playerId);
-    const playerPicker=(playerInDuel && player)?`<div class="card decision-card"><h3>Your lip sync strategy</h3><p>Choose only for ${escapeHtml(player.name)}. The other queen has already made her own choice.</p>${npcLines}${strategyButtonsForQueen(player,d.song,'player')}<button id="runCurrentLala" disabled>Run lip sync</button></div>`:`<div class="card decision-card"><h3>The queens choose their strategies</h3><p>You are watching this duel. The queens make their own choices.</p>${npcLines}<button id="runCurrentLala">Run lip sync</button></div>`;
-    setHTML(`${header}<div class="card important"><h3>${escapeHtml(d.stageLabel || (d.isFinal?'Final Duel':`Round ${d.round}`))}</h3><p><strong>${escapeHtml(qName(d.callerId))}</strong> was drawn and chose <strong>${escapeHtml(qName(d.opponentId))}</strong>.</p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div>${playerPicker}${footer}`);
+    const finalCopy=d.isFinal
+      ? `<p>The last song is on the stage. No draw, no callout, no song choice.</p>`
+      : `<p><strong>${escapeHtml(qName(d.callerId))}</strong> was drawn and chose <strong>${escapeHtml(qName(d.opponentId))}</strong>.</p><p><strong>${escapeHtml(qName(d.opponentId))}</strong> chooses the song.</p>`;
+    const playerPicker=(playerInDuel && player)?`<div class="card decision-card important"><h3>Lip Sync Strategy</h3><p>You are in the Lalaparuza. Choose the story you want to tell on stage.</p>${strategyButtonsForQueen(player,d.song,'player')}</div>`:`<div class="card subtle"><h3>Lip Sync</h3><button id="runCurrentLalaNpc">Watch lip sync</button></div>`;
+    setHTML(`${header}<div class="card important"><h3>${escapeHtml(d.stageLabel || (d.isFinal?'Final Duel':`Round ${d.round}`))}</h3>${finalCopy}${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div>${playerPicker}${footer}`);
     bindCommon(()=>showHistory(renderLalaparuzaEpisode));
     const chosen=Object.assign({},autoChosen);
     if(playerInDuel){
-      document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentLala').disabled=false;}));
-      document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(playerId); chosen[playerId]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentLala').disabled=false;}));
+      document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; const duel=completeLalaparuzaDuel(chosen); if(duel?.duels)renderLalaparuzaDuelResult(duel.final); else renderLalaparuzaDuelResult(duel);}));
+    }else{
+      document.querySelector('#runCurrentLalaNpc')?.addEventListener('click',()=>{const duel=completeLalaparuzaDuel(chosen); if(duel?.duels)renderLalaparuzaDuelResult(duel.final); else renderLalaparuzaDuelResult(duel);});
     }
-    document.querySelector('#runCurrentLala')?.addEventListener('click',()=>{const res=completeLalaparuzaDuel(chosen); if(st.phase==='complete')renderLalaparuzaResult(resolveLalaparuza()); else renderLalaparuzaEpisode();});
     return;
   }
   const active=st.activeQueenIds.map(qById).filter(Boolean);
@@ -364,9 +495,10 @@ function renderLalaparuzaEpisode(){
   const opponents=active.filter(q=>q.id!==drawn?.id);
   const history=(st.duels||[]).length?`<div class="card"><h3>History</h3>${st.duels.map(d=>`<p><strong>${escapeHtml(d.stageLabel||('Round '+d.round))}:</strong> ${escapeHtml(qName(d.winnerId))} won to ${escapeHtml(d.song?.title||'the song')}. ${escapeHtml(d.resultText||'')}</p>`).join('')}</div>`:'';
   if(isFinal){
-    const finalCaller=drawn?.id || active[0]?.id;
-    const finalOpponent=active.find(q=>q.id!==finalCaller)?.id || active[1]?.id;
-    return renderLalaparuzaSongChoice(finalCaller,finalOpponent);
+    const finalCaller=active[0]?.id;
+    const finalOpponent=active[1]?.id;
+    beginLalaparuzaDuel(finalCaller,finalOpponent,0);
+    return renderLalaparuzaEpisode();
   }
   if(drawn?.id!==playerId){
     const opponentId=lalaparuzaAutoOpponent(drawn.id);
@@ -385,9 +517,10 @@ function renderLalaparuzaSongChoice(callerId,opponentId){
   if(opponentId!==playerId){
     const songIndex=lalaparuzaAutoSong(opponentId);
     const song=st.availableSongs[songIndex] || st.availableSongs[0];
-    setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(stageLabel)}</h3><p><strong>${escapeHtml(caller)}</strong> was drawn and chose <strong>${escapeHtml(opponent)}</strong>.</p><p><strong>${escapeHtml(opponent)}</strong> chooses the song.</p>${lipSyncSongCard(song)}<button id="continueAutoSong">Continue</button></div></section>${queenSidebar()}</main>`);
+    setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(stageLabel)}</h3><p>A queen was drawn: <strong>${escapeHtml(caller)}</strong>.</p><p><strong>${escapeHtml(caller)}</strong> chooses <strong>${escapeHtml(opponent)}</strong>.</p><p><strong>${escapeHtml(opponent)}</strong> chooses the song.</p>${lipSyncSongCard(song)}</div></section>${queenSidebar()}</main>`);
     bindCommon(()=>showHistory(renderLalaparuzaEpisode));
-    document.querySelector('#continueAutoSong')?.addEventListener('click',()=>{beginLalaparuzaDuel(callerId,opponentId,songIndex); renderLalaparuzaEpisode();});
+    document.querySelector('.card.important')?.insertAdjacentHTML('beforeend','<button id="continueNpcSong">Continue to lip sync</button>');
+    document.querySelector('#continueNpcSong')?.addEventListener('click',()=>{beginLalaparuzaDuel(callerId,opponentId,songIndex); const st2=initLalaparuzaState(gameState.currentEpisode); const chosen=autoStrategyMapForDuel(st2.currentDuel?.queenIds||[callerId,opponentId],song); const duel=completeLalaparuzaDuel(chosen); if(duel?.duels)renderLalaparuzaDuelResult(duel.final); else renderLalaparuzaDuelResult(duel);});
     return;
   }
   setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div><div class="card important"><h3>${escapeHtml(stageLabel)}</h3><p><strong>${escapeHtml(caller)}</strong> was drawn and chose you.</p><p>You were chosen, so choose your song.</p><div class="options"><button class="option" id="autoSong"><strong>Choose Automatically</strong><span class="small">Use song-choice logic for your queen.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div></section>${queenSidebar()}</main>`);
@@ -405,7 +538,7 @@ function renderLalaparuzaResult(result){
     ${lalaQueenChip(d.queenIds[0], d.winnerId===d.queenIds[0]?'wins':d.loserId===d.queenIds[0]?'moves on':'')}
     <span class="vs">VS</span>
     ${lalaQueenChip(d.queenIds[1], d.winnerId===d.queenIds[1]?'wins':d.loserId===d.queenIds[1]?'moves on':'')}
-  </div><p class="small">Strategies: ${escapeHtml(qName(d.queenIds[0]))}: ${escapeHtml(d.strategyLabels?.[d.queenIds[0]]||d.strategy?.[d.queenIds[0]]||'Auto')} · ${escapeHtml(qName(d.queenIds[1]))}: ${escapeHtml(d.strategyLabels?.[d.queenIds[1]]||d.strategy?.[d.queenIds[1]]||'Auto')}</p></div>`;
+  </div></div>`;
   const rows=result.rounds.map(r=>`<div class="card lala-round-card"><h3>Round ${r.round}</h3>${r.byeId?`<div class="lala-bye">${lalaQueenChip(r.byeId,'bye')}</div>`:''}<div class="lala-duel-list">${r.duels.map(duelHtml).join('')}</div></div>`).join('');
   const playerOut=result.eliminatedQueenId===gameState.playerQueenId;
   const spectatorMode=!!gameState.season?.spectatorMode;
@@ -426,12 +559,13 @@ function renderReturnSmackdownEpisode(){
   const st=initReturnSmackdownState(ep);
   const playerId=gameState.playerQueenId;
   const type=ep.returnSmackdownType || gameState.season?.returnTwist?.type || 'legacy_smackdown';
+  const isReunion=type==='reunion_smackdown' || ep.challengeType==='reunion_smackdown' || ep.reunionOnly || gameState.season?.returnTwist?.reunionOnly;
   const isGauntlet=type==='redemption_smackdown'||type==='boot_order_gauntlet'||type==='elimination_order_gauntlet';
-  const title=isGauntlet?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return';
+  const title=isReunion?'Queen of She Already Done Had Herses':(isGauntlet?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return');
   const qById=id=>gameState.queens.find(q=>q.id===id);
   const participants=(ep.participantIds||[]).map(qById).filter(Boolean);
   const names=participants.map(q=>escapeHtml(q.name)).join(', ');
-  const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','One eliminated queen can fight her way back into the competition.')}</div>`;
+  const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',isReunion?'The eliminated queens battle for one last title. No one returns to the competition.':'One eliminated queen can fight her way back into the competition.')}</div>`;
   const footer=`</section>${queenSidebar()}</main>`;
   const history=(st.rounds||[]).length?`<div class="card"><h3>Duel history</h3>${st.rounds.map(r=>{const d=(r.duels||[])[0]; return d?`<p><strong>Round ${r.round}:</strong> ${escapeHtml(qName(d.winnerId))} defeated ${escapeHtml(qName(d.loserId))} to ${escapeHtml(d.song?.title||'the song')}.</p>`:'';}).join('')}</div>`:'';
   if(st.phase==='complete')return renderReturnSmackdownResult(ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown||resolveReturnSmackdown());
@@ -443,12 +577,13 @@ function renderReturnSmackdownEpisode(){
     if(chooserId!==playerId){
       const idx=returnSmackdownAutoSong(chooserId);
       const song=st.availableSongs[idx] || st.availableSongs[0];
-      setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><p><strong>${escapeHtml(qName(chooserId))}</strong> chooses the song.</p>${lipSyncSongCard(song)}<button id="continueReturnAutoSong">Continue</button></div>${footer}`);
+      setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isReunion?'The eliminated queens enter a bracket for the reunion title. Winners advance until one queen remains.':(isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.')}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><p><strong>${escapeHtml(qName(chooserId))}</strong> chooses the song.</p>${lipSyncSongCard(song)}</div>${footer}`);
       bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
-      document.querySelector('#continueReturnAutoSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(idx); renderReturnSmackdownEpisode();});
+      document.querySelector('.card.important')?.insertAdjacentHTML('beforeend','<button id="continueReturnNpcSong">Continue to lip sync</button>');
+      document.querySelector('#continueReturnNpcSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(idx); const st2=initReturnSmackdownState(gameState.currentEpisode); const chosen=autoStrategyMapForDuel(st2.currentDuel?.queenIds||d.queenIds,song); completeReturnSmackdownAndShow(chosen);});
       return;
     }
-    setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.'}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><h4>Choose your song</h4><div class="options"><button class="option" id="autoReturnSong"><strong>Choose Automatically</strong><span class="small">Use song-choice logic for your queen.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickReturnSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div>${footer}`);
+    setHTML(`${header}<div class="card"><h3>The eliminated queens return</h3><p>${isReunion?'The eliminated queens enter a bracket for the reunion title. Winners advance until one queen remains.':(isGauntlet?'The first eliminated queen starts the bracket and each winner faces the next eliminated queen in order.':'The eliminated queens enter a lip sync bracket. Winners advance until one queen remains.')}</p>${names?`<h4>Competing queens</h4><p>${names}</p>`:''}</div>${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> faces <strong>${escapeHtml(qName(d.queenIds[1]))}</strong>.</p><h4>Choose your song</h4><div class="options"><button class="option" id="autoReturnSong"><strong>Choose Automatically</strong><span class="small">Use song-choice logic for your queen.</span></button>${st.availableSongs.map((song,i)=>`<button class="option pickReturnSong" data-index="${i}">${lipSyncSongCard(song)}</button>`).join('')}</div></div>${footer}`);
     bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
     document.querySelector('#autoReturnSong')?.addEventListener('click',()=>{beginReturnSmackdownDuel(returnSmackdownAutoSong(d.queenIds[1])); renderReturnSmackdownEpisode();});
     document.querySelectorAll('.pickReturnSong').forEach(btn=>btn.addEventListener('click',()=>{beginReturnSmackdownDuel(Number(btn.dataset.index)); renderReturnSmackdownEpisode();}));
@@ -458,33 +593,37 @@ function renderReturnSmackdownEpisode(){
     const a=qById(d.queenIds[0]), b=qById(d.queenIds[1]);
     const playerInDuel=d.queenIds.includes(playerId);
     const autoChosen=autoStrategyMapForDuel(d.queenIds.filter(id=>id!==playerId),d.song);
-    const npcLines=d.queenIds.filter(id=>id!==playerId).map(id=>strategyRevealLine(qById(id),d.song,autoChosen[id])).join('');
+    const npcLines='';
     const player=qById(playerId);
-    const picker=(playerInDuel && player)?`<div class="card decision-card"><h3>Your lip sync strategy</h3><p>Choose only for ${escapeHtml(player.name)}. The other queen has already made her own choice.</p>${npcLines}${strategyButtonsForQueen(player,d.song,'player')}<button id="runCurrentReturn" disabled>Run lip sync</button></div>`:`<div class="card decision-card"><h3>The queens choose their strategies</h3><p>You are watching this duel. The queens make their own choices.</p>${npcLines}<button id="runCurrentReturn">Run lip sync</button></div>`;
+    const picker=(playerInDuel && player)?`<div class="card decision-card important"><h3>Lip Sync Strategy</h3><p>You are in the smackdown. Choose the story you want to tell on stage.</p>${strategyButtonsForQueen(player,d.song,'player')}</div>`:`<div class="card subtle"><h3>Lip Sync</h3><button id="runCurrentReturnNpc">Watch lip sync</button></div>`;
     setHTML(`${header}${history}<div class="card important"><h3>Round ${d.round}</h3><p><strong>${escapeHtml(qName(d.queenIds[0]))}</strong> vs <strong>${escapeHtml(qName(d.queenIds[1]))}</strong></p>${lipSyncSongCard(d.song)}<div class="lala-duel">${a?queenPortraitHtml(a,'md'):''}<span class="vs">VS</span>${b?queenPortraitHtml(b,'md'):''}</div></div>${picker}${footer}`);
     bindCommon(()=>showHistory(renderReturnSmackdownEpisode));
     const chosen=Object.assign({},autoChosen);
     if(playerInDuel){
-      document.querySelectorAll('.pickStrategy').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentReturn').disabled=false;}));
-      document.querySelectorAll('.autoStrategy').forEach(btn=>btn.addEventListener('click',()=>{const q=qById(playerId); chosen[playerId]=autoLipSyncStrategy(q,d.song); btn.closest('.strategy-pick').querySelectorAll('.option').forEach(b=>b.classList.remove('selected')); btn.classList.add('selected'); document.querySelector('#runCurrentReturn').disabled=false;}));
+      document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>{chosen[playerId]=btn.dataset.strategy; completeReturnSmackdownAndShow(chosen);}));
+    }else{
+      document.querySelector('#runCurrentReturnNpc')?.addEventListener('click',()=>{completeReturnSmackdownAndShow(chosen);});
     }
-    document.querySelector('#runCurrentReturn')?.addEventListener('click',()=>{const result=completeReturnSmackdownDuel(chosen); if(st.phase==='complete')renderReturnSmackdownResult(result||ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown); else renderReturnSmackdownEpisode();});
     return;
   }
 }
 function renderReturnSmackdownResult(result){
   if(!result){generateEpisode(); return renderWorkroom();}
   const type=result.type || gameState.currentEpisode?.returnSmackdownType || 'legacy_smackdown';
+  const isReunion=type==='reunion_smackdown' || result.reunionOnly || gameState.currentEpisode?.challengeType==='reunion_smackdown' || gameState.currentEpisode?.reunionOnly;
   const isRedemption=type==='redemption_smackdown'||type==='boot_order_gauntlet'||type==='elimination_order_gauntlet';
-  const title=isRedemption?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return';
+  const title=isReunion?'Queen of She Already Done Had Herses':(isRedemption?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return');
   const queenById=(id)=>gameState.queens.find(q=>q.id===id);
   const chip=(id,mark='')=>{const q=queenById(id); return `<div class="lala-queen-chip ${mark?`lala-${mark}`:''}">${q?queenPortraitHtml(q,'md'):''}<strong>${escapeHtml(qName(id))}</strong>${mark?`<span class="small">${escapeHtml(mark)}</span>`:''}</div>`;};
-  const duelHtml=(d)=>`<div class="lala-duel-block">${lipSyncSongCard(d.song)}<div class="lala-duel">${chip(d.queenIds[0],d.winnerId===d.queenIds[0]?'wins':'out')}<span class="vs">VS</span>${chip(d.queenIds[1],d.winnerId===d.queenIds[1]?'wins':'out')}</div><p class="small">Strategies: ${escapeHtml(qName(d.queenIds[0]))}: ${escapeHtml(d.strategyLabels?.[d.queenIds[0]]||d.strategy?.[d.queenIds[0]]||'Auto')} · ${escapeHtml(qName(d.queenIds[1]))}: ${escapeHtml(d.strategyLabels?.[d.queenIds[1]]||d.strategy?.[d.queenIds[1]]||'Auto')}</p></div>`;
+  const duelHtml=(d)=>`<div class="lala-duel-block">${lipSyncSongCard(d.song)}<div class="lala-duel">${chip(d.queenIds[0],d.winnerId===d.queenIds[0]?'wins':'out')}<span class="vs">VS</span>${chip(d.queenIds[1],d.winnerId===d.queenIds[1]?'wins':'out')}</div></div>`;
   const rows=(result.rounds||[]).map(r=>`<div class="card lala-round-card"><h3>Round ${r.round}</h3>${r.byeId?`<div class="lala-bye">${chip(r.byeId,'bye')}</div>`:''}<div class="lala-duel-list">${(r.duels||[]).map(duelHtml).join('')}</div></div>`).join('');
   const winner=queenById(result.winnerId);
-  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,'RETURN TWIST','danger','The battle for a place back in the race is decided.')}</div>${rows}<div class="card important lala-final-card"><h3>A queen returns to the competition.</h3>${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p><strong>${escapeHtml(qName(result.winnerId))}</strong> has earned her way back into the race.</p></div><button id="continueAfterReturnSmackdown">Continue to the next episode</button></section>${queenSidebar()}</main>`);
+  const finalHeading=isReunion?'The tournament has a winner.':'A queen returns to the competition.';
+  const finalCopy=isReunion?`<strong>${escapeHtml(qName(result.winnerId))}</strong> is crowned ${escapeHtml(title)}.`:`<strong>${escapeHtml(qName(result.winnerId))}</strong> has earned her way back into the race.`;
+  const heroCopy=isReunion?'The eliminated queens battle for one last title. No one returns to the competition.':'The battle for a place back in the race is decided.';
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',heroCopy)}</div>${rows}<div class="card important lala-final-card"><h3>${finalHeading}</h3>${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p>${finalCopy}</p></div><button id="continueAfterReturnSmackdown">${isReunion?'Continue':'Continue to the next episode'}</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownResult(result)));
-  document.querySelector('#continueAfterReturnSmackdown')?.addEventListener('click',()=>{gameState.currentEpisode=null; saveGame(); generateEpisode(); renderWorkroom();});
+  document.querySelector('#continueAfterReturnSmackdown')?.addEventListener('click',()=>{gameState.currentEpisode=null; saveGame(); if(result.reunionOnly || result.type==='reunion_smackdown'){ if(typeof renderFinale==='function')renderFinale(); else routeAfterLoad(); } else {generateEpisode(); renderWorkroom();}});
 }
 
 function challengeContentBlock(ep){

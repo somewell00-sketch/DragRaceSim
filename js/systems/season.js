@@ -584,12 +584,16 @@ function initReturnSmackdownState(ep){
   if(ep.returnSmackdownState)return ep.returnSmackdownState;
   const participants=(ep.participantIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
   const type=ep.returnSmackdownType || gameState.season?.returnTwist?.type || 'legacy_smackdown';
-  const ordered=(type==='legacy_smackdown') ? shuffle(participants).map(q=>q.id) : participants.map(q=>q.id);
+  const isGauntlet=(type==='boot_order_gauntlet'||type==='elimination_order_gauntlet'||type==='redemption_smackdown');
+  const ordered=isGauntlet ? participants.map(q=>q.id) : shuffle(participants).map(q=>q.id);
   ep.returnSmackdownState={
     type,
-    mode:(type==='boot_order_gauntlet'||type==='elimination_order_gauntlet'||type==='redemption_smackdown')?'boot_order_gauntlet':'legacy_bracket',
+    mode:isGauntlet?'boot_order_gauntlet':'legacy_bracket',
     phase:'draw',
     queueIds:[...ordered],
+    currentRoundIds:isGauntlet?[]:[...ordered],
+    nextRoundIds:[],
+    roundNumber:1,
     currentChampionId:null,
     availableSongs:pickLipSyncSongs(Math.max(1,participants.length-1)),
     usedSongs:[],
@@ -604,16 +608,51 @@ function beginReturnSmackdownDuel(songIndex){
   const ep=gameState.currentEpisode, st=initReturnSmackdownState(ep);
   if(st.phase==='complete')return null;
   if(!st.currentDuel){
-    if(!st.currentChampionId)st.currentChampionId=st.queueIds.shift()||null;
-    const opponentId=st.queueIds.shift()||null;
-    if(!st.currentChampionId || !opponentId){
-      st.winnerId=st.currentChampionId || opponentId || null;
-      st.phase='complete';
-      saveGame();
-      return null;
+    if(st.mode==='legacy_bracket'){
+      while((st.currentRoundIds||[]).length<2){
+        const byeId=(st.currentRoundIds||[]).shift()||null;
+        if(byeId){
+          let round=st.rounds.find(r=>r.round===st.roundNumber);
+          if(!round){round={round:st.roundNumber,duels:[],winnerIds:[]}; st.rounds.push(round);}
+          round.byeId=byeId;
+          if(!round.winnerIds.includes(byeId))round.winnerIds.push(byeId);
+          st.nextRoundIds.push(byeId);
+        }
+        if((st.nextRoundIds||[]).length===1 && !(st.currentRoundIds||[]).length){
+          st.winnerId=st.nextRoundIds[0];
+          st.phase='complete';
+          saveGame();
+          return null;
+        }
+        if((st.currentRoundIds||[]).length<2 && (st.nextRoundIds||[]).length>1){
+          st.currentRoundIds=[...st.nextRoundIds];
+          st.nextRoundIds=[];
+          st.roundNumber++;
+        }else break;
+      }
+      const aId=st.currentRoundIds.shift()||null;
+      const bId=st.currentRoundIds.shift()||null;
+      if(!aId || !bId){
+        st.winnerId=aId || bId || st.nextRoundIds?.[0] || null;
+        st.phase='complete';
+        saveGame();
+        return null;
+      }
+      const remainingAfterThis=(st.currentRoundIds||[]).length + (st.nextRoundIds||[]).length;
+      st.currentDuel={round:st.roundNumber,queenIds:[aId,bId],song:null,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal:remainingAfterThis===0};
+      st.phase='song';
+    }else{
+      if(!st.currentChampionId)st.currentChampionId=st.queueIds.shift()||null;
+      const opponentId=st.queueIds.shift()||null;
+      if(!st.currentChampionId || !opponentId){
+        st.winnerId=st.currentChampionId || opponentId || null;
+        st.phase='complete';
+        saveGame();
+        return null;
+      }
+      st.currentDuel={round:st.rounds.length+1,queenIds:[st.currentChampionId,opponentId],song:null,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal:st.queueIds.length===0};
+      st.phase='song';
     }
-    st.currentDuel={round:st.rounds.length+1,queenIds:[st.currentChampionId,opponentId],song:null,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal:st.queueIds.length===0};
-    st.phase='song';
   }
   if(songIndex!==undefined && songIndex!==null){
     const idx=Math.max(0,Math.min(st.availableSongs.length-1,Number(songIndex)||0));
@@ -637,11 +676,32 @@ function completeReturnSmackdownDuel(strategyByQueenId={}){
   const d=runLipSyncDuelNoStats(a,b,`Return Round ${cd.round}`,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'return_smackdown'});
   Object.assign(cd,{scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins and keeps fighting. ${qName(d.loserId)} is out.`});
   st.usedSongs.push(cd.song);
-  st.rounds.push({round:cd.round,duels:[cd],winnerIds:[cd.winnerId]});
-  st.currentChampionId=cd.winnerId;
-  st.currentDuel=null;
-  st.phase=st.queueIds.length?'draw':'complete';
-  if(st.phase==='complete')st.winnerId=cd.winnerId;
+  let round=st.rounds.find(r=>r.round===cd.round);
+  if(!round){round={round:cd.round,duels:[],winnerIds:[]}; st.rounds.push(round);}
+  round.duels.push(cd);
+  if(!round.winnerIds.includes(cd.winnerId))round.winnerIds.push(cd.winnerId);
+  if(st.mode==='legacy_bracket'){
+    st.nextRoundIds.push(cd.winnerId);
+    st.currentDuel=null;
+    if((st.currentRoundIds||[]).length===0){
+      if(st.nextRoundIds.length===1){
+        st.winnerId=cd.winnerId;
+        st.phase='complete';
+      }else{
+        st.currentRoundIds=[...st.nextRoundIds];
+        st.nextRoundIds=[];
+        st.roundNumber++;
+        st.phase='draw';
+      }
+    }else{
+      st.phase='draw';
+    }
+  }else{
+    st.currentChampionId=cd.winnerId;
+    st.currentDuel=null;
+    st.phase=st.queueIds.length?'draw':'complete';
+    if(st.phase==='complete')st.winnerId=cd.winnerId;
+  }
   saveGame();
   if(st.phase==='complete')return resolveReturnSmackdown();
   return cd;
@@ -649,13 +709,14 @@ function completeReturnSmackdownDuel(strategyByQueenId={}){
 function resolveReturnSmackdown(){
   const ep=gameState.currentEpisode;
   if(ep?.returnSmackdownResult)return ep.returnSmackdownResult;
-  if(!hasReturnTwistAvailable())return gameState.season?.returnAnnouncement?.smackdown||null;
+  const type=ep?.returnSmackdownType || gameState.season?.returnTwist?.type;
+  const isReunionSmackdown=type==='reunion_smackdown' || ep?.challengeType==='reunion_smackdown' || ep?.reunionOnly || gameState.season?.returnTwist?.reunionOnly;
+  if(!isReunionSmackdown && !hasReturnTwistAvailable())return gameState.season?.returnAnnouncement?.smackdown||null;
   const eliminated=[...getEliminatedQueens()];
-  const type=gameState.season.returnTwist.type;
   if(eliminated.length===1){
     const winnerId=eliminated[0].id;
-    returnQueenToCompetition(winnerId,type);
-    const result={type,rounds:[],winnerId};
+    if(!isReunionSmackdown)returnQueenToCompetition(winnerId,type);
+    const result={type,rounds:[],winnerId,reunionOnly:isReunionSmackdown};
     gameState.season.returnAnnouncement.smackdown=result;
     if(ep)ep.returnSmackdownResult=result;
     saveGame();
@@ -676,10 +737,15 @@ function resolveReturnSmackdown(){
       }
     }
     if(st.winnerId){
-      returnQueenToCompetition(st.winnerId,type);
-      const result={type,mode:st.mode,rounds:st.rounds,winnerId:st.winnerId,usedSongs:st.usedSongs};
+      if(!isReunionSmackdown)returnQueenToCompetition(st.winnerId,type);
+      const result={type,mode:st.mode,rounds:st.rounds,winnerId:st.winnerId,usedSongs:st.usedSongs,reunionOnly:isReunionSmackdown,title:isReunionSmackdown?'Queen of She Already Done Had Herses':undefined};
       ep.returnSmackdownResult=result;
-      gameState.season.returnAnnouncement.smackdown=result;
+      if(isReunionSmackdown){
+        gameState.season.reunionDone=true;
+        gameState.season.reunionResult=result;
+      }else{
+        gameState.season.returnAnnouncement.smackdown=result;
+      }
       saveGame();
       return result;
     }
@@ -694,9 +760,14 @@ function resolveReturnSmackdown(){
   }
   const winnerId=current?.id||null;
   if(winnerId){
-    returnQueenToCompetition(winnerId,type);
-    const result={type,rounds,winnerId};
-    gameState.season.returnAnnouncement.smackdown=result;
+    if(!isReunionSmackdown)returnQueenToCompetition(winnerId,type);
+    const result={type,rounds,winnerId,reunionOnly:isReunionSmackdown,title:isReunionSmackdown?'Queen of She Already Done Had Herses':undefined};
+    if(isReunionSmackdown){
+      gameState.season.reunionDone=true;
+      gameState.season.reunionResult=result;
+    }else{
+      gameState.season.returnAnnouncement.smackdown=result;
+    }
     saveGame();
     return result;
   }
@@ -2188,19 +2259,22 @@ if (winnerQueen) {
 
 
 const LALA_LIP_SYNC_STRATEGIES=[
-  {id:'sell_lyrics',label:'Sell the Lyrics',description:'Focus on emotion, face, timing and storytelling.',bonusTags:['vocals','emotional','ballad']},
-  {id:'dance',label:'Dance the House Down',description:'Go for choreography, energy and stage presence.',bonusTags:['dance','pop','high']},
-  {id:'stunts',label:'Stunts & Tricks',description:'Take risks with drops, splits and reveals.',bonusTags:['stunt','performance'],risk:true},
-  {id:'camp',label:'Camp It Up',description:'Use comedy, character and absurd choices.',bonusTags:['camp','comedy','weird']},
-  {id:'reveal',label:'Big Reveal',description:'Bet on a reveal moment. High reward, but can flop.',bonusTags:['reveal','performance'],risk:true},
-  {id:'play_safe',label:'Play It Safe',description:'Avoid mistakes and deliver a clean performance.',bonusTags:['safe'],risk:false}
+  {id:'emotion',label:'Sell the Emotion',description:'Lead with vulnerability and make every beat feel personal.',bonusTags:['emotional','ballad','low']},
+  {id:'sell_lyrics',label:'Sell the Lyrics',description:'Use face, timing, and intention to make the song feel written for you.',bonusTags:['vocals','emotional','ballad']},
+  {id:'dance',label:'Dance the House Down',description:'Attack the rhythm and try to own the whole stage.',bonusTags:['dance','pop','high']},
+  {id:'stunts',label:'Stunts & Tricks',description:'Go for big physical moments. It could be iconic or messy.',bonusTags:['stunt','performance','high'],risk:true},
+  {id:'save_reveal',label:'Save the Reveal for the Climax',description:'Hold the reveal until the song hits its biggest moment.',bonusTags:['reveal','performance'],risk:true},
+  {id:'reveal_early',label:'Reveal Early',description:'Shock the judges quickly and hope the energy carries through.',bonusTags:['reveal','performance'],risk:true},
+  {id:'multiple_reveals',label:'Multiple Reveals',description:'Throw everything at the wall and pray it sticks.',bonusTags:['reveal','performance'],risk:true},
+  {id:'overshadow',label:'Overshadow Your Opponent',description:'High risk: steal the spotlight.',bonusTags:['performance','high'],risk:true},
+  {id:'play_safe',label:'Play It Safe',description:'Keep it clean and controlled, but risk being forgettable.',bonusTags:['safe'],risk:false}
 ];
 function lipSyncStrategies(){return LALA_LIP_SYNC_STRATEGIES;}
 function pickLipSyncSongs(count){
   const base=(gameState.data.songs)||[];
-  const pool=shuffle(base.map(s=>Object.assign({},s,{tags:s.tags||[s.mood,s.energy].filter(Boolean),icons:s.icons||['🎤']})));
+  const pool=shuffle(base.map(s=>Object.assign({},s,{tags:s.tags||[s.mood,s.energy].filter(Boolean),icons:s.icons||[]})));
   const songs=[];
-  for(let i=0;i<count;i++)songs.push(pool[i%Math.max(1,pool.length)]||{title:'Lip Sync Song',artist:'Unknown Artist',energy:'high',mood:'pop',icons:['🎤'],tags:['performance']});
+  for(let i=0;i<count;i++)songs.push(pool[i%Math.max(1,pool.length)]||{title:'Lip Sync Song',artist:'Unknown Artist',energy:'high',mood:'pop',icons:[],tags:['performance']});
   return songs;
 }
 function strategyObj(id){return LALA_LIP_SYNC_STRATEGIES.find(s=>s.id===id)||LALA_LIP_SYNC_STRATEGIES[0];}
@@ -2214,8 +2288,9 @@ function autoLipSyncStrategy(q,song){
     if(st.id==='dance')score+=(attrs.dance||attrs.lipSync||5)/2;
     if(st.id==='stunts')score+=(attrs.lipSync||5)/2+(attrs.cunt||0)/4;
     if(st.id==='sell_lyrics')score+=(attrs.acting||5)/3+(attrs.lipSync||5)/3;
-    if(st.id==='camp')score+=(attrs.comedy||5)/2;
-    if(st.id==='reveal')score+=(q.inventory?.reveals||0)?4:0;
+    if(st.id==='emotion')score+=(attrs.acting||5)/3+(attrs.cunt||0)/4;
+    if(st.id==='overshadow')score+=(attrs.cunt||5)/2;
+    if(['save_reveal','reveal_early','multiple_reveals'].includes(st.id))score+=(q.inventory?.reveals||0)?4:0;
     if(st.id==='play_safe')score+=q.stress>60?3:0;
     if(st.risk && q.stress>70)score-=2;
     if(score>bestScore){bestScore=score; best=st;}
@@ -2237,8 +2312,9 @@ function simpleLipSyncScoreFor(q,opts={}){
   if(st.id==='dance')strategyBonus+=(q.attributes?.dance||q.attributes?.lipSync||5)*0.08;
   if(st.id==='stunts')strategyBonus+=(q.attributes?.lipSync||5)*0.1;
   if(st.id==='sell_lyrics')strategyBonus+=(q.attributes?.acting||q.attributes?.lipSync||5)*0.07;
-  if(st.id==='camp')strategyBonus+=(q.attributes?.comedy||5)*0.1;
-  if(st.id==='reveal')strategyBonus+=(q.inventory?.reveals||0)?1.2:-0.4;
+  if(st.id==='emotion')strategyBonus+=(q.attributes?.acting||5)*0.08;
+  if(st.id==='overshadow')strategyBonus+=(q.attributes?.cunt||5)*0.08;
+  if(['save_reveal','reveal_early','multiple_reveals'].includes(st.id))strategyBonus+=(q.inventory?.reveals||0)?1.2:-0.4;
   if(st.id==='play_safe')strategyBonus= Math.min(strategyBonus+0.4,0.9);
   if(st.risk && Math.random()<0.22)strategyBonus-=rand(0.6,1.8);
   score+=strategyBonus;
