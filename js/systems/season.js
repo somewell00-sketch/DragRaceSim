@@ -2395,6 +2395,7 @@ function beginLalaparuzaDuel(callerId,opponentId,songIndex){
   st.currentDuel={round:st.duels.length+1,stage:st.stage,stageLabel:lalaparuzaStageLabel(st.stage),callerId,opponentId,song,strategyByQueenId:{},winnerId:'',loserId:'',resultText:'',isFinal};
   st.phase='strategy';
   delete st.drawnQueenId;
+  delete ep.lalaparuzaPendingChoice;
   saveGame();
   return st.currentDuel;
 }
