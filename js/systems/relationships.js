@@ -24,7 +24,7 @@ function applyChallengeWinRelationshipPenalty(winner, ep){
   if(!targets.length)return [];
   ep.winRelationshipPenalties=ep.winRelationshipPenalties||[];
   const changes=targets.map(target=>{
-    const affinityLoss=rand(-14,-8);
+    const affinityLoss=rand(-18,-8);
     const respectShift=rand(-3,1);
     changeRelationship(target.id,winner.id,affinityLoss,respectShift);
     return {winnerId:winner.id,targetId:target.id,affinity:affinityLoss,respect:respectShift};
@@ -44,12 +44,12 @@ function applyHighQueensWinnerJealousy(winner, ep){
 
     const roll=Math.random();
     if(roll<0.40){
-      changeRelationship(highQueen.id,winner.id,rand(-8,-4),rand(-2,0));
+      changeRelationship(highQueen.id,winner.id,rand(-12,-4),rand(-2,0));
       return {fromId:highQueen.id,toId:winner.id,type:'small'};
     }
 
     if(roll<0.70){
-      changeRelationship(highQueen.id,winner.id,rand(-16,-9),rand(-5,-2));
+      changeRelationship(highQueen.id,winner.id,rand(-20,-9),rand(-5,-2));
       return {fromId:highQueen.id,toId:winner.id,type:'large'};
     }
 
