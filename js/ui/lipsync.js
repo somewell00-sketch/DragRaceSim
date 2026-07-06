@@ -50,7 +50,7 @@ function renderLipSync(){
   const isTournament=ep.special==='tournament_bracket';
   const isAllWinners=getSeasonFormat()==='all_winners';
   const duelIds=(isAllWinners||isTournament) ? (ep.top2Queens||[]) : (isLegacy ? (ep.top2Queens||[]) : (isAssassin ? [ep.topQueenId,'lip_sync_assassin'] : (ep.special==='premiere_no_elim' ? (ep.top2Queens||[]) : ep.bottomQueens)));
-  const bottom=duelIds.map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
+  const bottom=duelIds.map(id=>id==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:7.5,cunt:7.5}}) : gameState.queens.find(q=>q.id===id)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const playerInBottom=duelIds.includes(gameState.playerQueenId);
   const badge=(ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?(isAssassin?'Lip Sync Assassin':'Top 2 Lip Sync'):'Lip Sync For Your Life';
   const intro=isAssassin ? 'The challenge winner and the Lip Sync Assassin stand before me.' : ((ep.special==='premiere_no_elim'||isLegacy||isTournament||isAllWinners)
