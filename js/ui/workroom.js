@@ -189,7 +189,7 @@ function renderTalentChoice(){
   setHTML(`<main class="layout"><section class="screen">
     <div class="hero"><span class="badge">Episode ${ep.number}</span><h2>Choose Your Talent</h2><p>Before RuPaul announces the Talent Show lineup, decide what ${escapeHtml(player?.name||'your queen')} will perform.</p></div>
     ${challengeContentBlock(ep)}
-    <div class="card decision-card"><h3>Your Talent Show category</h3><p>The game will randomly pull one act from <code>talentPerformances.js</code> using the type you choose.</p><div class="options">${buttons}</div></div>
+    <div class="card decision-card"><h3>Your Talent Show category</h3><p>Tonight is your chance to prove why you belong here. Decide what kind of talent you'll perform and own the spotlight.</p><div class="options">${buttons}</div></div>
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderTalentChoice));
   document.querySelectorAll('[data-talent-type]').forEach(btn=>btn.addEventListener('click',()=>{
