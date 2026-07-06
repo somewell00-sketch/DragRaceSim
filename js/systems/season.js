@@ -344,7 +344,7 @@ function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,
 function randomizeAttributes(base){
   const randomized={};
   ['cunt','lipSync','makeup','sewing','runway','acting'].forEach(attr=>{
-    randomized[attr]=clamp(Math.round((Number(base[attr])||7)+rand(-2,2)),1,10);
+    randomized[attr]=clamp(Math.round((Number(base[attr])||7)+rand(-1,2)),1,10);
   });
   return randomized;
 }
