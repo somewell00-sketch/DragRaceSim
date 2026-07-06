@@ -174,7 +174,15 @@ function isMissingSchemaColumnError(error) {
 }
 
 async function saveCommunityQueen(queen) {
-  if (!communityDb || !queen?.name) return null;
+  if (!communityDb) {
+    console.error('Could not save community queen: Supabase client is not available.');
+    return null;
+  }
+
+  if (!queen?.name) {
+    console.error('Could not save community queen: queen name is missing.', queen);
+    return null;
+  }
 
   let { data, error } = await insertCommunityQueenPayload(communityQueenPayload(queen));
 
@@ -184,11 +192,13 @@ async function saveCommunityQueen(queen) {
   }
 
   if (error) {
-    console.warn('Could not save community queen:', error);
+    console.error('Could not save community queen:', error);
     return null;
   }
 
-  return data?.[0] || null;
+  const savedQueen = data?.[0] || null;
+  console.info('[COMMUNITY QUEEN SAVE]', savedQueen ? 'Saved' : 'Not saved', savedQueen);
+  return savedQueen;
 }
 
 function isTrueLike(value) {

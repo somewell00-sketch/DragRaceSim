@@ -2242,7 +2242,13 @@ const winnerQueen = gameState.queens.find(q => q.id === finale.winnerId);
 
 if (winnerQueen) {
     winnerQueen.winner = true;
-   saveCommunityQueen(winnerQueen);
+   if (typeof saveCommunityQueen === 'function') {
+     saveCommunityQueen(winnerQueen)
+       .then(savedQueen => console.info('[COMMUNITY QUEEN SAVE]', savedQueen ? 'Winner saved' : 'Winner not saved', savedQueen))
+       .catch(error => console.error('Could not save winning community queen:', error));
+   } else {
+     console.error('Could not save winning community queen: saveCommunityQueen is not available.');
+   }
 }
   const allFinalists=gameState.queens.filter(q=>finale.finalistIds.includes(q.id));
   allFinalists.forEach(q=>{

@@ -381,7 +381,10 @@ function renderQueenCreator(){
      window.currentUserCommunityLocation = userLocation;
      const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes,location:userLocation});
 if(typeof saveCommunityQueen === 'function'){
-  saveCommunityQueen(queen).catch(console.warn);
+  const savedQueen = await saveCommunityQueen(queen);
+  console.info('[COMMUNITY QUEEN SAVE]', savedQueen ? 'Saved before season start' : 'Not saved before season start', savedQueen);
+} else {
+  console.error('Could not save community queen: saveCommunityQueen is not available.');
 }
      const setup=window.pendingSeasonSetup || {castSize:'random',format:'regular'};
      await startSeason(
