@@ -2171,7 +2171,7 @@ const winnerQueen = gameState.queens.find(q => q.id === finale.winnerId);
 
 if (winnerQueen) {
     winnerQueen.winner = true;
-    await saveCommunityQueen(winnerQueen);
+   saveCommunityQueen(winnerQueen);
 }
   const allFinalists=gameState.queens.filter(q=>finale.finalistIds.includes(q.id));
   allFinalists.forEach(q=>{
