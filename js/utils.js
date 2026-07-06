@@ -2,6 +2,24 @@ function clamp(value,min,max){return Math.max(min,Math.min(max,value));}
 function sample(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function shuffle(arr){return [...arr].sort(()=>Math.random()-.5);}
 function rand(min,max){return Math.round((Math.random()*(max-min)+min)*10)/10;}
+function effectiveAttrValue(v){
+  v = Number(v) || 0;
+
+  switch(v){
+    case 1: return 1.0;
+    case 2: return 2.0;
+    case 3: return 3.0;
+    case 4: return 4.0;
+    case 5: return 5.0;
+    case 6: return 5.9;
+    case 7: return 6.7;
+    case 8: return 7.4;
+    case 9: return 8.0;
+    case 10:return 8.5;
+    default:return v;
+  }
+}
+
 function weightedAttributeScore(attributes, weights) {
   return Object.entries(weights).reduce((t, [a, w]) => {
     const globalAttrMultiplier = {
@@ -10,7 +28,7 @@ function weightedAttributeScore(attributes, weights) {
     };
 
     const mult = globalAttrMultiplier[a] ?? 1;
-    return t + (attributes[a] || 0) * 10 * w * mult;
+    return t + effectiveAttrValue(attributes[a] || 0) * 10 * w * mult;
   }, 0);
 }
 function riskRoll(risk){if(risk==='safe')return rand(-4,4); if(risk==='unexpected')return Math.random()>.5?rand(7,14):rand(-14,-7); return rand(-10,10);}
