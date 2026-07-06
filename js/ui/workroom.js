@@ -356,7 +356,11 @@ function smackdownResultObjectFromDuel(d){
   };
 }
 function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false}={}){
-  if(!d)return '<div class="card important"><p>The lip sync result is no longer available.</p></div>';
+  if(!d){
+    const fallback=latestReturnSmackdownDuelFrom(null);
+    if(fallback)d=fallback;
+    else return '<div class="card important"><h3>Lip Sync Smackdown</h3><p>The duel has already been resolved.</p></div>';
+  }
   const result=smackdownResultObjectFromDuel(d);
   const oldSong=gameState.currentEpisode?.song;
   if(gameState.currentEpisode)gameState.currentEpisode.song=d.song;
@@ -400,6 +404,7 @@ function latestReturnSmackdownDuelFrom(value){
 function currentReturnSmackdownFinalResult(fallback=null){
   const ep=gameState.currentEpisode;
   if(ep?.returnSmackdownResult)return ep.returnSmackdownResult;
+  if(gameState.season?.reunionResult && (ep?.reunionOnly || ep?.challengeType==='reunion_smackdown'))return gameState.season.reunionResult;
   if(gameState.season?.returnAnnouncement?.smackdown)return gameState.season.returnAnnouncement.smackdown;
   const st=ep?.returnSmackdownState;
   if(st?.phase==='complete' && st.winnerId){
@@ -422,6 +427,7 @@ function renderReturnSmackdownDuelResult(d){
   const st=initReturnSmackdownState(gameState.currentEpisode);
   const isComplete=st.phase==='complete';
   const safeDuel=d || latestReturnSmackdownDuelFrom(null);
+  if(!safeDuel && isComplete)return renderReturnSmackdownResult(currentReturnSmackdownFinalResult());
   setHTML(`<main class="layout"><section class="screen">${smackdownLipSyncResultCard(safeDuel,{returnSmackdown:true})}<button id="continueAfterReturnDuel">${isComplete?'See Smackdown result':'Continue Smackdown'}</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownDuelResult(safeDuel)));
   document.querySelector('#continueAfterReturnDuel')?.addEventListener('click',()=>{ if(isComplete)renderReturnSmackdownResult(currentReturnSmackdownFinalResult()); else renderReturnSmackdownEpisode(); });
@@ -619,9 +625,14 @@ function renderReturnSmackdownResult(result){
   const rows=(result.rounds||[]).map(r=>`<div class="card lala-round-card"><h3>Round ${r.round}</h3>${r.byeId?`<div class="lala-bye">${chip(r.byeId,'bye')}</div>`:''}<div class="lala-duel-list">${(r.duels||[]).map(duelHtml).join('')}</div></div>`).join('');
   const winner=queenById(result.winnerId);
   const finalHeading=isReunion?'The tournament has a winner.':'A queen returns to the competition.';
-  const finalCopy=isReunion?`<strong>${escapeHtml(qName(result.winnerId))}</strong> is crowned ${escapeHtml(title)}.`:`<strong>${escapeHtml(qName(result.winnerId))}</strong> has earned her way back into the race.`;
+  const winnerName=escapeHtml(qName(result.winnerId));
+  const winnerBadge=isReunion?'QUEEN OF SHE ALREADY DONE HAD HERSES':'RETURNING QUEEN';
+  const finalCopy=isReunion
+    ? `<strong>${winnerName}</strong> is crowned ${escapeHtml(title)}.`
+    : `<strong>${winnerName}</strong> has earned her way back into the race.`;
   const heroCopy=isReunion?'The eliminated queens battle for one last title. No one returns to the competition.':'The battle for a place back in the race is decided.';
-  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',heroCopy)}</div>${rows}<div class="card important lala-final-card"><h3>${finalHeading}</h3>${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p>${finalCopy}</p></div><button id="continueAfterReturnSmackdown">${isReunion?'Continue':'Continue to the next episode'}</button></section>${queenSidebar()}</main>`);
+  const winnerCard=`<div class="card important lala-final-card smackdown-winner-card"><span class="badge win smackdown-winner-badge">${winnerBadge}</span><h3>${finalHeading}</h3>${winner?`<div class="winner-portrait-wrap smackdown-winner-portrait">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="smackdown-winner-copy">${finalCopy}</p></div>`;
+  setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',heroCopy)}</div>${rows}${winnerCard}<button id="continueAfterReturnSmackdown">${isReunion?'Continue':'Continue to the next episode'}</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownResult(result)));
   document.querySelector('#continueAfterReturnSmackdown')?.addEventListener('click',()=>{gameState.currentEpisode=null; saveGame(); if(result.reunionOnly || result.type==='reunion_smackdown'){ if(typeof renderFinale==='function')renderFinale(); else routeAfterLoad(); } else {generateEpisode(); renderWorkroom();}});
 }
