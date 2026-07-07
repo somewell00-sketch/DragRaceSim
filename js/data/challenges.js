@@ -129,7 +129,8 @@ window.GAME_DATA.challenges = [
   "acting": 0.2,
   "runway": 0.2,
   "makeup": 0.2
-}
+},
+    "uniqueSeason": true
   },
   {
     "id": "rusical",
