@@ -1163,7 +1163,13 @@ function allStarsRelationshipStrength(q, playerId){
 
 function chooseAllStarsReturningQueens(player){
   const playerId=player?.id||gameState.playerQueenId;
-  const candidates=(gameState.queens||[]).filter(q=>q.id!==playerId && !q.isAssassin);
+const previousWinnerId = gameState.season?.winnerId;
+
+const candidates=(gameState.queens||[]).filter(q=>
+  q.id !== playerId &&
+  q.id !== previousWinnerId &&
+  !q.isAssassin
+);
   const scored=candidates.map(q=>{
     const tags=(typeof seasonArcTags==='function')?seasonArcTags(q):[];
     const placement=Number(q.finalPlacement)||999;
