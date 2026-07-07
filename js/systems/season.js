@@ -1345,13 +1345,80 @@ function pickChallengeByRules(activeCount){
 }
 
 function challengeStructures(challengeId, activeCount){
-  const solo=['talent','design','ball','comedy','roast','snatchgame','interview','rumix','political_debate','makeover'];
-  if(challengeId==='fashion_wars') return [{id:'fashion_wars',label:activeCount===10?'Two fashion houses':activeCount===9?'Three fashion houses':'Fashion duels'}];
-  if(solo.includes(challengeId)) return [{id:'solo',label:'Solo challenge'}];
-  const list=[{id:'solo',label:'Solo challenge'}];
+  const solo=[
+    'talent',
+    'design',
+    'ball',
+    'roast',
+    'snatchgame',
+    'rumix',
+    'political_debate',
+    'makeover'
+  ];
+
+  if(challengeId==='fashion_wars'){
+    return [{
+      id:'fashion_wars',
+      label:activeCount===10
+        ?'Two fashion houses'
+        :activeCount===9
+          ?'Three fashion houses'
+          :'Fashion duels'
+    }];
+  }
+
+  if(solo.includes(challengeId)){
+    return [{id:'solo',label:'Solo challenge'}];
+  }
+
+  // Acting & Comedy: 90% group, 10% solo
+  if(challengeId==='acting' || challengeId==='comedy'){
+    const list=[];
+
+    if(Math.random()<0.10){
+      list.push({id:'solo',label:'Solo challenge'});
+    }
+
+    if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
+    if(activeCount>=8) list.push({id:'teams2',label:'Two teams'});
+    if(activeCount>=10) list.push({id:'teams3',label:'Three teams'});
+
+    return list.length ? list : [{id:'solo',label:'Solo challenge'}];
+  }
+
+  // Interview: solo or duos only
+  if(challengeId==='interview'){
+    const list=[
+      {id:'solo',label:'Solo challenge'}
+    ];
+
+    if(activeCount>=6){
+      list.push({id:'duos',label:'Paired challenge'});
+    }
+
+    return list;
+  }
+
+  // Girl Groups are always team challenges
+  if(challengeId==='girlgroup'){
+    const list=[];
+
+    if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
+    if(activeCount>=8) list.push({id:'teams2',label:'Two teams'});
+    if(activeCount>=10) list.push({id:'teams3',label:'Three teams'});
+
+    return list.length ? list : [{id:'solo',label:'Solo challenge'}];
+  }
+
+  // Default behavior
+  const list=[
+    {id:'solo',label:'Solo challenge'}
+  ];
+
   if(activeCount>=6) list.push({id:'duos',label:'Paired challenge'});
   if(activeCount>=8) list.push({id:'teams2',label:'Two teams'});
   if(activeCount>=10) list.push({id:'teams3',label:'Three teams'});
+
   return list;
 }
 function pickEpisodeStructure(challengeId, activeCount){
