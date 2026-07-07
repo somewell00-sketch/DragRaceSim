@@ -1306,11 +1306,33 @@ function lipSyncDecisionCards(result){
   }
   return standardLsfylDecisionCards(result);
 }
-function finalAmenCard(){
-  return `<div class="card lipsync-finale-card lipsync-finale-left"><h3>RuPaul</h3><p>${escapeHtml(rupaulFinalLine())}</p><p class="amen-response"><strong>AMEN!</strong></p><p class="small">Now let the music play</p><p class="music-cue spotlight-cue">💡 ✦ 💡</p></div>`;
+function seasonRuPaulMusicCue(){
+  const season = gameState.season || {};
+  if(season.finalMusicCue) return season.finalMusicCue;
+
+  const songs = (gameState.data?.songs || []).filter(s =>
+    String(s?.artist || '').toLowerCase().startsWith('rupaul')
+  );
+
+  const picked = sample(songs) || {title:'Champion', artist:'RuPaul'};
+  season.finalMusicCue = picked;
+  saveGame();
+  return picked;
 }
+function finalAmenCard(){
+  const song = seasonRuPaulMusicCue();
+  const title = escapeHtml(song?.title || 'Champion');
+  const artist = escapeHtml(song?.artist || 'RuPaul');
 
-
+  return `<div class="card lipsync-finale-card lipsync-finale-left">
+    <h3>RuPaul</h3>
+    <p>${escapeHtml(rupaulFinalLine())}</p>
+    <p class="amen-response"><strong>AMEN!</strong></p>
+    <p class="small">Now let the music play</p>
+    <p class="music-cue">🎶 ${title} by ${artist} 🎶</p>
+    <p class="music-cue spotlight-cue">💡 ✦ 💡</p>
+  </div>`;
+}
 function lipstickFarewellBlock(q){
   const name=escapeHtml(q?.name||'My dear');
   return `<div class="lipstick-farewell"><h3>${name}</h3><p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote><p><strong>Now... sashay away.</strong></p></div>`;
