@@ -300,6 +300,12 @@ function normalizeCritiqueSpread(scored, activeCount=scored.length){
     lows.shift().placement='SAFE';
   }
 }
+function getBottomCountForCurrentFormat(activeCount){
+  const format=typeof getSeasonFormat==='function'?getSeasonFormat():'regular';
+  if(format==='all_winners')return 0;
+  if(format==='legacy' || format==='assassin')return Math.min(3, activeCount);
+  return Math.min(2, activeCount);
+}
 function assignIndividualPlacements(scored){
   scored.forEach(s=>s.placement='SAFE');
   if(scored[0])scored[0].placement='WIN';
@@ -318,15 +324,15 @@ function assignTeamPlacements(scored, ep){
   ep.teamScores=teams.map(t=>({teamId:t.team.id,name:t.team.name,score:t.score,chemistry:Math.round((typeof teamChemistryBonus==='function'?teamChemistryBonus(t.team,ep):0)*10)/10,queenIds:t.team.queenIds}));
   if(!teams.length){assignIndividualPlacements(scored); return;}
 
-  // When the episode is judged as groups/pairs, placement is assigned to the TEAM,
-  // not to individual members. This prevents one queen in the same judged team from
-  // winning while her partner/team mate lands in the bottom.
   const setTeamPlacement=(teamRow, placement)=>{
     if(!teamRow?.team?.queenIds?.length)return;
     scored
       .filter(s=>teamRow.team.queenIds.includes(s.queenId))
       .forEach(s=>{ s.placement=placement; });
   };
+  const membersForTeam=(teamRow)=>scored
+    .filter(s=>teamRow?.team?.queenIds?.includes(s.queenId))
+    .sort((a,b)=>(a.individualScore-b.individualScore)||(a.score-b.score));
 
   const best=teams[0];
   const worst=teams[teams.length-1];
@@ -343,13 +349,26 @@ function assignTeamPlacements(scored, ep){
     setTeamPlacement(best,'WIN');
   }else{
     setTeamPlacement(best,'HIGH');
-    const individualWinner=bestMembers.sort((a,b)=>b.individualScore-a.individualScore)[0];
+    const individualWinner=[...bestMembers].sort((a,b)=>b.individualScore-a.individualScore)[0];
     if(individualWinner)individualWinner.placement='WIN';
   }
-  if(worst && worst.team.id!==best.team.id)setTeamPlacement(worst,'BTM');
+
+  if(worst && worst.team.id!==best.team.id){
+    const worstMembers=membersForTeam(worst);
+    const bottomCount=getBottomCountForCurrentFormat(scored.length);
+    const wholeTeamBottom=bottomCount>0 && worstMembers.length>bottomCount && Math.random()<0.03;
+    ep.wholeTeamBottom=!!wholeTeamBottom;
+    ep.wholeTeamBottomTeamId=wholeTeamBottom?worst.team.id:null;
+
+    if(wholeTeamBottom){
+      setTeamPlacement(worst,'BTM');
+    }else{
+      worstMembers.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+      worstMembers.slice(bottomCount,bottomCount+1).forEach(s=>{s.placement='LOW';});
+    }
+  }
 
   // With a large cast, call one additional whole team as HIGH/LOW.
-  // Still never split members inside the same judged group into top and bottom.
   if(scored.length>=13 && teams.length>=4){
     const secondBest=teams[1];
     if(secondBest && ![best.team.id,worst.team.id].includes(secondBest.team.id))setTeamPlacement(secondBest,'HIGH');
@@ -408,7 +427,7 @@ function assignFashionWarsPlacements(scored, ep){
   const activeCount=ep.activeCount || scored.length;
   const format=(typeof getSeasonFormat==='function'?getSeasonFormat():'regular');
   const winCount=(format==='all_winners'||format==='legacy'||format==='assassin')?2:1;
-  const bottomCount=(format==='all_winners')?0:(activeCount<=8?2:3);
+  const bottomCount=getBottomCountForCurrentFormat(activeCount);
   const bestTeam=standings[0];
   const worstTeam=standings[standings.length-1];
   ep.fashionWarsWinningTeamId=bestTeam?.teamId||null;
@@ -437,22 +456,34 @@ function assignFashionWarsPlacements(scored, ep){
   if(activeCount===10){
     const bestRows=sortedTeamRows(bestTeam.teamId,false);
     const worstRows=sortedTeamRows(worstTeam.teamId,true);
+    const wholeTeamBottom=bottomCount>0 && worstRows.length>bottomCount && Math.random()<0.03;
+    ep.wholeTeamBottom=!!wholeTeamBottom;
+    ep.wholeTeamBottomTeamId=wholeTeamBottom?worstTeam.teamId:null;
     markRows(bestRows.slice(0,3).map(s=>s.queenId),'HIGH');
-    markRows(worstRows.slice(0,3).map(s=>s.queenId),'BTM');
     bestRows.slice(0,winCount).forEach(s=>{s.placement='WIN';});
-    worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
-    worstRows.slice(bottomCount,3).forEach(s=>{s.placement='LOW';});
+    if(wholeTeamBottom){
+      markRows(worstRows.map(s=>s.queenId),'BTM');
+    }else{
+      worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+      worstRows.slice(bottomCount,bottomCount+1).forEach(s=>{s.placement='LOW';});
+    }
     return;
   }
 
   if(activeCount===9){
     const bestRows=sortedTeamRows(bestTeam.teamId,false);
     const worstRows=sortedTeamRows(worstTeam.teamId,true);
+    const wholeTeamBottom=bottomCount>0 && worstRows.length>bottomCount && Math.random()<0.03;
+    ep.wholeTeamBottom=!!wholeTeamBottom;
+    ep.wholeTeamBottomTeamId=wholeTeamBottom?worstTeam.teamId:null;
     markRows(bestRows.map(s=>s.queenId),'HIGH');
-    markRows(worstRows.map(s=>s.queenId),'BTM');
     bestRows.slice(0,winCount).forEach(s=>{s.placement='WIN';});
-    worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
-    worstRows.slice(bottomCount).forEach(s=>{s.placement='LOW';});
+    if(wholeTeamBottom){
+      markRows(worstRows.map(s=>s.queenId),'BTM');
+    }else{
+      worstRows.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
+      worstRows.slice(bottomCount,bottomCount+1).forEach(s=>{s.placement='LOW';});
+    }
     return;
   }
 
