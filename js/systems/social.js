@@ -340,7 +340,7 @@ if(kind==='keepWarm'){
 
   return {
     effects:{
-      production:-6,
+      production:-4,
       fans:1.2,
       confidence:Math.max(1,Math.round(4*scale)),
       queens:2,
