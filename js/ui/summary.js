@@ -53,7 +53,9 @@ function castReceptionScore(q){
 
   let score=(pub*0.35)+(relScore*0.85);
 
-  score += count('alliance_builder')*6 + count('alliance_member')*4 + count('warm_moment')*3;
+score += Math.tanh(count('alliance_builder') / 5) * 18;
+score += Math.tanh(count('alliance_member') / 5) * 12;
+score += Math.tanh(count('warm_moment') / 6) * 8;
   score -= count('argument')*8 + count('villain_edit')*7 + count('villain_spark')*5;
 
   score += Math.min(6,(st.wins||0)*1.5+(st.highs||0)*0.75);
