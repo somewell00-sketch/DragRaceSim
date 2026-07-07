@@ -9,6 +9,7 @@ function receptionTier(value, tiers){
   for(const tier of tiers){ if(value>=tier.min) return tier; }
   return tiers[tiers.length-1];
 }
+
 function fanReceptionTier(fans){
   return receptionTier(fans,[
     {min:30.2,label:'Season Icon',tone:'Fans will be quoting you, debating you, and asking for more.'},
@@ -22,38 +23,53 @@ function fanReceptionTier(fans){
 }
 function productionReceptionTier(prod){
   return receptionTier(prod,[
-    {min:32.2,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
-    {min:22.9,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
-    {min:14,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
-    {min:6.7,label:'Useful Television',tone:'Production enjoyed having you on the show, but did not build everything around you.'},
-    {min:1.8,label:'Professional Relationship',tone:'Production could use you when needed, but the relationship stayed mostly neutral.'},
-    {min:-6.8,label:'Hard to Center',tone:'The edit rarely made you central to the episode.'},
+    {min:70,label:'Main Character Edit',tone:'The cameras followed you like the season had your name on it.'},
+    {min:50,label:'Production Darling',tone:'Production knew exactly how to use you every single week.'},
+    {min:32,label:'Strong TV Presence',tone:'You gave the edit personality, conflict, humor, or stakes.'},
+    {min:16,label:'Useful Television',tone:'Production enjoyed having you on the show, but did not build everything around you.'},
+    {min:0,label:'Professional Relationship',tone:'Production could use you when needed, but the relationship stayed mostly neutral.'},
+    {min:-25,label:'Hard to Center',tone:'The edit rarely made you central to the episode.'},
     {min:-999,label:'Hard to Edit',tone:'Production struggled to turn your run into a clear story.'}
   ]);
 }
 function castReceptionScore(q){
   const rels=Object.values(gameState.relationships?.[q?.id]||{});
-  const relScore=rels.length ? rels.reduce((sum,r)=>sum+(Number(r.affinity)||0)+(Number(r.respect)||0)*0.75,0)/rels.length : 0;
+  const relScore=rels.length
+    ? rels.reduce((sum,r)=>{
+        const affinity=Number(r.affinity)||0;
+        const respect=Number(r.respect)||0;
+
+        // limita snowball de relação
+        return sum
+          + Math.tanh(affinity / 55) * 34
+          + Math.tanh(respect / 45) * 22;
+      },0)/rels.length
+    : 0;
+
   const pub=Number(q?.publicScores?.queens)||0;
   const flags=(q?.storyFlags||[]).concat((gameState.season?.storyFlags||[]).filter(f=>f.queenId===q?.id));
   const count=type=>flags.filter(f=>f.type===type).reduce((sum,f)=>sum+(Number(f.strength)||1),0);
   const st=q?.statistics||{};
-  let score=(pub*0.55)+(relScore*0.75);
-  score += count('alliance_builder')*8 + count('alliance_member')*5 + count('warm_moment')*4;
-  score -= count('argument')*7 + count('villain_edit')*5 + count('villain_spark')*4;
-  score += Math.min(10,(st.wins||0)*3+(st.highs||0)*1.5);
-  score -= Math.min(8,(st.bottoms||0)*2);
+
+  let score=(pub*0.35)+(relScore*0.85);
+
+  score += count('alliance_builder')*6 + count('alliance_member')*4 + count('warm_moment')*3;
+  score -= count('argument')*8 + count('villain_edit')*7 + count('villain_spark')*5;
+
+  score += Math.min(6,(st.wins||0)*1.5+(st.highs||0)*0.75);
+  score -= Math.min(10,(st.bottoms||0)*2);
+
   return Math.round(score);
 }
 function castReceptionTier(value){
   return receptionTier(value,[
-    {min:28,label:'Cast Favorite',tone:'The workroom treated you like one of the hearts of the season.'},
-    {min:24,label:'Beloved by the Cast',tone:'The other queens clearly had real affection for you.'},
-    {min:12,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
-    {min:0,label:'Generally Liked',tone:'Most of the cast seemed comfortable with you.'},
-    {min:-4,label:'Complicated Cast Reception',tone:'Your relationships had warmth, distance, and a few unresolved edges.'},
-    {min:-8,label:'Divisive in the Workroom',tone:'Some queens connected with you, but the tension was real.'},
-    {min:-12,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
+    {min:42,label:'Cast Favorite',tone:'The workroom treated you like one of the hearts of the season.'},
+    {min:32,label:'Beloved by the Cast',tone:'The other queens clearly had real affection for you.'},
+    {min:20,label:'Respected by the Cast',tone:'Even when they disagreed with you, the cast respected your drag.'},
+    {min:8,label:'Generally Liked',tone:'Most of the cast seemed comfortable with you.'},
+    {min:-6,label:'Complicated Cast Reception',tone:'Your relationships had warmth, distance, and a few unresolved edges.'},
+    {min:-18,label:'Divisive in the Workroom',tone:'Some queens connected with you, but the tension was real.'},
+    {min:-32,label:'Difficult in the Workroom',tone:'The workroom often felt tense around you.'},
     {min:-999,label:'Cast Villain',tone:'The cast did not exactly line up to braid your wig.'}
   ]);
 }
@@ -749,8 +765,8 @@ function relationshipVoteScore(voter, candidate){
   const alliance=typeof activeAllianceFor==='function' && activeAllianceFor(voter?.id,candidate?.id) ? 12 : 0;
 
   let score=0;
-  score += affinity*1.10;
-  score += respect*0.78;
+ score += Math.tanh(affinity / 55) * 40;
+score += Math.tanh(respect / 45) * 28;
 
   score += (Number(pub.queens)||0)*0.22;
   score += (Number(pub.fans)||0)*0.08;
