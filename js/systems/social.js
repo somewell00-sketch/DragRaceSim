@@ -318,10 +318,10 @@ function buildDynamicPlayerEffects(kind,target=null){
   const targets=randomLiveQueens(3,[player?.id,target?.id]);
   const names=targets.map(q=>q.name).join(', ');
   if(kind==='stealRoom'){
-    return {effects:{production:13,fans:0.5,stress:6,queens:-4,relationships:relationshipEffectsFor(targets,-35,-10)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
+    return {effects:{production:13,fans:3,stress:6,queens:-8,relationships:relationshipEffectsFor(targets,-35,-10)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
   }
   if(kind==='keepWarm'){
-    return {effects:{fans:5.2,confidence:4,queens:5.2,stress:-2,relationships:relationshipEffectsFor(targets,12,6)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
+    return {effects:{production:-10,fans:5.2,confidence:4,queens:5.2,stress:-2,relationships:relationshipEffectsFor(targets,12,6)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
   }
   if(kind==='askHelp' && target){
     return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:20,respect:6,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
@@ -330,13 +330,13 @@ function buildDynamicPlayerEffects(kind,target=null){
     return {effects:{fans:4,confidence:2,momentum:1,affinity:22,respect:9,queens:2},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
   }
   if(kind==='provoke' && target){
-    return {effects:{production:10.5,fans:-1.25,stress:7,momentum:-1,affinity:-43,respect:-16,queens:-1.25},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
+    return {effects:{production:10.5,fans:-5,stress:7,momentum:-1,affinity:-43,respect:-16,queens:-1.25},note:`You provoke ${target.name}. Production gets conflict, but the relationship takes a clear hit.`};
   }
   if(kind==='apologize' && target){
     return {effects:{production:0,fans:1.25,queens:2,stress:-4,affinity:20,respect:8},note:`You apologize to ${target.name}. The damage is repaired enough for the rivalry to cool, even if trust is not automatic.`};
   }
   if(kind==='makeDrama'){
-    return {effects:{production:13,fans:0.5,stress:8,queens:-4,momentum:-1,relationships:relationshipEffectsFor(targets,-33,-10)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
+    return {effects:{production:13,fans:0.5,stress:8,queens:-8,momentum:-1,relationships:relationshipEffectsFor(targets,-33,-10)},note:`You make drama in Untucked. Production gets the scene, but ${names||'several queens'} clock the move.`};
   }
   if(kind==='buildAlliance' && target){
     return {effects:{production:1.25,fans:1.25,queens:2,confidence:3,momentum:1,stress:1,affinity:36,respect:23},note:`You and ${target.name} form an alliance. This can now affect social sparks, Untucked tension, narrative events, and future strategic beats.`};
