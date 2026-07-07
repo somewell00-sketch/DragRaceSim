@@ -693,16 +693,59 @@ function evolveRelationshipsDuringEpisode(){
   for(let i=0;i<active.length;i++){
     for(let j=i+1;j<active.length;j++)pairs.push([active[i],active[j]]);
   }
-  shuffle(pairs).slice(0,Math.min(4,pairs.length)).forEach(([a,b])=>{
+const relationshipPulseCount = Math.min(
+  pairs.length,
+  Math.max(4, Math.ceil(active.length * 0.7))
+);
+
+shuffle(pairs).slice(0, relationshipPulseCount).forEach(([a,b])=>{
   const existing =
     (gameState.relationships?.[a.id]?.[b.id]?.affinity||0) +
     (gameState.relationships?.[a.id]?.[b.id]?.respect||0);
 
-  const polarize=Math.random()<0.55;
-  const sign=existing>=20?1:(existing<=-20?-1:(Math.random()<0.5?1:-1));
+  const roll = Math.random();
 
-  const da=polarize?sign*rand(10,22):rand(-12,12);
-  const dr=polarize?sign*rand(4,14):rand(-8,8);
+  let da = 0;
+  let dr = 0;
+
+  // 40%: polariza relações existentes
+  if(roll < 0.40){
+    const sign = existing >= 20 ? 1 : (existing <= -20 ? -1 : (Math.random()<0.5 ? 1 : -1));
+    da = sign * rand(10,22);
+    dr = sign * rand(4,14);
+  }
+
+  // 30%: cria novo vínculo, especialmente se ainda estavam neutras
+  else if(roll < 0.70){
+    if(Math.abs(existing) < 25){
+      da = rand(12,24);
+      dr = rand(5,12);
+    }else{
+      da = rand(4,12);
+      dr = rand(2,8);
+    }
+  }
+
+  // 20%: atrito casual
+  else if(roll < 0.90){
+    da = rand(-18,-8);
+    dr = rand(-9,-3);
+  }
+
+  // 10%: virada grande
+  else{
+    if(existing >= 25){
+      da = rand(-32,-16);
+      dr = rand(-14,-6);
+    }else if(existing <= -25){
+      da = rand(16,32);
+      dr = rand(6,16);
+    }else{
+      const sign = Math.random()<0.5 ? 1 : -1;
+      da = sign * rand(18,30);
+      dr = sign * rand(6,14);
+    }
+  }
 
   adjustRelationshipBothWays(a.id,b.id,da,dr,0.65);
 });
