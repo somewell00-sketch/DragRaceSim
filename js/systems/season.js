@@ -1372,7 +1372,7 @@ function challengeStructures(challengeId, activeCount){
   }
 
   // Acting & Comedy: 90% group, 10% solo
-  if(challengeId==='acting' || challengeId==='comedy'){
+  if(challengeId==='acting' || challengeId==='comedy' || challengeId==='dance'){
     const list=[];
 
     if(Math.random()<0.10){
@@ -1842,6 +1842,16 @@ challengeTitle: design?.title || category?.category || 'Design Challenge',
     const format=sample(data.comedyFormats||['a comedy set']);
     return {format, challengeTitle:'Comedy Challenge', challengePrompt:`Deliver ${format}. Timing is everything.`, mainTheme:format};
   }
+  if(challengeId==='dance'){
+  const dance=sample(data.danceChallenges||[]);
+
+  return {
+    dance,
+    challengeTitle:dance?.title || 'Dance Challenge',
+    challengePrompt:dance?.prompt || 'Learn the choreography, stay in sync, and command the stage.',
+    mainTheme:dance?.title || 'Dance'
+  };
+}
   return {challengeTitle:null, challengePrompt:null, mainTheme:null};
 }
 function episodeDisplayTitle(challenge, theme, content, isSnatchGame){
