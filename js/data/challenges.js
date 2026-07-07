@@ -183,6 +183,24 @@ window.GAME_DATA.challenges = [
     "uniqueSeason": true
   },
   {
+  "id": "dance",
+  "name": "Dance Challenge",
+  "structures": [
+    "solo",
+    "duos",
+    "teams2",
+    "teams3"
+  ],
+  "runwayWeight": 0.15,
+  "weights": {
+    "lipSync": 0.50,
+    "acting": 0.20,
+    "cunt": 0.15,
+    "runway": 0.15
+  },
+  "uniqueSeason": true
+},
+  {
     "id": "rumix",
     "name": "Rumix",
     "structures": [
