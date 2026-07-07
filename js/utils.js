@@ -44,9 +44,9 @@ function relationshipEmojiFromScore(a=0,r=0){
 
   if(score<=-12)return pick(['😒','🤨','😠'],score);
 
-  if(score<12)return pick(['😐','😬','🙂'],score);
+  if(score<15)return pick(['😐','😬','🙂'],score);
 
-  if(score<35)return pick(['😁','😊','😘'],score);
+  if(score<40)return pick(['😁','😊','😘'],score);
 
   return pick(['🥰','😍','🤩'],score);
 }
