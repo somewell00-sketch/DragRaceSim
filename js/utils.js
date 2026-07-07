@@ -85,7 +85,16 @@ function personalityColor(q){
 function typeColor(q){
   return QUEEN_TYPE_COLORS[q?.type] || '#A78BFA';
 }
-const EPISODE_TEAM_MARKERS=['💎','🔥','🌙','⚡','🌹','🦋','🍒','🪩'];
+const EPISODE_TEAM_MARKERS = [
+  '🎀', // Rosa
+  '💎', // Ciano
+  '🔥', // Laranja
+  '🍀', // Verde
+  '💋', // Vermelho
+  '💜', // Roxo
+  '⭐', // Amarelo
+  '🪩'  // Azul
+];
 function currentEpisodeTeamForQueen(qId){
   const ep=window.gameState?.currentEpisode;
   if(!ep?.teams?.length || !qId)return null;
