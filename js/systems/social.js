@@ -320,9 +320,39 @@ function buildDynamicPlayerEffects(kind,target=null){
   if(kind==='stealRoom'){
     return {effects:{production:13,fans:3,stress:6,queens:-8,relationships:relationshipEffectsFor(targets,-35,-10)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
   }
-  if(kind==='keepWarm'){
-    return {effects:{production:-8,fans:1.2,confidence:4,queens:2,stress:-2,relationships:relationshipEffectsFor(targets,12,6)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
-  }
+if(kind==='keepWarm'){
+  const season=ensureSeasonSocialSystems();
+  season.playerWarmUses=(season.playerWarmUses||0)+1;
+
+  const use=season.playerWarmUses;
+  const scale=use<=2?1:(use<=4?0.65:(use<=6?0.40:0.22));
+
+  const affinity=Math.round(12*scale);
+  const respect=Math.round(6*scale);
+
+  const fatigue=use>=5
+    ? relationshipEffectsFor(
+        randomLiveQueens(2,[player?.id,target?.id,...targets.map(q=>q.id)]),
+        -4,
+        -2
+      )
+    : [];
+
+  return {
+    effects:{
+      production:-6,
+      fans:1.2,
+      confidence:Math.max(1,Math.round(4*scale)),
+      queens:2,
+      stress:-2,
+      relationships:[
+        ...relationshipEffectsFor(targets,affinity,respect),
+        ...fatigue
+      ]
+    },
+    note:`You keep it warm with ${names||'the room'}. The goodwill is real, but repeated blanket warmth has diminishing returns.`
+  };
+}
   if(kind==='askHelp' && target){
     return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:20,respect:6,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
   }
@@ -663,16 +693,19 @@ function evolveRelationshipsDuringEpisode(){
   for(let i=0;i<active.length;i++){
     for(let j=i+1;j<active.length;j++)pairs.push([active[i],active[j]]);
   }
-  shuffle(pairs).slice(0,Math.min(12,pairs.length)).forEach(([a,b])=>{
-    const roll=Math.random();
-    let da=0, dr=0, note='';
-    if(roll<0.34){da=rand(8,16); dr=rand(3,8); note=`${a.name} and ${b.name} have a quick kiki and seem warmer after it.`;}
-    else if(roll<0.58){da=rand(-18,-8); dr=rand(-9,-3); note=`${a.name} and ${b.name} clash over the challenge prep.`;}
-    else if(roll<0.78){da=rand(3,7); dr=rand(8,16); note=`${a.name} clocks ${b.name}'s work ethic and respects her a little more.`;}
-    else {da=rand(-11,-4); dr=rand(-14,-5); note=`${a.name} side-eyes ${b.name}'s choices this week.`;}
-    adjustRelationshipBothWays(a.id,b.id,Math.round(da),Math.round(dr),0.65);
-    notes.push(note);
-  });
+  shuffle(pairs).slice(0,Math.min(4,pairs.length)).forEach(([a,b])=>{
+  const existing =
+    (gameState.relationships?.[a.id]?.[b.id]?.affinity||0) +
+    (gameState.relationships?.[a.id]?.[b.id]?.respect||0);
+
+  const polarize=Math.random()<0.55;
+  const sign=existing>=20?1:(existing<=-20?-1:(Math.random()<0.5?1:-1));
+
+  const da=polarize?sign*rand(10,22):rand(-12,12);
+  const dr=polarize?sign*rand(4,14):rand(-8,8);
+
+  adjustRelationshipBothWays(a.id,b.id,da,dr,0.65);
+});
   if(player){
     const queenScore=player.publicScores?.queens||0;
     const extraChance=queenScore>=6?0.92:(queenScore<=-6?0.8:0.55);
