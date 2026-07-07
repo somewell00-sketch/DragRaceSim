@@ -739,23 +739,69 @@ function finaleReturnLine(q){
   const ep=last.episode && last.episode!=='Finale' ? `Ep. ${escapeHtml(last.episode)}` : 'Finale stage';
   return `<li><strong>${escapeHtml(q.name)}</strong> returns to the stage <span class="small">(${ep})</span></li>`;
 }
-function fanFavoriteScoreFor(voter, candidate){
+
+function relationshipVoteScore(voter, candidate){
   const rel=gameState.relationships?.[voter?.id]?.[candidate?.id] || {};
   const affinity=Number(rel.affinity)||0;
   const respect=Number(rel.respect)||0;
   const pub=candidate?.publicScores||{};
   const st=candidate?.statistics||{};
+  const alliance=typeof activeAllianceFor==='function' && activeAllianceFor(voter?.id,candidate?.id) ? 12 : 0;
+
   let score=0;
-  score += affinity*0.88;
-  score += respect*0.62;
-  score += (Number(pub.queens)||0)*0.48;
-  score += (Number(pub.fans)||0)*0.24;
-  score += (Number(pub.production)||0)*0.10;
-  score += (st.wins||0)*1.30 + (st.highs||0)*0.65;
-  score -= (st.bottoms||0)*0.40;
-  score += rand(-8,8);
+  score += affinity*1.10;
+  score += respect*0.78;
+
+  score += (Number(pub.queens)||0)*0.22;
+  score += (Number(pub.fans)||0)*0.08;
+  score += (Number(pub.production)||0)*0.03;
+
+  score += (st.wins||0)*0.35 + (st.highs||0)*0.20;
+  score -= (st.bottoms||0)*0.18;
+
+  score += alliance;
+  score += rand(-18,18);
+
   return score;
 }
+
+function playerCongenialityGate(candidate, score){
+  if(candidate?.id!==gameState.playerQueenId) return score;
+
+  const pid=gameState.playerQueenId;
+  const rels=(gameState.queens||[])
+    .filter(q=>q.id!==pid)
+    .map(q=>gameState.relationships?.[q.id]?.[pid])
+    .filter(Boolean)
+    .map(r=>({
+      affinity:Number(r.affinity)||0,
+      respect:Number(r.respect)||0,
+      score:(Number(r.affinity)||0)+(Number(r.respect)||0)*0.7
+    }));
+
+  if(!rels.length) return score-40;
+
+  const avg=rels.reduce((s,r)=>s+r.score,0)/rels.length;
+  const strong=rels.filter(r=>r.score>=48).length;
+  const veryStrong=rels.filter(r=>r.score>=70).length;
+  const cold=rels.filter(r=>r.score<0).length;
+  const warmUses=Number(gameState.season?.playerWarmUses)||0;
+
+  let adjusted=score;
+
+  if(avg<28) adjusted-=24;
+  if(strong<4) adjusted-=22;
+  if(veryStrong<1) adjusted-=8;
+  if(cold>=3) adjusted-=18;
+  if(warmUses>=5 && strong<5) adjusted-=Math.min(22,(warmUses-4)*4);
+
+  return adjusted;
+}
+
+function fanFavoriteScoreFor(voter, candidate){
+  return playerCongenialityGate(candidate, relationshipVoteScore(voter,candidate));
+}
+
 function calculateFanFavorite(playerVoteId=null){
   const queens=gameState.queens||[];
   if(playerVoteId && playerVoteId===gameState.playerQueenId) playerVoteId=null;
