@@ -59,14 +59,14 @@ const CHALLENGE_APPROACHES = {
   safe: {
     label:'Play it safe',
     description:'Consistent and controlled. Less likely to flop, less likely to win.',
-    effects:{performance:0.8, energy:-3, stress:-3, production:-1.5, queens:1.5, fans:-0.3},
+    effects:{performance:0.8, energy:-3, stress:-3, production:-1.5, queens:0, fans:-0.3},
     risk:'safe',
     text:'You choose control over chaos.'
   },
   risk: {
     label:'Go all in',
     description:'Bigger upside, bigger crash potential.',
-    effects:{performance:1.2, energy:-15, stress:10, production:2.5, queens:-0.3, fans:2.5},
+    effects:{performance:1.2, energy:-15, stress:10, production:2.5, queens:-3, fans:2.5},
     risk:'risk',
     text:'You swing for the crown, knowing the bottom is also watching.'
   },
@@ -83,7 +83,7 @@ const JUDGE_RESPONSES = {
   accept: {
     label:'Accept the critique',
     description:'Humble, composed, and hard to punish.',
-    effects:{production:2.4, queens:2.5, fans:1.25, stress:-4},
+    effects:{production:2.4, queens:2, fans:1.25, stress:-4},
     text:'You take the notes with grace. The panel respects the professionalism.'
   },
   explain: {
@@ -95,7 +95,7 @@ const JUDGE_RESPONSES = {
   confident: {
     label:'Answer with confidence',
     description:'Potentially iconic. Potentially a mistake.',
-    effects:{production:2.5, queens:-1.25, fans:3.8, stress:4},
+    effects:{production:2.5, queens:-5, fans:3.8, stress:4},
     text:'You stand ten toes down. It is bold, maybe too bold, but it reads as television.'
   }
 };
