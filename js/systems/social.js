@@ -321,7 +321,7 @@ function buildDynamicPlayerEffects(kind,target=null){
     return {effects:{production:13,fans:3,stress:6,queens:-8,relationships:relationshipEffectsFor(targets,-35,-10)},note:`You steal the room. Production lights up, fans get a moment, and ${names||'the room'} lose patience with you.`};
   }
   if(kind==='keepWarm'){
-    return {effects:{production:-10,fans:5.2,confidence:4,queens:5.2,stress:-2,relationships:relationshipEffectsFor(targets,12,6)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
+    return {effects:{production:-8,fans:1.2,confidence:4,queens:2,stress:-2,relationships:relationshipEffectsFor(targets,12,6)},note:`You keep it warm with ${names||'the room'}. The goodwill is real, and you leave the Workroom more confident.`};
   }
   if(kind==='askHelp' && target){
     return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:20,respect:6,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
