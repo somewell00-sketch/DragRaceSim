@@ -496,7 +496,7 @@ window.GAME_DATA.songs = [
   {"title": "Ghungroo", "artist": "Shreya Ghoshal", "energy": "high"},
   {"title": "Mere Dholna", "artist": "Shreya Ghoshal", "energy": "low"},
   {"title": "Kamli", "artist": "Sunidhi Chauhan", "energy": "high"},
-  {"title": "Fantastic Baby", "artist": "2NE1", "energy": "high"},
+  {"title": "Fantastic Baby", "artist": "BIGBANG", "energy": "high"},
   {"title": "Boombayah", "artist": "BLACKPINK", "energy": "high"},
   {"title": "Gashina", "artist": "Sunmi", "energy": "high"},
   {"title": "Tail", "artist": "Sunmi", "energy": "high"},
@@ -1440,7 +1440,7 @@ window.GAME_DATA.songs = [
 
 { title: "Training Season", artist: "Dua Lipa", energy: "high" },
 { title: "Houdini", artist: "Dua Lipa", energy: "high" },
-{ title: "These Walls", artist: "Dua Lipa", energy: "medium" },
+{ title: "These Walls", artist: "Dua Lipa", energy: "low" },
 
 { title: "Break My Soul", artist: "Beyoncé", energy: "high" },
 { title: "Alien Superstar", artist: "Beyoncé", energy: "high" },
@@ -1449,7 +1449,7 @@ window.GAME_DATA.songs = [
 
 { title: "About Damn Time", artist: "Lizzo", energy: "high" },
 { title: "Good as Hell", artist: "Lizzo", energy: "high" },
-{ title: "Special", artist: "Lizzo", energy: "medium" },
+{ title: "Special", artist: "Lizzo", energy: "low" },
 
 { title: "XS", artist: "Rina Sawayama", energy: "high" },
 { title: "This Hell", artist: "Rina Sawayama", energy: "high" },
@@ -1513,5 +1513,6 @@ window.GAME_DATA.songs = [
 { title: "Easy on Me", artist: "Adele", energy: "low" },
 { title: "What Was I Made For?", artist: "Billie Eilish", energy: "low" },
 { title: "I Drink Wine", artist: "Adele", energy: "low" },
-{ title: "Messy", artist: "Lola Young", energy: "low" }
+{ title: "Messy", artist: "Lola Young", energy: "low" },
+  
 ];
