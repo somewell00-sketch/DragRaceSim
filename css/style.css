@@ -481,6 +481,13 @@ button:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.2)}
   text-align:left!important;
   letter-spacing:.12em;
 }
+.rupaul-music-cue{
+  text-align:center;
+  font-size:1.05rem;
+  font-weight:700;
+  letter-spacing:.05em;
+  margin-top:.75rem;
+}
 .music-card,
 .lipsync-battle-card{
   border-color:rgba(139,16,32,.28)!important;
