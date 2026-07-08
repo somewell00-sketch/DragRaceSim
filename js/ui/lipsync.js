@@ -1329,8 +1329,9 @@ function finalAmenCard(){
     <p>${escapeHtml(rupaulFinalLine())}</p>
     <p class="amen-response"><strong>AMEN!</strong></p>
     <p class="small">Now let the music play</p>
-    <p class="music-cue">🎶 ${title} by ${artist} 🎶</p>
-    <p class="music-cue spotlight-cue">💡 ✦ 💡</p>
+
+  <p class="rupaul-music-cue">💡 ✦ 🎶 ${title} by ${artist} 🎶 ✦ 💡</p>
+
   </div>`;
 }
 function lipstickFarewellBlock(q){
