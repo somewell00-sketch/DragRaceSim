@@ -1062,5 +1062,252 @@ window.GAME_DATA.balls = [
       "Stealing the Inheritance",
       "Constructed Outliving You All Couture"
     ]
-  }
+  },
+
+
+  {
+    "title": "Gamer Rage Ball",
+    "mainTheme": "Toxic Gaming",
+    "categories": [
+      "Cozy Gamer Bimbo",
+      "Rage-Quitting Meltdown",
+      "Constructed RGB Twitch Streamer"
+    ]
+  },
+  {
+    "title": "Cancel Culture Ball",
+    "mainTheme": "Public Execution",
+    "categories": [
+      "Deeply Flawed Apology Note",
+      "Account Hacked Realness",
+      "Constructed Deplatformed Diva"
+    ]
+  },
+  {
+    "title": "Crypto Bro Ball",
+    "mainTheme": "Digital Scams",
+    "categories": [
+      "NFT Screen-Shotter Realness",
+      "Market Crash Meltdown",
+      "Constructed Bitcoin Billionaire"
+    ]
+  },
+  {
+    "title": "E-Girl & E-Boy Ball",
+    "mainTheme": "TikTok Aesthetics",
+    "categories": [
+      "Alt-TikTok Thirst Trap",
+      "Anime Filter Realness",
+      "Constructed Algorithm Pandering"
+    ]
+  },
+  {
+    "title": "Immigration Ball",
+    "mainTheme": "Border Patrol Drama",
+    "categories": [
+      "90-Day Fiancé Realness",
+      "Customs Seizure Catastrophe",
+      "Constructed Green Card Eleganza"
+    ]
+  },
+  {
+    "title": "Rich Widow Ball",
+    "mainTheme": "Mysterious Deaths",
+    "categories": [
+      "Tragic Yacht Accident Realness",
+      "Black Veil & Big Checks",
+      "Constructed Arsenic Poisoning Couture"
+    ]
+  },
+  {
+    "title": "Reality TV Villain Ball",
+    "mainTheme": "Unscripted Drama",
+    "categories": [
+      "Drink Throwing Realness",
+      "Hot Mic Confessional",
+      "Constructed Not Here to Make Friends"
+    ]
+  },
+  {
+    "title": "Coachella Camp Ball",
+    "mainTheme": "Festival Influencers",
+    "categories": [
+      "Heatstroke Realness",
+      "Appropriated Culture Couture",
+      "Constructed VIP Wristband Excess"
+    ]
+  },
+  {
+    "title": "Y2K Panic Ball",
+    "mainTheme": "Technological Apocalypse",
+    "categories": [
+      "Dial-Up Internet Patience",
+      "Low-Rise Jeans Disaster",
+      "Constructed Millennium Bug Meltdown"
+    ]
+  },
+  {
+    "title": "Sugar Baby Ball",
+    "mainTheme": "Financially Dominated",
+    "categories": [
+      "Arrangement Meeting Realness",
+      "Allowance Cut-Off Catastrophe",
+      "Constructed Golden Handcuffs Eleganza"
+    ]
+  },
+
+  {
+    "title": "Dragon Ball",
+    "mainTheme": "Anime Super Saiyan",
+    "categories": [
+      "Capsule Corp Realness",
+      "Over 9000! Super Saiyan Glamour",
+      "Shenlong Dragon-God Extravaganza"
+    ]
+  },
+  {
+    "title": "Family Drama Ball",
+    "mainTheme": "Thanksgiving Hell",
+    "categories": [
+      "Disowned Leftist Daughter",
+      "Alcoholic Aunt Realness",
+      "Cut Me Out of the Will Extravaganza"
+    ]
+  },
+  {
+    "title": "Ex-Boyfriend Ball",
+    "mainTheme": "Audacity & Regret",
+    "categories": [
+      "Stalking on Finsta Realness",
+      "Downgrade Recovery Glamour",
+      "Restraining Order Radiance"
+    ]
+  },
+  {
+    "title": "Hoarder Ball",
+    "mainTheme": "Clutter & Chaos",
+    "categories": [
+      "Sentimental Trash Realness",
+      "Buried Alive Glamour",
+      "One Man's Trash is My High Fashion"
+    ]
+  },
+  {
+    "title": "Infomercial Ball",
+    "mainTheme": "As Seen On TV",
+    "categories": [
+      "Before the Product Disaster",
+      "Call In the Next 10 Minutes!",
+      "But Wait, There's Couture!"
+    ]
+  },
+  {
+    "title": "Girl Boss Down Ball",
+    "mainTheme": "Corporate Feminism Collapse",
+    "categories": [
+      "Leaning In Too Far Realness",
+      "Embezzlement Scandal Glamour",
+      "Chapter 11 Bankruptcy Eleganza"
+    ]
+  },
+  {
+    "title": "Gymnastics Drama Ball",
+    "mainTheme": "Toxic Sports",
+    "categories": [
+      "Chalked Up & Fractured Realness",
+      "Russian Coach Nightmare",
+      "Stuck the Landing, Broke the Runway"
+    ]
+  },
+  {
+    "title": "Airport Security Ball",
+    "mainTheme": "TSA Nightmares",
+    "categories": [
+      "Liquids Over 100ml Catastrophe",
+      "Full-Body Scanner Realness",
+      "Step Aside for a Pat-Down, Diva"
+    ]
+  },
+  {
+    "title": "Fast Fashion Ball",
+    "mainTheme": "Shein & Temu",
+    "categories": [
+      "Expectation vs. Reality Shopping",
+      "Sweatshop Chic",
+      "Haul or Nothing Extravaganza"
+    ]
+  },
+  {
+    "title": "In My Defense Ball",
+    "mainTheme": "True Crime",
+    "categories": [
+      "Gaslight, Gatekeep, Girlboss",
+      "YouTube Apology Video",
+      "Guilty Up to the Gods"
+    ]
+  },
+  {
+    "title": "Grave Mistake Ball",
+    "mainTheme": "Gothic Cemetery",
+    "categories": [
+      "Grieving Sugar Baby",
+      "Ghosted by the Living",
+      "Drop Dead Gorgeous"
+    ]
+  },
+  {
+    "title": "Glow Big or Glow Home Ball",
+    "mainTheme": "Neon & Cyber",
+    "categories": [
+      "Rave Kid Realness",
+      "Radioactive Mutant Glamour",
+      "Bright Young Thing"
+    ]
+  },
+  {
+    "title": "Seas the Day Ball",
+    "mainTheme": "Nautical Cruising",
+    "categories": [
+      "Lost Luggage Realness",
+      "Overboard Scandal Glamour",
+      "Pier Pressure Couture"
+    ]
+  },
+  {
+    "title": "Simulation Glitch Ball",
+    "mainTheme": "Matrix Breakdown",
+    "categories": [
+      "Unrendered Textures Realness",
+      "T-Pose to Assert Dominance",
+      "Array.prototype.slay()"
+    ]
+  },
+  {
+    "title": "The Patch Notes Ball",
+    "mainTheme": "Game Updates",
+    "categories": [
+      "Nerfed to the Ground Realness",
+      "Microtransaction Whale Glamour",
+      "Bug Fixed and Fully Executed"
+    ]
+  },
+  {
+    "title": "Syntax Error Ball",
+    "mainTheme": "Coding Nightmares",
+    "categories": [
+      "Missing Semicolon Meltdown",
+      "Stack Overflow Panic",
+      "Compile Error, Ru-Boot the System"
+    ]
+  },
+  {
+    "title": "NPC Dialogue Tree Ball",
+    "mainTheme": "Video Game Logic",
+    "categories": [
+      "Background Character Realness",
+      "Repeat the Same Line Glamour",
+      "Hardcoded to Perfection"
+    ]
+  },
+  
 ];
