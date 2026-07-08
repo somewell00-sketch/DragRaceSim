@@ -1,9 +1,9 @@
 window.GAME_DATA = window.GAME_DATA || {};
 
 window.GAME_DATA.designChallenges = [
-  // ===== 1. UNCONVENTIONAL MATERIALS =====
+  // ===== 1. TRASH & TREASURE =====
   {
-    category: "Unconventional Materials",
+    category: "Trashy",
     challenges: [
       { title: "Trash to Treasure", prompt: "Transform discarded materials into a couture runway look worthy of the main stage." },
       { title: "Dollar Store Couture", prompt: "Using only inexpensive craft supplies, create a fashion-forward garment that looks luxurious." },
@@ -13,9 +13,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 2. FASHION HOUSE =====
+  // ===== 2. HAUTE COUTURE =====
   {
-    category: "Fashion House",
+    category: "Haute Couture",
     challenges: [
       { title: "Avant-Garde Couture", prompt: "Push fashion beyond its limits with a bold avant-garde runway creation." },
       { title: "Paris Fashion Week", prompt: "Design a luxury couture garment fit for the world's biggest fashion runway." },
@@ -25,9 +25,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 3. NATURE =====
+  // ===== 3. WILDERNESS =====
   {
-    category: "Nature",
+    category: "Wilderness",
     challenges: [
       { title: "Floral Fantasy", prompt: "Create an extravagant couture garment inspired by flowers and botanical beauty." },
       { title: "Ocean Eleganza", prompt: "Design a runway look inspired by the mysteries and colors of the sea." },
@@ -37,9 +37,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 4. FANTASY =====
+  // ===== 4. ENCHANTED =====
   {
-    category: "Fantasy",
+    category: "Enchanted",
     challenges: [
       { title: "Mythical Creatures", prompt: "Create a couture look inspired by legendary mythical beings." },
       { title: "Dark Fairytale", prompt: "Reimagine classic fairytales with a dark, fashion-forward twist." },
@@ -49,9 +49,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 5. HISTORICAL =====
+  // ===== 5. ANACHRONISM =====
   {
-    category: "Historical",
+    category: "Anachronic",
     challenges: [
       { title: "Marie Antoinette", prompt: "Design an opulent couture look inspired by French royal fashion." },
       { title: "Ancient Egypt", prompt: "Create a luxurious runway garment inspired by Ancient Egyptian aesthetics." },
@@ -61,9 +61,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 6. POP CULTURE =====
+  // ===== 6. POP ICON =====
   {
-    category: "Pop Culture",
+    category: "Iconic",
     challenges: [
       { title: "Movie Premiere", prompt: "Design a show-stopping red carpet look worthy of a blockbuster premiere." },
       { title: "Rock Superstar", prompt: "Create an iconic stage outfit fit for a legendary rock performer." },
@@ -73,9 +73,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 7. COLOR STORY =====
+  // ===== 7. CHROMATIC =====
   {
-    category: "Color Story",
+    category: "Chromatic",
     challenges: [
       { title: "All White", prompt: "Create a breathtaking monochromatic white couture look." },
       { title: "All Black", prompt: "Serve drama and sophistication using only black." },
@@ -85,9 +85,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 8. TEXTURES =====
+  // ===== 8. TACTILE =====
   {
-    category: "Textures",
+    category: "Tactile",
     challenges: [
       { title: "Leather & Latex", prompt: "Design a fierce couture garment featuring leather or latex aesthetics." },
       { title: "Feathers Fantasy", prompt: "Create an extravagant feather-inspired runway masterpiece." },
@@ -97,9 +97,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 9. CULTURAL INSPIRATION =====
+  // ===== 9. GLOBAL HERITAGE =====
   {
-    category: "Cultural Inspiration",
+    category: "Heritage",
     challenges: [
       { title: "Carnival Couture", prompt: "Celebrate carnival through an extravagant couture creation." },
       { title: "Global Textiles", prompt: "Create a look inspired by beautiful textiles from around the world." },
@@ -109,9 +109,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 10. ABSTRACT CONCEPTS =====
+  // ===== 10. AVANT-GARDE =====
   {
-    category: "Abstract Concepts",
+    category: "Avant-Garde",
     challenges: [
       { title: "Chaos", prompt: "Turn the concept of chaos into a bold couture runway look." },
       { title: "Dreams", prompt: "Design an ethereal garment inspired by dreams." },
@@ -121,9 +121,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 11. SILHOUETTES =====
+  // ===== 11. ARCHITECTURE =====
   {
-    category: "Silhouettes",
+    category: "Architecture",
     challenges: [
       { title: "Exaggerated Proportions", prompt: "Design a look with dramatic, oversized silhouettes." },
       { title: "Mermaid Silhouette", prompt: "Create a glamorous mermaid-style gown with a dramatic train." },
@@ -133,9 +133,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 12. ERA DRAG =====
+  // ===== 12. DECADES =====
   {
-    category: "Era Drag",
+    category: "Retro",
     challenges: [
       { title: "90s Supermodel", prompt: "Serve 90s supermodel realness with a iconic runway look." },
       { title: "Disco Diva", prompt: "Create a dazzling disco-era glamour fantasy." },
@@ -145,9 +145,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 13. FABRICS =====
+  // ===== 13. TEXTILE =====
   {
-    category: "Fabric Focus",
+    category: "Textile",
     challenges: [
       { title: "Silk Fantasy", prompt: "Create a luxurious garment using the drape of silk." },
       { title: "Velvet Opulence", prompt: "Design a rich, opulent velvet runway masterpiece." },
@@ -157,9 +157,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 14. SEASONS =====
+  // ===== 14. SOLSTICE =====
   {
-    category: "Seasons",
+    category: "Solstice",
     challenges: [
       { title: "Winter Wonderland", prompt: "Create a frosty, ice-queen inspired winter couture." },
       { title: "Spring Blossom", prompt: "Design a fresh, floral springtime fashion fantasy." },
@@ -169,9 +169,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 15. ART MOVEMENTS =====
+  // ===== 15. FINE ART =====
   {
-    category: "Art Movements",
+    category: "Fine Art",
     challenges: [
       { title: "Cubism Couture", prompt: "Design a fragmented, abstract look inspired by Cubist art." },
       { title: "Surrealism", prompt: "Create a dreamlike, surrealist fashion masterpiece." },
@@ -181,9 +181,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 16. SCIENCE & TECH =====
+  // ===== 16. FUTURISM =====
   {
-    category: "Science & Tech",
+    category: "Futurism",
     challenges: [
       { title: "Cyberpunk", prompt: "Design a futuristic cyberpunk dystopian fashion look." },
       { title: "Robotic Couture", prompt: "Create a look inspired by robotics and AI aesthetics." },
@@ -193,9 +193,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 17. ANIMALS =====
+  // ===== 17. BESTIARY =====
   {
-    category: "Animals",
+    category: "Wild",
     challenges: [
       { title: "Peacock Pride", prompt: "Create a look inspired by the majestic peacock." },
       { title: "Butterfly Wings", prompt: "Design a delicate, winged butterfly-inspired garment." },
@@ -205,9 +205,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 18. FOOD =====
+  // ===== 18. GOURMET =====
   {
-    category: "Food Fantasy",
+    category: "Gourmet",
     challenges: [
       { title: "Candy Couture", prompt: "Create a whimsical look inspired by candy and sweets." },
       { title: "Fruit Tart", prompt: "Design a colorful, fruit-inspired fashion statement." },
@@ -217,7 +217,7 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 19. ARCHITECTURE =====
+  // ===== 19. ARCHITECTURE (already used - keeping as is) =====
   {
     category: "Architecture",
     challenges: [
@@ -229,9 +229,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 20. MOODS & EMOTIONS =====
+  // ===== 20. PSYCHOLOGY =====
   {
-    category: "Moods & Emotions",
+    category: "Emotional",
     challenges: [
       { title: "Joy", prompt: "Design a look that radiates pure joy and happiness." },
       { title: "Melancholy", prompt: "Create a romantic, melancholic fashion statement." },
@@ -241,9 +241,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 21. DRAG SUBGENRES =====
+  // ===== 21. DRAG ROYALTY =====
   {
-    category: "Drag Subgenres",
+    category: "Regal",
     challenges: [
       { title: "Pageant Glam", prompt: "Create a polished, pageant-ready gorgeous gown." },
       { title: "Club Kid", prompt: "Design an underground, edgy club kid fantasy." },
@@ -253,9 +253,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 22. THEATER & PERFORMANCE =====
+  // ===== 22. THEATRICAL =====
   {
-    category: "Theater & Performance",
+    category: "Theatrical",
     challenges: [
       { title: "Broadway Star", prompt: "Design a look fit for a Broadway leading lady." },
       { title: "Opera Diva", prompt: "Create an operatic, dramatic, over-the-top gown." },
@@ -267,7 +267,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 23. MYTHOLOGY =====
   {
-    category: "Mythology",
+    category: "Mythic",
     challenges: [
       { title: "Greek Goddess", prompt: "Create a divine Olympian goddess fashion look." },
       { title: "Norse Valkyrie", prompt: "Design a fierce warrior Valkyrie-inspired garment." },
@@ -277,9 +277,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 24. MUSIC GENRES =====
+  // ===== 24. SONIC BOOM =====
   {
-    category: "Music Genres",
+    category: "Sonic",
     challenges: [
       { title: "Disco Fever", prompt: "Create a glittering, disco-era dance floor fantasy." },
       { title: "Punk Rock", prompt: "Design an edgy, rebellious punk rock fashion look." },
@@ -291,7 +291,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 25. FANTASY ARCHETYPES =====
   {
-    category: "Fantasy Archetypes",
+    category: "Fantastic",
     challenges: [
       { title: "Elven Royalty", prompt: "Design an ethereal elven queen fashion look." },
       { title: "Dark Sorceress", prompt: "Create a powerful, dark magic-inspired garment." },
@@ -301,9 +301,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 26. TRAVEL & DESTINATIONS =====
+  // ===== 26. WANDERLUST =====
   {
-    category: "Travel & Destinations",
+    category: "Wanderlust",
     challenges: [
       { title: "Venetian Mask", prompt: "Create a look inspired by Venetian carnival masks." },
       { title: "Moroccan Fantasy", prompt: "Design a look inspired by Moroccan palaces." },
@@ -313,9 +313,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 27. ELEMENTS =====
+  // ===== 27. ELEMENTAL =====
   {
-    category: "Elements",
+    category: "Elemental",
     challenges: [
       { title: "Fire", prompt: "Design a fierce, fiery runway look." },
       { title: "Water", prompt: "Create a flowing, water-inspired fashion statement." },
@@ -327,7 +327,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 28. CELEBRITY ICONS =====
   {
-    category: "Celebrity Icons",
+    category: "Iconic",
     challenges: [
       { title: "Diana Ross", prompt: "Design a look inspired by the legendary Diana Ross." },
       { title: "David Bowie", prompt: "Create a gender-bending Bowie-inspired fashion fantasy." },
@@ -349,7 +349,7 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 30. DECADES =====
+  // ===== 30. DECADES (already used - keeping as is) =====
   {
     category: "Decades",
     challenges: [
@@ -363,7 +363,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 31. PAINTING & ART =====
   {
-    category: "Painting & Art",
+    category: "Artistic",
     challenges: [
       { title: "Starry Night", prompt: "Design a look inspired by Van Gogh's Starry Night." },
       { title: "Mona Lisa", prompt: "Create a mysterious, Renaissance-inspired fashion look." },
@@ -373,9 +373,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 32. MATERIALS LUXURY =====
+  // ===== 32. LUXURY MATERIALS =====
   {
-    category: "Luxury Materials",
+    category: "Luxury",
     challenges: [
       { title: "Gold Eleganza", prompt: "Create a look using gold leaf or gold fabrics." },
       { title: "Pearl Fantasy", prompt: "Design a look covered in pearls and mother of pearl." },
@@ -387,7 +387,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 33. GENDER & IDENTITY =====
   {
-    category: "Gender & Identity",
+    category: "Identity",
     challenges: [
       { title: "Androgynous Glam", prompt: "Design a look that blurs masculine and feminine lines." },
       { title: "Gender Euphoria", prompt: "Create a look celebrating authentic gender expression." },
@@ -399,7 +399,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 34. NATURAL PHENOMENA =====
   {
-    category: "Natural Phenomena",
+    category: "Natural",
     challenges: [
       { title: "Lightning Strike", prompt: "Create a look inspired by lightning and electricity." },
       { title: "Aurora Borealis", prompt: "Design a look inspired by the Northern Lights." },
@@ -411,7 +411,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 35. FASHION SUBGENRES =====
   {
-    category: "Fashion Subgenres",
+    category: "Fashionist",
     challenges: [
       { title: "Gothic Romance", prompt: "Design a dark, romantic gothic fashion look." },
       { title: "Steampunk", prompt: "Create a Victorian-era steampunk fantasy." },
@@ -423,7 +423,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 36. PLANETS & SPACE =====
   {
-    category: "Planets & Space",
+    category: "Solar",
     challenges: [
       { title: "Moon Queen", prompt: "Create a lunar-inspired silvery fashion look." },
       { title: "Mars Warrior", prompt: "Design a fierce red planetary warrior look." },
@@ -447,7 +447,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 38. BODY MODIFICATION =====
   {
-    category: "Body Modification",
+    category: "Modified",
     challenges: [
       { title: "Tattoo Couture", prompt: "Design a look that mimics full-body tattoo art." },
       { title: "Piercing Fantasy", prompt: "Create a look featuring dramatic piercings." },
@@ -459,7 +459,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 39. LITERATURE =====
   {
-    category: "Literature",
+    category: "Literary",
     challenges: [
       { title: "Shakespearean", prompt: "Create a look inspired by Shakespeare's characters." },
       { title: "Gothic Novel", prompt: "Design a dark, romantic gothic literature-inspired look." },
@@ -471,7 +471,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 40. CELEBRATION =====
   {
-    category: "Celebration",
+    category: "Celebrating",
     challenges: [
       { title: "New Year's Eve", prompt: "Create a sparkling New Year's Eve fashion fantasy." },
       { title: "Mardi Gras", prompt: "Design a colorful, festive Mardi Gras look." },
@@ -481,9 +481,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 41. DARK AESTHETICS =====
+  // ===== 41. GOTHIC =====
   {
-    category: "Dark Aesthetics",
+    category: "Gothic",
     challenges: [
       { title: "Dark Angel", prompt: "Create a fallen angel-inspired dark fashion look." },
       { title: "Gothic Bridal", prompt: "Design a dark, dramatic gothic wedding dress." },
@@ -493,9 +493,9 @@ window.GAME_DATA.designChallenges = [
     ]
   },
 
-  // ===== 42. LIGHT & BRIGHT =====
+  // ===== 42. LUMINOUS =====
   {
-    category: "Light & Bright",
+    category: "Luminous",
     challenges: [
       { title: "Sunbeam", prompt: "Create a radiant sun-inspired fashion look." },
       { title: "Rainbow", prompt: "Design a colorful rainbow fashion statement." },
@@ -507,7 +507,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 43. COSTUME DRAMA =====
   {
-    category: "Costume Drama",
+    category: "Dramatic",
     challenges: [
       { title: "Medieval Queen", prompt: "Design a regal medieval queen fashion look." },
       { title: "Victorian Lady", prompt: "Create an elegant Victorian era fashion statement." },
@@ -519,7 +519,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 44. UNUSUAL PERSPECTIVES =====
   {
-    category: "Unusual Perspectives",
+    category: "Unusual",
     challenges: [
       { title: "Upside Down", prompt: "Create a look that defies gravity." },
       { title: "Inside Out", prompt: "Design a garment with structure exposed." },
@@ -543,7 +543,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 46. FUTURE VISIONS =====
   {
-    category: "Future Visions",
+    category: "Futuristic",
     challenges: [
       { title: "Year 3000", prompt: "Create a look from the year 3000." },
       { title: "Eco-Futurism", prompt: "Design a sustainable futuristic fashion look." },
@@ -555,7 +555,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 47. EXOTIC PLACES =====
   {
-    category: "Exotic Places",
+    category: "Exotic",
     challenges: [
       { title: "Amazon Rainforest", prompt: "Create a look inspired by the Amazon." },
       { title: "Sahara Desert", prompt: "Design a look inspired by the Sahara." },
@@ -567,7 +567,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 48. FILM GENRES =====
   {
-    category: "Film Genres",
+    category: "Cinematic",
     challenges: [
       { title: "Film Noir", prompt: "Create a moody, noir-inspired fashion look." },
       { title: "Western", prompt: "Design a glamorous Western-inspired outfit." },
@@ -579,7 +579,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 49. DANCE STYLES =====
   {
-    category: "Dance Styles",
+    category: "Dance",
     challenges: [
       { title: "Ballerina", prompt: "Create an elegant, ethereal ballet-inspired look." },
       { title: "Tango", prompt: "Design a passionate, dramatic tango-inspired garment." },
@@ -651,7 +651,7 @@ window.GAME_DATA.designChallenges = [
 
   // ===== 55. SEASONS OF LIFE =====
   {
-    category: "Seasons of Life",
+    category: "Life",
     challenges: [
       { title: "Birth", prompt: "Create a look inspired by new beginnings." },
       { title: "Bloom", prompt: "Design a look celebrating growth and flowering." },
@@ -660,29 +660,174 @@ window.GAME_DATA.designChallenges = [
       { title: "Rebirth", prompt: "Create a look inspired by renewal and rebirth." }
     ]
   },
+
+  // ===== 56. ROMANCE =====
   {
-  category: "Seasons of Love",
+    category: "Seasons of Love",
+    challenges: [
+      { 
+        title: "Five Hundred Twenty-Five Thousand Six Hundred Minutes", 
+        prompt: "Design a look that captures the passage of time and the measurement of a year in love." 
+      },
+      { 
+        title: "How Do You Measure a Year?", 
+        prompt: "Create a garment that tells the story of a year through fashion—joy, sorrow, triumph, and love." 
+      },
+      { 
+        title: "Daylight", 
+        prompt: "Design a radiant look inspired by the light of day and the warmth of love shared in sunlit moments." 
+      },
+      { 
+        title: "Sunset", 
+        prompt: "Create a dramatic, romantic look inspired by the colors of a sunset and the passion of love at dusk." 
+      },
+      { 
+        title: "Midnight", 
+        prompt: "Design a mysterious, intimate look inspired by love shared under the stars and the magic of midnight." 
+      }
+    ]
+  },
+
+  // ===== 56. ENCHANTED =====
+{
+  category: "Mahou Shojo",
   challenges: [
-    { 
-      title: "Five Hundred Twenty-Five Thousand Six Hundred Minutes", 
-      prompt: "Design a look that captures the passage of time and the measurement of a year in love." 
-    },
-    { 
-      title: "How Do You Measure a Year?", 
-      prompt: "Create a garment that tells the story of a year through fashion—joy, sorrow, triumph, and love." 
-    },
-    { 
-      title: "Daylight", 
-      prompt: "Design a radiant look inspired by the light of day and the warmth of love shared in sunlit moments." 
-    },
-    { 
-      title: "Sunset", 
-      prompt: "Create a dramatic, romantic look inspired by the colors of a sunset and the passion of love at dusk." 
-    },
-    { 
-      title: "Midnight", 
-      prompt: "Design a mysterious, intimate look inspired by love shared under the stars and the magic of midnight." 
-    }
+    { title: "Sailor Moon Realness", prompt: "Create a look inspired by the Sailor Scouts aesthetic with bows, tiaras, and flowing ribbons." },
+    { title: "Magical Girl Transformation", prompt: "Design the moment of magical transformation into a high-fashion couture gown." },
+    { title: "Anime Villainess", prompt: "Create a look for an anime magical girl villain, full of feathers, chains, and gothic drama." },
+    { title: "Shoujo Manga Dream", prompt: "Transform the sparkling eyes and flowing hair of shoujo manga into a wearable fashion piece." },
+    { title: "Mecha Pilot Princess", prompt: "Design a look that mixes magical girl delicacy with giant robot armor." }
   ]
-}
+},
+
+// ===== 57. MYTHIC =====
+{
+  category: "Folkloric",
+  challenges: [
+    { title: "Brazilian Folklore", prompt: "Create a look inspired by Iara, Saci, or Curupira from Brazilian mythology." },
+    { title: "Celtic Druid", prompt: "Design a garment inspired by Celtic rituals, using moss, wood, and ancient symbols." },
+    { title: "Goddess of Chaos", prompt: "Create a look for Eris using asymmetrical elements and clashing vibrant colors." },
+    { title: "Japanese Yokai", prompt: "Design a runway look inspired by a Japanese demon like Kitsune or Yuki-onna." },
+    { title: "Modern Norse", prompt: "Mix Viking brutality with modern high-fashion tailoring." }
+  ]
+},
+
+// ===== 58. DIGITAL =====
+{
+  category: "Arcade",
+  challenges: [
+    { title: "8-Bit Glamour", prompt: "Create a look that seems to have stepped out of an arcade game with 3D pixels and neon colors." },
+    { title: "RPG Fantasy Armor", prompt: "Design high-fashion armor worthy of a Final Fantasy character." },
+    { title: "Princess of Mushroom Kingdom", prompt: "Reimagine Princess Peach or Daisy for the Met Gala red carpet." },
+    { title: "Cyberpunk 2077", prompt: "Create a nighttime look for a cyberpunk game character full of LED lights and metallic fabrics." },
+    { title: "Queen of Chess", prompt: "Design a look inspired by the most powerful piece on the chessboard." }
+  ]
+},
+
+// ===== 59. ETHEREAL =====
+{
+  category: "Illusory",
+  challenges: [
+    { title: "Liquid Fabric", prompt: "Create a look that imitates the appearance of water in motion or liquid metal." },
+    { title: "Fractal Pattern", prompt: "Use mathematical fractals to create a psychedelic and hypnotic textile print." },
+    { title: "Starry Fabric", prompt: "Design a fabric that seems to contain moving nebulae and constellations." },
+    { title: "Invisible Colors", prompt: "Create a look that plays with ultraviolet light, revealing 'invisible' colors in the dark." },
+    { title: "Victorian Wallpaper", prompt: "Transform an antique wallpaper pattern into an opulent ball gown." }
+  ]
+},
+
+// ===== 60. ELEMENTAL =====
+{
+  category: "Alchemical",
+  challenges: [
+    { title: "Will-o'-the-Wisp", prompt: "Create a look inspired by the mysterious blue light of swamp gas." },
+    { title: "Chain Reaction", prompt: "Design a garment with structures that appear to multiply or disintegrate." },
+    { title: "Zero Gravity", prompt: "Create a look that appears to float on the body, defying gravity." },
+    { title: "Liquid Gold", prompt: "Design a dress that looks like it's made of mercury or molten gold." },
+    { title: "Doppler Effect", prompt: "Translate the phenomenon of sound into colors and textile forms." }
+  ]
+},
+
+// ===== 61. CINEMATIC =====
+{
+  category: "Genre",
+  challenges: [
+    { title: "Giallo Suspense", prompt: "Create a look with leather gloves, gleaming knives, and 1970s Italian thriller aesthetics." },
+    { title: "Spaghetti Western", prompt: "Design a velvet and lace look for a Wild West sheriff." },
+    { title: "Blaxploitation Glam", prompt: "Create a bold look with fur jackets and bell-bottoms inspired by 1970s films." },
+    { title: "Silent Cinema", prompt: "Design a black and white look with dramatic textures that tells a story without words." },
+    { title: "Post-Apocalyptic Glam", prompt: "Use recycled materials like tires and plastic to create a luxury survivor look." }
+  ]
+},
+
+// ===== 62. SUBCONSCIOUS =====
+{
+  category: "Subconscious",
+  challenges: [
+    { title: "Stockholm Syndrome", prompt: "Create a look that mixes elements of imprisonment and luxury." },
+    { title: "Euphoria & Anxiety", prompt: "Mix vibrant colors with chaotic and restless forms." },
+    { title: "Introvert vs Extrovert", prompt: "Design a look that's 'closed' from behind but 'explosive' in front." },
+    { title: "Déjà Vu", prompt: "Create a look that feels familiar but has a disturbing, distorted detail." },
+    { title: "Saudade", prompt: "Translate the Portuguese feeling of melancholic longing into an ethereal gown." }
+  ]
+},
+
+// ===== 63. SONIC =====
+{
+  category: "Amplified",
+  challenges: [
+    { title: "K-Pop Maximalist", prompt: "Create a look with exaggerated details, chains, and a touch of streetwear." },
+    { title: "High-Fashion Grunge", prompt: "Use flannel, combat boots, and ripped lace in a couture silhouette." },
+    { title: "Heavy Metal Ball", prompt: "Transform spikes, leather, and studs into a ball gown." },
+    { title: "Country Diva", prompt: "Create a look with fringe, boots, and plenty of sparkle for a country queen." },
+    { title: "Rock Opera", prompt: "Mix theatrical rock costumes with dramatic opera flair." }
+  ]
+},
+
+
+// ===== 65. AVANT-GARDE =====
+{
+  category: "Museum",
+  challenges: [
+    { title: "Dadaism", prompt: "Create an absurd look with random objects sewn together." },
+    { title: "Arte Povera", prompt: "Use 'poor' materials like newspaper and sawdust to create a rich visual." },
+    { title: "Russian Avant-Garde", prompt: "Use primary colors and geometric shapes inspired by Malevich." },
+    { title: "Living Jewelry", prompt: "Design a dress that's a jewelry showcase, where the model is the mannequin." },
+    { title: "Ming Porcelain", prompt: "Recreate the texture and painting of a Ming vase in a structured bodice." }
+  ]
+},
+{
+  category: "Poetic",
+  challenges: [
+    { title: "Silent Spring", prompt: "Create a beautiful look made of plastic synthetics as an environmental critique." },
+    { title: "Summer Solstice", prompt: "Design a vibrant, golden look to celebrate the height of light." },
+    { title: "Autumn of Life", prompt: "Use dry leaves and rust tones in an elegant mourning garment." },
+    { title: "Nuclear Winter", prompt: "Create a survival fantasy for an eternal frozen winter." },
+    { title: "Vernal Bloom", prompt: "Create a look inspired by spring’s first bloom, with petals, fresh greens, and soft romantic movement." }
+  ]
+},
+
+// ===== 66. FANTASTICAL =====
+{
+  category: "Surreal",
+  challenges: [
+    { title: "Bio-Luminescence", prompt: "Create a look that glows in the dark like deep-sea creatures." },
+    { title: "Carnival of Venus", prompt: "Design a look inspired by the planet of love and war." },
+    { title: "Marionette", prompt: "Create a look that seems controlled by invisible strings." },
+    { title: "Metamorphosis", prompt: "Design a look that seems to be transforming like a caterpillar to butterfly." },
+    { title: "Lucid Dream", prompt: "Create a distorted, surreal look where shapes make no sense." }
+  ]
+},
+
+// ===== 67. OBJECT COUTURE =====
+{
+  category: "Assemblage",
+  challenges: [
+    { title: "Money Heist", prompt: "Mix the red jumpsuit with high-fashion drip." },
+    { title: "Still Life", prompt: "Transform a table setting with fruits and flowers into a dress." },
+    { title: "Fashion Scars", prompt: "Use visible mending techniques to tell a story of overcoming." },
+    { title: "Insect Jewelry", prompt: "Create a beetle armor or dragonfly wings made of Swarovski crystals." },
+    { title: "Zero Waste Couture", prompt: "Challenge yourself to create a look with no fabric scraps, using only patches." }
+  ]
+},
 ];
