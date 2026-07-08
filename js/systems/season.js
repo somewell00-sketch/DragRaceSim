@@ -1438,10 +1438,10 @@ function pickEpisodeStructure(challengeId, activeCount){
 
 // Team formation configuration. Change these weights to rebalance how often each method appears.
 const TEAM_FORMATION_METHOD_WEIGHTS={
-  mini_captains:45,
-  random:20,
-  free_choice:20,
-  previous_winner:15
+  mini_captains:60,
+  random:10,
+  free_choice:10,
+  previous_winner:20
 };
 
 function teamStructureTargetSizes(structure, active){
@@ -2041,14 +2041,17 @@ function generateEpisode(){
   const theme=(isSnatchGame || challenge.id==='talent' || ['ball','design','fashion_wars','makeover','roast','interview'].includes(challenge.id))?null:sample(gameState.data.themes);
   const runway=episodeRunwayForChallenge(challenge.id, theme, challengeContent);
   const runwayCategories=challengeContent.runwayCategories || [runway];
-  const song=sample(gameState.data.songs);
-  const miniChallenge=Math.random()>.45;
-  const miniWinner=miniChallenge?sample(active):null;
-  if(miniWinner)miniWinner.statistics.miniChallengeWins++;
-  let structure=pickEpisodeStructure(challenge.id, activeCount);
-  // Talent Show and Makeover are always individual, including normal and double premieres.
-  if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
-  const formationResult=buildTeamsForEpisodeWithFormation(structure, active, miniWinner);
+ const song=sample(gameState.data.songs);
+
+let structure=pickEpisodeStructure(challenge.id, activeCount);
+// Talent Show and Makeover are always individual, including normal and double premieres.
+if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
+
+const miniChallenge=structure?.id!=='solo' ? true : Math.random()>.45;
+const miniWinner=miniChallenge?sample(active):null;
+if(miniWinner)miniWinner.statistics.miniChallengeWins++;
+
+const formationResult=buildTeamsForEpisodeWithFormation(structure, active, miniWinner);
   const teams=formationResult.teams;
   const teamFormation=formationResult.teamFormation;
   if(challenge.id==='fashion_wars')assignFashionWarsBattles({activeCount,teams,challengeContent});
