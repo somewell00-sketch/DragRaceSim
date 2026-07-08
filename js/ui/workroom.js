@@ -237,6 +237,15 @@ const workroomPulse = [
 }
 
 
+function miniChallengeWorkroomLine(ep){
+  if(!ep?.miniChallenge)return 'No mini challenge today. The dolls get straight to work.';
+  const names=escapeHtml(ep.miniWinnerName||'a queen');
+  const source=ep.teamFormation?.captainSource;
+  if(source==='double_mini')return `A mini challenge took place. Winners: <strong>${names}</strong>. They became the team captains.`;
+  if(source==='previous' || source==='previous_survivor')return `A mini challenge took place. Winner: <strong>${names}</strong>. Team captains were decided by last episode's results.`;
+  return `A mini challenge took place. Winner: <strong>${names}</strong>.`;
+}
+
 function teamFormationBlock(ep){
   if(!ep?.teams?.length || !ep.teamFormation)return '';
   const tf=ep.teamFormation;
@@ -800,6 +809,7 @@ function returnAnnouncementCard(){
 function renderWorkroom(){
   const ep=gameState.currentEpisode;
   if(!ep){generateEpisode(); return renderWorkroom();}
+  if(ep.teamFormation?.pending && typeof renderTeamFormationStep==='function')return renderTeamFormationStep();
   if(ep.special==='lalaparuza')return renderLalaparuzaEpisode();
   if(ep.special==='return_smackdown')return renderReturnSmackdownEpisode();
   if(typeof isCurrentEpisodePremiereObserver==='function' && isCurrentEpisodePremiereObserver())return renderPremiereObserverWorkroom();
@@ -851,7 +861,7 @@ const workroomPulse = [
     ${teamFormationBlock(ep)}
     <div class="card">
       <h3>Workroom</h3>
-      <p>${ep.miniChallenge?`A mini challenge took place. Winner: <strong>${escapeHtml(ep.miniWinnerName)}</strong>.`:'No mini challenge today. The dolls get straight to work.'}</p>
+      <p>${miniChallengeWorkroomLine(ep)}</p>
       <h4>Story Beats</h4>
       <ul>${workroomPulse}</ul>
       ${ep.teams?.length?`<h4>Teams</h4><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
