@@ -1680,7 +1680,7 @@ function finalizeCurrentEpisodeTeams(teams, autoChosen=false){
   ep.teams=teams||[];
   if(ep.teamFormation){ep.teamFormation.autoChosen=!!autoChosen; ep.teamFormation.pending=false;}
   if(ep.challengeType==='fashion_wars')assignFashionWarsBattles(ep);
-  ep.judgingMode=(ep.challengeType==='fashion_wars' && (ep.activeCount||0)!==8)?'team':((ep.teams&&ep.teams.length && ep.challengeType!=='fashion_wars')?pickTeamJudgingMode(ep.structure):'individual');
+  ep.judgingMode=(ep.challengeType==='fashion_wars' && (ep.activeCount||0)!==8)?'team':((ep.teams&&ep.teams.length && ep.challengeType!=='fashion_wars')?pickTeamJudgingMode(ep.structure, ep.teams, ep.activeCount):'individual');
   saveGame();
 }
 
@@ -1763,9 +1763,14 @@ function teamAffinityBonus(qId, ep){
 }
 function pickGuestJudge(){return sample(gameState.data.guestJudges||[{name:'Guest Judge',note:'They are here for the fantasy.'}]);}
 
-function pickTeamJudgingMode(structure){
+function pickTeamJudgingMode(structure, teams=[], activeCount=0){
   if(!structure || structure.id==='solo')return 'individual';
-  // Ru may judge team challenges as a group or individually. Duos are more often judged as pairs.
+  // Paired challenges with four or more complete duos always use pair judging,
+  // so the results can cleanly show WIN/HIGH/LOW/BTM pairs.
+  const completeDuoCount=(teams||[]).filter(t=>(t.queenIds||[]).length===2).length;
+  if(structure.id==='duos' && completeDuoCount>=4)return 'team';
+  // Ru may judge team challenges as a group or individually. Smaller duo challenges
+  // can still occasionally be judged individually.
   if(structure.id==='duos')return Math.random()<0.68?'team':'individual';
   return Math.random()<0.58?'team':'individual';
 }
@@ -2127,7 +2132,7 @@ const formationResult=buildTeamsForEpisodeWithFormation(structure, active, miniW
     challengeContent.challengePrompt=`Host a sit-down interview with ${challengeContent.interviewGuest.name}. Keep it funny, sharp, and moving.`;
     challengeContent.mainTheme=`Interview with ${challengeContent.interviewGuest.name}`;
   }
-  const judgingMode=(challenge.id==='fashion_wars' && activeCount!==8)?'team':((teams&&teams.length && challenge.id!=='fashion_wars')?pickTeamJudgingMode(structure):'individual');
+  const judgingMode=(challenge.id==='fashion_wars' && activeCount!==8)?'team':((teams&&teams.length && challenge.id!=='fashion_wars')?pickTeamJudgingMode(structure, teams, activeCount):'individual');
   const snatchCharacters=isSnatchGame?assignSnatchCharacters(active):[];
   gameState.currentEpisode={
     number,
