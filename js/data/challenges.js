@@ -220,6 +220,24 @@ window.GAME_DATA.challenges = [
     "uniqueSeason": true
   },
   {
+    "id": "music_video",
+    "name": "Music Video",
+    "structures": [
+      "solo"
+    ],
+    "runwayWeight": 0.25,
+    "minQueens": 4,
+    "maxQueens": 5,
+    "weights": {
+  "lipSync": 0.4,
+  "cunt": 0.25,
+  "acting": 0.1,
+  "runway": 0.15,
+  "makeup": 0.1
+},
+    "uniqueSeason": true
+  },
+  {
     "id": "political_debate",
     "name": "Political Debate",
     "structures": [
