@@ -397,7 +397,34 @@ function fashionWarsBattleCards(ep, placements){
   return `${cards}${points?`<div class="card"><h3>Fashion Wars score</h3>${points}</div>`:''}`;
 }
 
+
+function publicChallengeResultsCard(ep, placements){
+  const byId=Object.fromEntries((placements||[]).map(p=>[p.queenId,p]));
+  const title=ep.challengeContent?.challengeTitle || ep.challengeName || 'Public Challenge';
+  const subtitle=ep.challengeContent?.challengePrompt || ep.themeNotes || '';
+  const totals=(ep.teamTotals&&ep.teamTotals.length)?ep.teamTotals:(ep.teams||[]).map(team=>({teamId:team.id,name:team.name,queenIds:team.queenIds,total:(team.queenIds||[]).reduce((sum,id)=>sum+(Number(ep.publicResults?.[id])||0),0)})).sort((a,b)=>b.total-a.total);
+  const winningTeamId=ep.winningTeam || totals[0]?.teamId;
+  const teamBlocks=totals.map(team=>{
+    const isWinner=team.teamId===winningTeamId;
+    const rows=(team.queenIds||[]).map(id=>byId[id]).filter(Boolean).sort((a,b)=>(Number(ep.publicResults?.[b.queenId])||0)-(Number(ep.publicResults?.[a.queenId])||0)).map(p=>`
+      <tr><td>${escapeHtml(p.name)}</td><td style="text-align:right;"><strong>${Number(ep.publicResults?.[p.queenId])||0}</strong></td></tr>
+    `).join('');
+    return `<div class="card ${isWinner?'winner-card':''}">
+      <h3>${isWinner?'🏆 ':''}${escapeHtml(team.name||'Team')}</h3>
+      <table class="score-table"><tbody>${rows}<tr><td><strong>TOTAL</strong></td><td style="text-align:right;"><strong>${Number(team.total)||0}</strong></td></tr></tbody></table>
+    </div>`;
+  }).join('');
+  const winnerName=totals.find(t=>t.teamId===winningTeamId)?.name || 'The winning team';
+  return `<div class="card runway-card public-challenge-results">
+    <h2>${escapeHtml(title)}</h2>
+    ${subtitle?`<p>${escapeHtml(subtitle)}</p>`:''}
+    <div class="grid two">${teamBlocks}</div>
+    <p class="small"><strong>${escapeHtml(winnerName)} wins the challenge!</strong></p>
+  </div>`;
+}
+
 function runwayCategoryCards(ep, placements, runwayOrder){
+  if(ep.challengeType==='public')return publicChallengeResultsCard(ep, placements);
   if(ep.challengeType==='fashion_wars')return fashionWarsBattleCards(ep, placements);
   const categories=(ep.runwayCategories&&ep.runwayCategories.length)?ep.runwayCategories:[ep.runwayCategory];
   if(ep.challengeType==='ball' && categories.length>1){

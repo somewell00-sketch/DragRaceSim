@@ -236,4 +236,26 @@ window.GAME_DATA.challenges = [
     "uniqueSeason": true
 
   }
+  ,{
+    "id": "public",
+    "name": "Public Challenge",
+    "structures": [
+      "teams2"
+    ],
+    "runwayWeight": 0.1,
+    "weights": {
+      "cunt": 0.45,
+      "acting": 0.25,
+      "lipSync": 0.15,
+      "runway": 0.10,
+      "makeup": 0.05
+    },
+    "uniqueSeason": true,
+    "minQueens": 8,
+    "maxQueens": 12
+  }
+
 ];
+
+
+

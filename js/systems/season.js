@@ -1321,6 +1321,7 @@ function pickChallengeByRules(activeCount){
     if(getSeasonFormat()==='all_winners' && c.id==='talent' && upcomingEpisodeNumber!==11)return false;
     if(c.id==='rumix' && activeCount!==finaleSize+1)return false;
     if(c.id==='fashion_wars' && ![8,9,10].includes(activeCount))return false;
+    if(c.id==='public' && (activeCount%2!==0 || activeCount<8 || activeCount>12))return false;
     if(c.minQueens && activeCount<c.minQueens)return false;
     if(c.maxQueens && activeCount>c.maxQueens)return false;
     if(c.id==='rusical'&&activeCount>10)return false;
@@ -1335,6 +1336,7 @@ function pickChallengeByRules(activeCount){
     available=challenges.filter(c=>{
       if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
       if(c.id==='fashion_wars' && ![8,9,10].includes(activeCount))return false;
+    if(c.id==='public' && (activeCount%2!==0 || activeCount<8 || activeCount>12))return false;
       if(c.minQueens && activeCount<c.minQueens)return false;
       if(c.maxQueens && activeCount>c.maxQueens)return false;
       if(c.id==='rusical'&&activeCount>10)return false;
@@ -1351,6 +1353,9 @@ function pickChallengeByRules(activeCount){
 }
 
 function challengeStructures(challengeId, activeCount){
+  if(challengeId==='public'){
+    return (activeCount%2===0 && activeCount>=8) ? [{id:'teams2',label:'Two public teams'}] : [{id:'solo',label:'Solo challenge'}];
+  }
   const solo=[
     'talent',
     'design',
@@ -1806,6 +1811,16 @@ function teamJudgingLabel(ep){
 
 function pickChallengeContent(challengeId){
   const data=gameState.data||{};
+  if(challengeId==='public'){
+    const item=sample(data.publicChallenges||[]) || {title:'Public Challenge', subtitle:'Charm the public, collect points, and outscore the other team.', subtype:'public_interaction'};
+    return {
+      publicChallenge:item,
+      publicSubtype:item.subtype || 'public_interaction',
+      challengeTitle:item.title || 'Public Challenge',
+      challengePrompt:item.subtitle || 'Charm the public and outscore the other team.',
+      mainTheme:item.title || 'Public Challenge'
+    };
+  }
   if(challengeId==='ball'){
     const ball=sample(data.balls||[]);
     return {
@@ -2109,7 +2124,7 @@ function generateEpisode(){
     challengeContent.mainTheme='Talent Show';
     challengeContent.talents=buildSpecialTalentContent(active);
   }
-  const theme=(isSnatchGame || challenge.id==='talent' || ['ball','design','fashion_wars','makeover','roast','interview'].includes(challenge.id))?null:sample(gameState.data.themes);
+  const theme=(isSnatchGame || challenge.id==='talent' || ['ball','design','fashion_wars','makeover','roast','interview','public'].includes(challenge.id))?null:sample(gameState.data.themes);
   const runway=episodeRunwayForChallenge(challenge.id, theme, challengeContent);
   const runwayCategories=challengeContent.runwayCategories || [runway];
  const song=sample(gameState.data.songs);
@@ -2117,6 +2132,7 @@ function generateEpisode(){
 let structure=pickEpisodeStructure(challenge.id, activeCount);
 // Talent Show and Makeover are always individual, including normal and double premieres.
 if(challenge.id==='talent' || challenge.id==='makeover') structure={id:'solo',label:'Solo challenge'};
+if(challenge.id==='public' && activeCount%2!==0) structure={id:'solo',label:'Solo challenge'};
 
 const miniChallenge=structure?.id!=='solo' ? true : Math.random()>.45;
 const miniWinner=miniChallenge?sample(active):null;
@@ -2132,7 +2148,7 @@ const formationResult=buildTeamsForEpisodeWithFormation(structure, active, miniW
     challengeContent.challengePrompt=`Host a sit-down interview with ${challengeContent.interviewGuest.name}. Keep it funny, sharp, and moving.`;
     challengeContent.mainTheme=`Interview with ${challengeContent.interviewGuest.name}`;
   }
-  const judgingMode=(challenge.id==='fashion_wars' && activeCount!==8)?'team':((teams&&teams.length && challenge.id!=='fashion_wars')?pickTeamJudgingMode(structure, teams, activeCount):'individual');
+  const judgingMode=challenge.id==='public'?'team':((challenge.id==='fashion_wars' && activeCount!==8)?'team':((teams&&teams.length && challenge.id!=='fashion_wars')?pickTeamJudgingMode(structure, teams, activeCount):'individual'));
   const snatchCharacters=isSnatchGame?assignSnatchCharacters(active):[];
   gameState.currentEpisode={
     number,

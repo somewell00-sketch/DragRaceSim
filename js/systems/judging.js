@@ -496,12 +496,121 @@ function assignFashionWarsPlacements(scored, ep){
   losers.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
 }
 
+
+function publicChallengeSubtypeWeights(subtype){
+  const profiles={
+    hustle:{cunt:.50,acting:.25,lipSync:.10,runway:.10,makeup:.05},
+    sales:{cunt:.50,acting:.25,lipSync:.10,runway:.10,makeup:.05},
+    fundraising:{cunt:.50,acting:.25,lipSync:.10,runway:.10,makeup:.05},
+    performance:{lipSync:.40,cunt:.35,acting:.15,runway:.05,makeup:.05},
+    promo:{cunt:.35,acting:.35,runway:.15,makeup:.10,lipSync:.05},
+    campaign:{cunt:.35,acting:.35,runway:.15,makeup:.10,lipSync:.05},
+    public_interaction:{cunt:.45,acting:.35,runway:.10,makeup:.05,lipSync:.05}
+  };
+  return profiles[String(subtype||'').toLowerCase()] || {cunt:.45,acting:.25,lipSync:.15,runway:.10,makeup:.05};
+}
+function publicPointsFromPerformance(performance){
+  const p=Number(performance)||0;
+  let lo=0, hi=20;
+  if(p>=9.5){lo=92;hi=100;}
+  else if(p>=9.0){lo=86;hi=95;}
+  else if(p>=8.5){lo=78;hi=90;}
+  else if(p>=8.0){lo=70;hi=84;}
+  else if(p>=7.5){lo=62;hi=76;}
+  else if(p>=7.0){lo=52;hi=68;}
+  else if(p>=6.5){lo=42;hi=58;}
+  else if(p>=6.0){lo=32;hi=48;}
+  else if(p>=5.5){lo=22;hi=38;}
+  else if(p>=5.0){lo=12;hi=28;}
+  let points=rand(lo,hi);
+  const roll=Math.random();
+  if(roll<0.04)points+=rand(10,18);
+  else if(roll<0.08)points-=rand(10,18);
+  else points+=rand(-8,10);
+  return clamp(Math.round(points),0,100);
+}
+function ensurePublicChallengeResults(scored, ep){
+  if(!ep || ep.challengeType!=='public')return null;
+  const subtype=ep.challengeContent?.publicSubtype || ep.challengeContent?.publicChallenge?.subtype || ep.subtype || 'public_interaction';
+  ep.subtype=subtype;
+  const byId=Object.fromEntries(scored.map(s=>[s.queenId,s]));
+  if(!ep.publicResults)ep.publicResults={};
+  (ep.teams||[]).forEach(team=>{
+    (team.queenIds||[]).forEach(id=>{
+      if(ep.publicResults[id]!==undefined)return;
+      const row=byId[id];
+      const perf=(Number(row?.individualScore)||Number(row?.score)||0)/10;
+      ep.publicResults[id]=publicPointsFromPerformance(perf);
+    });
+  });
+  ep.teamTotals=(ep.teams||[]).map(team=>({
+    teamId:team.id,
+    name:team.name,
+    queenIds:team.queenIds||[],
+    total:(team.queenIds||[]).reduce((sum,id)=>sum+(Number(ep.publicResults[id])||0),0)
+  })).sort((a,b)=>b.total-a.total);
+  ep.winningTeam=ep.teamTotals[0]?.teamId||null;
+  ep.losingTeam=ep.teamTotals[ep.teamTotals.length-1]?.teamId||null;
+  ep.teamScores=ep.teamTotals.map(t=>({teamId:t.teamId,name:t.name,score:t.total,chemistry:0,queenIds:t.queenIds}));
+  return ep.teamTotals;
+}
+function applyPublicChallengePlacements(scored, ep, seasonFormat){
+  scored.forEach(s=>s.placement='SAFE');
+  ensurePublicChallengeResults(scored,ep);
+  const byTeam=Object.fromEntries((ep.teams||[]).map(t=>[t.id,t]));
+  const winnerTeam=byTeam[ep.winningTeam];
+  const loserTeam=byTeam[ep.losingTeam];
+  const pointFor=s=>Number(ep.publicResults?.[s.queenId])||0;
+  const best=scored.filter(s=>(winnerTeam?.queenIds||[]).includes(s.queenId)).sort((a,b)=>pointFor(b)-pointFor(a)||(b.score-a.score)).slice(0,3);
+  const worst=scored.filter(s=>(loserTeam?.queenIds||[]).includes(s.queenId)).sort((a,b)=>pointFor(a)-pointFor(b)||(a.score-b.score)).slice(0,3);
+  const bottomCount=getBottomCountForCurrentFormat(scored.length);
+  if(seasonFormat==='legacy'){
+    best.slice(0,2).forEach(s=>s.placement='WIN');
+    if(best[2])best[2].placement='HIGH';
+    worst.slice(0,bottomCount).forEach(s=>s.placement='BTM');
+    ep.top2Queens=best.slice(0,2).map(s=>s.queenId);
+    ep.bottomQueens=worst.slice(0,bottomCount).map(s=>s.queenId);
+    ep.legacyVotes={};
+    ep.top2Queens.forEach(id=>{ep.legacyVotes[id]=chooseLipstick(id, ep.bottomQueens);});
+    return;
+  }
+  if(seasonFormat==='assassin'){
+    if(best[0])best[0].placement='WIN';
+    best.slice(1,3).forEach(s=>s.placement='HIGH');
+    worst.slice(0,bottomCount).forEach(s=>s.placement='BTM');
+    ep.topQueenId=best[0]?.queenId||null;
+    ep.bottomQueens=worst.slice(0,bottomCount).map(s=>s.queenId);
+    ep.assassinTopVote=ep.topQueenId?chooseLipstick(ep.topQueenId, ep.bottomQueens):null;
+    ep.assassinGroupVotes={};
+    const activeVoterIds=new Set(scored.map(s=>s.queenId));
+    scored.forEach(s=>{ if(s.queenId!==ep.topQueenId && activeVoterIds.has(s.queenId))ep.assassinGroupVotes[s.queenId]=chooseAssassinVote(s.queenId, ep.bottomQueens); });
+    ep.lipSyncAssassin=typeof createLipSyncAssassin==='function'?createLipSyncAssassin():{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,attributes:{lipSync:8,cunt:8},statistics:{},publicScores:{production:20},momentum:0,inventory:{reveals:1}};
+    return;
+  }
+  if(seasonFormat==='all_winners'){
+    best.slice(0,2).forEach(s=>s.placement='TOP2');
+    best.slice(2,3).forEach(s=>s.placement='HIGH');
+    ep.top2Queens=best.slice(0,2).map(s=>s.queenId);
+    ep.bottomQueens=[];
+    return;
+  }
+  if(best[0])best[0].placement='WIN';
+  best.slice(1,3).forEach(s=>s.placement='HIGH');
+  if(worst[2])worst[2].placement='LOW';
+  worst.slice(0,2).forEach(s=>s.placement='BTM');
+  ep.bottomQueens=worst.slice(0,2).map(s=>s.queenId);
+}
+
 function applyPassiveWinCap(scored, ep){
   if(!(ep.passiveWorkroom || ep.canPlayerWin===false))return;
   const playerScore=scored.find(s=>s.queenId===gameState.playerQueenId);
   if(!playerScore || playerScore.placement!=='WIN')return;
   playerScore.placement='HIGH';
-  const replacement=scored.find(s=>s.queenId!==gameState.playerQueenId && s.placement!=='WIN');
+  let replacement=null;
+  if(ep?.challengeType==='public' && ep.winningTeam){
+    replacement=scored.find(s=>s.queenId!==gameState.playerQueenId && s.teamId===ep.winningTeam && s.placement!=='WIN' && s.placement!=='TOP2');
+  }
+  if(!replacement)replacement=scored.find(s=>s.queenId!==gameState.playerQueenId && s.placement!=='WIN' && s.placement!=='TOP2');
   if(replacement)replacement.placement='WIN';
   ep.playerCappedByPassive=true;
 }
@@ -542,6 +651,9 @@ function talentWeightsForType(type){
 function challengeWeightsForQueen(challenge,ep,q){
   if(ep?.challengeType==='talent'){
     return talentWeightsForType(talentTypeForQueenInEpisode(ep,q));
+  }
+  if(ep?.challengeType==='public'){
+    return publicChallengeSubtypeWeights(ep.challengeContent?.publicSubtype || ep.challengeContent?.publicChallenge?.subtype || ep.subtype);
   }
   return challenge.weights;
 }
@@ -1161,16 +1273,17 @@ const individualScore=challengeCore+production+momentum+episodeForm.score+fatigu
     const team=typeof getTeamForQueen==='function'?getTeamForQueen(q.id,ep):null;
     return {queenId:q.id,name:q.name,risk,riskLabel:RISK_LABEL[risk],score:Math.round(total*10)/10,individualScore:Math.round(individualScore*10)/10,base:Math.round((ballRunway?runway:base)*10)/10,runway:Math.round(runway*10)/10,tootBootScore:Math.round(tootBootScore*10)/10,ballRunwayScores:ballRunway?.scores||null,ballRunwayWeights:ballRunway?.weights||null,talentType:ep.challengeType==='talent'?talentTypeForQueenInEpisode(ep,q):null,talentWeights:ep.challengeType==='talent'?effectiveChallengeWeights:null,production:Math.round(production*10)/10,momentum,episodeForm:episodeForm.score,episodeFormLabel:episodeForm.label,fatigue,legacyPressure,allWinnersBalance,vulnerabilityPressure,frontrunnerVolatility,riskBonus:Math.round(riskBonus*10)/10,eventBonus,eventLuck,runwayEventBonus:Math.round(runwayEventBonus*10)/10,runwayEvent,judgingEventBonus:Math.round(judgingEventBonus*10)/10,judgingEvent,choiceBonus:Math.round(choiceBonus*10)/10,energyStressMod,maxBuildPenalty,teamBonus,winThrottlePenalty,teamId:team?.id||null,teamName:team?.name||'',placement:'SAFE'};
   }).sort((a,b)=>b.score-a.score);
-  if(ep.challengeType==='fashion_wars')assignFashionWarsPlacements(scored,ep);
+  if(ep.challengeType==='public')applyPublicChallengePlacements(scored,ep,seasonFormat);
+  else if(ep.challengeType==='fashion_wars')assignFashionWarsPlacements(scored,ep);
   else if(ep.teams?.length && ep.judgingMode==='team')assignTeamPlacements(scored,ep);
   else {ep.teamScores=[]; assignIndividualPlacements(scored);}
 
   const useSnatchGameOfLove=isSnatchGameOfLoveEpisode(ep);
-  if(seasonFormat==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+  if(ep.challengeType!=='public' && seasonFormat==='legacy' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
     if(useSnatchGameOfLove) applySnatchGameOfLoveLegacyPlacements(scored, ep);
     else applyLegacyPlacements(scored, ep);
   }
-  if(seasonFormat==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
+  if(ep.challengeType!=='public' && seasonFormat==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special)){
     if(useSnatchGameOfLove) applySnatchGameOfLoveAssassinPlacements(scored, ep);
     else applyAssassinPlacements(scored, ep);
   }
@@ -1178,7 +1291,7 @@ const individualScore=challengeCore+production+momentum+episodeForm.score+fatigu
     applyTournamentPlacements(scored, ep);
   }
 
-  if(seasonFormat==='all_winners'){
+  if(ep.challengeType!=='public' && seasonFormat==='all_winners'){
     applyAllWinnersSpotlightSwaps(scored, ep);
     const allWinnersRows=pickAllWinnersPlacementRows(scored, ep);
     scored.forEach(s=>s.placement='SAFE');
