@@ -366,6 +366,10 @@ if(isDuoChallenge && teams.length >= 4){
   const secondBest = teams[1];
   const secondWorst = teams[teams.length - 2];
 
+  // Four judged pairs: best pair WIN, second-best pair HIGH,
+  // second-worst pair LOW, worst pair BTM.
+  setTeamPlacement(worst, 'BTM');
+
   if(secondBest && ![best.team.id, worst.team.id].includes(secondBest.team.id)){
     setTeamPlacement(secondBest, 'HIGH');
   }
