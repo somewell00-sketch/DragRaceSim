@@ -353,28 +353,35 @@ function assignTeamPlacements(scored, ep){
     if(individualWinner)individualWinner.placement='WIN';
   }
 
-  if(worst && worst.team.id!==best.team.id){
-    const worstMembers=membersForTeam(worst);
-    const bottomCount=getBottomCountForCurrentFormat(scored.length);
-    const wholeTeamBottom=bottomCount>0 && worstMembers.length>bottomCount && Math.random()<0.03;
-    ep.wholeTeamBottom=!!wholeTeamBottom;
-    ep.wholeTeamBottomTeamId=wholeTeamBottom?worst.team.id:null;
+  // Duo challenges with 4+ duos should judge two duos at the top
+// and two duos at the bottom: WIN / HIGH / LOW / BTM.
+const isDuoChallenge =
+  ep?.structure === 'duos' ||
+  ep?.structureId === 'duos' ||
+  ep?.challengeStructure === 'duos' ||
+  ep?.challengeContent?.structure === 'duos' ||
+  teams.every(t => (t.team?.queenIds || []).length === 2);
 
-    if(wholeTeamBottom){
-      setTeamPlacement(worst,'BTM');
-    }else{
-      worstMembers.slice(0,bottomCount).forEach(s=>{s.placement='BTM';});
-      worstMembers.slice(bottomCount,bottomCount+1).forEach(s=>{s.placement='LOW';});
-    }
+if(isDuoChallenge && teams.length >= 4){
+  const secondBest = teams[1];
+  const secondWorst = teams[teams.length - 2];
+
+  if(secondBest && ![best.team.id, worst.team.id].includes(secondBest.team.id)){
+    setTeamPlacement(secondBest, 'HIGH');
   }
 
-  // With a large cast, call one additional whole team as HIGH/LOW.
-  if(scored.length>=13 && teams.length>=4){
-    const secondBest=teams[1];
-    if(secondBest && ![best.team.id,worst.team.id].includes(secondBest.team.id))setTeamPlacement(secondBest,'HIGH');
-    const secondWorst=teams[teams.length-2];
-    if(secondWorst && ![best.team.id,worst.team.id,secondBest?.team?.id].includes(secondWorst.team.id))setTeamPlacement(secondWorst,'LOW');
+  if(secondWorst && ![best.team.id, worst.team.id, secondBest?.team?.id].includes(secondWorst.team.id)){
+    setTeamPlacement(secondWorst, 'LOW');
   }
+}
+// With a large cast, call one additional whole team as HIGH/LOW.
+else if(scored.length >= 13 && teams.length >= 4){
+  const secondBest = teams[1];
+  if(secondBest && ![best.team.id,worst.team.id].includes(secondBest.team.id))setTeamPlacement(secondBest,'HIGH');
+
+  const secondWorst = teams[teams.length - 2];
+  if(secondWorst && ![best.team.id,worst.team.id,secondBest?.team?.id].includes(secondWorst.team.id))setTeamPlacement(secondWorst,'LOW');
+}
 }
 
 function teamForQueenIdInEpisode(qId, ep){
