@@ -1231,7 +1231,7 @@ async function startAllStarsSeasonFromCurrent(format){
 
 function challengeFamily(id){
   const key=String(id||'').toLowerCase();
-  if(['rusical','girlgroup','musical','rumix'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix'))return 'performance';
+  if(['rusical','girlgroup','musical','rumix','music_video'].includes(key)||key.includes('rusical')||key.includes('musical')||key.includes('rumix')||key.includes('music_video')||key.includes('music video'))return 'performance';
   if(['acting','improv'].includes(key))return 'acting';
   if(['comedy','roast','snatchgame','snatch game'].includes(key))return 'comedy';
   if(['branding','advertisement','commercial'].includes(key))return 'branding';
@@ -1247,6 +1247,7 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
   // Use that fixed value to reserve the last two competitive challenges.
   // Top 4/5 before finale = Rumix. Top 5/6 before finale = Ball if it has not happened earlier.
   const rumixCount=finaleSize+1;
+  const finalPerformanceChallenge=Math.random()<0.7?'rumix':'music_video';
   const ballFallbackCount=finaleSize+2;
   const reservedCounts=[rumixCount, ballFallbackCount].filter(n=>counts.includes(n));
 
@@ -1260,7 +1261,7 @@ const required=['design','snatchgame','makeover','roast','rusical'];
   let best={};
   for(let attempt=0; attempt<300; attempt++){
     const plan={};
-    if(counts.includes(rumixCount))plan[rumixCount]='rumix';
+    if(counts.includes(rumixCount))plan[rumixCount]=finalPerformanceChallenge;
     if(counts.includes(ballFallbackCount))plan[ballFallbackCount]='ball';
 
     const design=sample(designOptions.filter(n=>!plan[n])); if(!design)continue; plan[design]='design';
@@ -1276,7 +1277,7 @@ const rusical=sample(rusicalOptions.filter(n=>!plan[n])); if(!rusical)continue; 
     best=plan;
   }
 
-  if(counts.includes(rumixCount))best[rumixCount]='rumix';
+  if(counts.includes(rumixCount))best[rumixCount]=finalPerformanceChallenge;
   if(counts.includes(ballFallbackCount) && !best[ballFallbackCount])best[ballFallbackCount]='ball';
   return best;
 }
@@ -1289,19 +1290,24 @@ function isUniqueSeasonChallenge(challengeOrId){
   // These are special-format challenges: maximum once per season, except when a double premiere repeats
   // the same selected challenge for both premiere groups.
   return [
-    'talent','snatchgame','makeover','roast','rusical','branding','rumix','ball','fashion_wars','political','debate'
+    'talent','snatchgame','makeover','roast','rusical','branding','rumix','music_video','ball','fashion_wars','political','debate'
   ].some(key=>id.includes(key)||name.includes(key));
 }
 function requiredChallengeForActiveCount(activeCount){
   const finaleSize=gameState.season?.finaleSize || 4;
+  const planned=gameState.season?.challengePlan?.[activeCount];
 
-  // Rumix is always the last competitive challenge before the finale.
-  if(activeCount===finaleSize+1 && !alreadyUsedChallenge('rumix'))return 'rumix';
+  // Last competitive challenge before the finale: 70% Rumix, 30% RuPaul Music Video.
+  if(activeCount===finaleSize+1){
+    const finalChallenge=planned || (Math.random()<0.7?'rumix':'music_video');
+    if(!alreadyUsedChallenge(finalChallenge))return finalChallenge;
+    const fallback=finalChallenge==='rumix'?'music_video':'rumix';
+    if(!alreadyUsedChallenge(fallback))return fallback;
+  }
 
-  // Ball may happen naturally earlier. If it has not, force it as the penultimate challenge before Rumix.
+  // Ball may happen naturally earlier. If it has not, force it as the penultimate challenge before the final performance challenge.
   if(activeCount===finaleSize+2 && !alreadyUsedChallenge('ball'))return 'ball';
 
-  const planned=gameState.season?.challengePlan?.[activeCount];
   if(planned && !alreadyUsedChallenge(planned))return planned;
   return null;
 }
@@ -1319,7 +1325,7 @@ function pickChallengeByRules(activeCount){
   let available=challenges.filter(c=>{
     if(isUniqueSeasonChallenge(c)&&alreadyUsedChallenge(c.id))return false;
     if(getSeasonFormat()==='all_winners' && c.id==='talent' && upcomingEpisodeNumber!==11)return false;
-    if(c.id==='rumix' && activeCount!==finaleSize+1)return false;
+    if((c.id==='rumix' || c.id==='music_video') && activeCount!==finaleSize+1)return false;
     if(c.id==='fashion_wars' && ![8,9,10].includes(activeCount))return false;
     if(c.id==='public' && (activeCount%2!==0 || activeCount<8 || activeCount>12))return false;
     if(c.minQueens && activeCount<c.minQueens)return false;
@@ -1363,6 +1369,7 @@ function challengeStructures(challengeId, activeCount){
     'roast',
     'snatchgame',
     'rumix',
+    'music_video',
     'political_debate',
     'makeover'
   ];
@@ -1911,6 +1918,17 @@ challengeTitle: design?.title || category?.category || 'Design Challenge',
       challengeTitle:'Rumix',
       challengePrompt:`Write, record, and perform an original verse for ${rumix}. This is about star power, lyrics, movement, and selling the final stretch of the season.`,
       mainTheme:rumix
+    };
+  }
+  if(challengeId==='music_video'){
+    const rupaulSongs=(data.songs||[]).filter(song=>/^rupaul\b/i.test(String(song?.artist||'')));
+    const song=sample(rupaulSongs.length?rupaulSongs:[{title:'Champion',artist:'RuPaul'}]);
+    const songTitle=song?.title||'Champion';
+    return {
+      musicVideoSong:song,
+      challengeTitle:`${songTitle} Music Video`,
+      challengePrompt:`The final ${(gameState.queens||[]).filter(q=>!q.isEliminated).length} queens star with RuPaul in a music video for "${songTitle}". Learn the choreography, perform for the cameras, and prove you have the star power to carry the final stretch of the season.`,
+      mainTheme:songTitle
     };
   }
   if(challengeId==='political_debate'){
