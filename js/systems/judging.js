@@ -362,6 +362,37 @@ const isDuoChallenge =
   ep?.challengeContent?.structure === 'duos' ||
   teams.every(t => (t.team?.queenIds || []).length === 2);
 
+  const bottomCount=typeof getBottomCountForCurrentFormat==='function'
+    ? getBottomCountForCurrentFormat(scored.length)
+    : 2;
+  const markBottomFromWorstTeams=()=>{
+    if(!bottomCount || !worst?.team?.id)return;
+    const worstMembers=membersForTeam(worst);
+    const wholeTeamBottom=bottomCount>0 && worstMembers.length>bottomCount && Math.random()<0.03;
+    ep.wholeTeamBottom=!!wholeTeamBottom;
+    ep.wholeTeamBottomTeamId=wholeTeamBottom?worst.team.id:null;
+
+    if(wholeTeamBottom){
+      setTeamPlacement(worst,'BTM');
+      return;
+    }
+
+    const bottomRows=[];
+    for(const teamRow of [...teams].reverse()){
+      if(bottomRows.length>=bottomCount)break;
+      if(teamRow?.team?.id===best?.team?.id)continue;
+      for(const row of membersForTeam(teamRow)){
+        if(bottomRows.length>=bottomCount)break;
+        if(!bottomRows.some(r=>r.queenId===row.queenId))bottomRows.push(row);
+      }
+    }
+    bottomRows.forEach(row=>{row.placement='BTM';});
+
+    const bottomIds=new Set(bottomRows.map(r=>r.queenId));
+    const lowRow=worstMembers.find(row=>!bottomIds.has(row.queenId));
+    if(lowRow && lowRow.placement==='SAFE')lowRow.placement='LOW';
+  };
+
 if(isDuoChallenge && teams.length >= 4){
   const secondBest = teams[1];
   const secondWorst = teams[teams.length - 2];
@@ -385,9 +416,12 @@ else if(scored.length >= 13 && teams.length >= 4){
 
   const secondWorst = teams[teams.length - 2];
   if(secondWorst && ![best.team.id,worst.team.id,secondBest?.team?.id].includes(secondWorst.team.id))setTeamPlacement(secondWorst,'LOW');
+  markBottomFromWorstTeams();
+}
+else{
+  markBottomFromWorstTeams();
 }
 }
-
 function teamForQueenIdInEpisode(qId, ep){
   return (ep?.teams||[]).find(t=>(t.queenIds||[]).includes(qId)) || null;
 }
@@ -1316,12 +1350,28 @@ const individualScore=challengeCore+production+momentum+episodeForm.score+fatigu
 
 
   if(ep.special==='premiere_no_elim'){
+    // No-elimination premieres use a Top 2 lip sync. If the premiere challenge
+    // was judged in duos, the winning duo should be the Top 2, but the lip sync
+    // system still needs two queen ids, never a team id or an oversized group.
+    const duoTeams=(ep.teams||[]).filter(t=>(t.queenIds||[]).length===2);
+    const duoTeamJudging=!!(ep.judgingMode==='team' && duoTeams.length && (ep.structure?.id==='duos' || duoTeams.length===ep.teams.length));
+    const winningDuo=duoTeamJudging ? duoTeams
+      .map(team=>({team, score: (typeof teamGroupScore==='function'?teamGroupScore(team, scored, ep):0)}))
+      .sort((a,b)=>b.score-a.score)[0]?.team : null;
+    const topRows=(winningDuo?.queenIds||[])
+      .map(id=>scored.find(s=>s.queenId===id))
+      .filter(Boolean)
+      .slice(0,2);
+    const fallbackTop=scored.filter(s=>!topRows.some(t=>t.queenId===s.queenId)).slice(0,2-topRows.length);
+    const top2=[...topRows,...fallbackTop].slice(0,2);
+    const top2Ids=top2.map(s=>s.queenId).filter((id,idx,arr)=>id && arr.indexOf(id)===idx);
+
     scored.forEach(s=>s.placement='SAFE');
-    if(scored[0])scored[0].placement='TOP2';
-    if(scored[1])scored[1].placement='TOP2';
-    if(scored[2])scored[2].placement='HIGH';
+    top2Ids.forEach(id=>{ const row=scored.find(s=>s.queenId===id); if(row)row.placement='TOP2'; });
+    const high=scored.find(s=>!top2Ids.includes(s.queenId));
+    if(high)high.placement='HIGH';
     scored.slice(-3).forEach(s=>{ if(s.placement==='SAFE')s.placement='LOW'; });
-    ep.top2Queens=scored.slice(0,2).map(s=>s.queenId);
+    ep.top2Queens=top2Ids;
     ep.bottomQueens=[];
   }
   // In a no-elimination premiere, the Top 2 lip sync decides the only WIN.
@@ -1495,9 +1545,52 @@ function applyAssassinVoteRelationshipPenalty(topQueenId, eliminatedQueenId, ep)
   return changes;
 }
 
+function repairPremiereTop2Queens(ep){
+  if(!ep || ep.special!=='premiere_no_elim')return;
+  const activeQueens=(gameState.queens||[]).filter(q=>!q.isEliminated);
+  const activeIds=new Set(activeQueens.map(q=>q.id));
+  const uniqueIds=(ids)=>[...new Set((ids||[]).filter(id=>id && activeIds.has(id)))];
+  let top2Ids=uniqueIds(ep.top2Queens);
+
+  if(top2Ids.length<2){
+    const placementRows=(ep.placements||[])
+      .filter(p=>activeIds.has(p.queenId))
+      .sort((a,b)=>{
+        const order={TOP2:0,WIN:1,HIGH:2,SAFE:3,LOW:4,BTM:5};
+        const oa=order[a.placement] ?? 9;
+        const ob=order[b.placement] ?? 9;
+        if(oa!==ob)return oa-ob;
+        return (b.score||0)-(a.score||0);
+      });
+    for(const row of placementRows){
+      if(top2Ids.length>=2)break;
+      if(row?.queenId && !top2Ids.includes(row.queenId))top2Ids.push(row.queenId);
+    }
+  }
+
+  if(top2Ids.length<2){
+    const rankedActive=[...activeQueens].sort((a,b)=>(b.statistics?.wins||0)-(a.statistics?.wins||0));
+    for(const q of rankedActive){
+      if(top2Ids.length>=2)break;
+      if(q?.id && !top2Ids.includes(q.id))top2Ids.push(q.id);
+    }
+  }
+
+  ep.top2Queens=top2Ids.slice(0,2);
+  if(ep.top2Queens.length>=2 && Array.isArray(ep.placements)){
+    const topSet=new Set(ep.top2Queens);
+    ep.placements.forEach(p=>{
+      if(topSet.has(p.queenId))p.placement='TOP2';
+      else if(p.placement==='TOP2')p.placement='SAFE';
+    });
+  }
+}
+
 function resolveLipSync(playerMoves=null, options={}){
   const ep=gameState.currentEpisode;
-  const song=ep.song;
+  repairPremiereTop2Queens(ep);
+  const song=ep.song || sample(gameState.data?.songs||[]) || {title:'Lip Sync Song',artist:'Unknown Artist',energy:'high'};
+  if(!ep.song) ep.song=song;
   const format=getSeasonFormat();
   const isAssassinEpisode=format==='assassin' && !['premiere_no_elim','lalaparuza'].includes(ep.special);
   const isTournamentEpisode=isTournamentFormat(format) && ep.special==='tournament_bracket';
