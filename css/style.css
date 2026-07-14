@@ -4746,7 +4746,7 @@ body.perf-mode table{
 }
 
 /* All Winners finale bracket compact cards + anti white repaint */
-html, body, #app{background:#09090d!important;}
+/* html, body, #app{background:#09090d!important;}*/
 #app{min-height:100vh;}
 .finale-duel-card.compact{
   padding:14px!important;
