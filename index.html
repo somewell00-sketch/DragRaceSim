@@ -1,38 +1,145 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Create your own drag queen and compete in a Drag Race-inspired simulator. Build alliances, survive eliminations, impress the judges, and play Regular, All Stars and All Winners seasons directly in your browser.">
-  <meta name="keywords" content="drag race simulator, drag race game, drag queen simulator, drag competition game, fantasy drag race, drag race rpg, create your own drag queen, all stars simulator, all winners simulator">
-  <meta property="og:title" content="Drag Race Simulator">
-<meta property="og:description" content="Create your own drag queen and compete in a full Drag Race-inspired season with strategy, relationships and dynamic storytelling.">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://somewell00-sketch.github.io/DragRaceSim/">
-<meta property="og:image" content="https://somewell00-sketch.github.io/DragRaceSim/assets/social-preview.png">
-  <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Drag Race Simulator">
-<meta name="twitter:description" content="Create your own drag queen and compete in a Drag Race-inspired simulator.">
-<meta name="twitter:image" content="https://somewell00-sketch.github.io/DragRaceSim/assets/social-preview.png">
-  
-<link rel="icon" href="assets/favicon.ico" sizes="any">
-<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16x16.png">
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<link rel="manifest" href="assets/site.webmanifest">  
-  
-<title>Drag Race Full Fantasy | Create Your Own Drag Queen and Compete</title>  <link rel="stylesheet" href="css/style.css" />
-</head>
-  <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-FCMFSJGTLD"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <meta charset="UTF-8">
 
-  gtag('config', 'G-FCMFSJGTLD');
-</script>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <title>Drag Race Simulator | Create Your Own Drag Queen</title>
+
+  <meta
+    name="description"
+    content="Create your own drag queen and compete in a Drag Race-inspired simulator. Build alliances, survive eliminations, impress the judges, and play Regular, All Stars and All Winners seasons directly in your browser."
+  >
+
+  <meta name="robots" content="index, follow">
+
+  <link
+    rel="canonical"
+    href="https://somewell00-sketch.github.io/DragRaceSim/"
+  >
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Drag Race Simulator">
+
+  <meta
+    property="og:description"
+    content="Create your own drag queen and compete in a full Drag Race-inspired season with strategy, relationships and dynamic storytelling."
+  >
+
+  <meta property="og:type" content="website">
+
+  <meta
+    property="og:url"
+    content="https://somewell00-sketch.github.io/DragRaceSim/"
+  >
+
+  <meta
+    property="og:image"
+    content="https://somewell00-sketch.github.io/DragRaceSim/assets/social-preview.png"
+  >
+
+  <meta
+    property="og:image:alt"
+    content="Drag Race Simulator"
+  >
+
+  <meta property="og:site_name" content="Drag Race Simulator">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+
+  <meta
+    name="twitter:title"
+    content="Drag Race Simulator"
+  >
+
+  <meta
+    name="twitter:description"
+    content="Create your own drag queen and compete in a Drag Race-inspired simulator."
+  >
+
+  <meta
+    name="twitter:image"
+    content="https://somewell00-sketch.github.io/DragRaceSim/assets/social-preview.png"
+  >
+
+  <meta
+    name="twitter:image:alt"
+    content="Drag Race Simulator"
+  >
+
+  <!-- Icons -->
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="32x32"
+    href="assets/favicon-32x32.png"
+  >
+
+  <link
+    rel="icon"
+    type="image/png"
+    sizes="16x16"
+    href="assets/favicon-16x16.png"
+  >
+
+  <link
+    rel="apple-touch-icon"
+    href="assets/apple-touch-icon.png"
+  >
+
+  <link
+    rel="manifest"
+    href="assets/site.webmanifest"
+  >
+
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Google Analytics -->
+  <script
+    async
+    src="https://www.googletagmanager.com/gtag/js?id=G-FCMFSJGTLD"
+  ></script>
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+
+    function gtag() {
+      dataLayer.push(arguments);
+    }
+
+    gtag("js", new Date());
+    gtag("config", "G-FCMFSJGTLD");
+  </script>
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Drag Race Simulator",
+    "url": "https://somewell00-sketch.github.io/DragRaceSim/",
+    "description": "Create your own drag queen and compete in a Drag Race-inspired simulator with alliances, eliminations, challenges and multiple season formats.",
+    "applicationCategory": "GameApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires JavaScript and a modern web browser",
+    "image": "https://somewell00-sketch.github.io/DragRaceSim/assets/social-preview.png",
+    "isAccessibleForFree": true,
+    "inLanguage": "en"
+  }
+  </script>
+</head>
+
 <body>
+
   <h1 class="sr-only">Drag Race Simulator</h1>
   <div id="app"></div>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
