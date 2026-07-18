@@ -1622,6 +1622,23 @@ function resolveLipSync(playerMoves=null, options={}){
     const ability=clamp((q.attributes.lipSync||0)*0.82 + (q.attributes.cunt||0)*0.18,0,10); // 40%
     const momentumScore=clamp(((q.momentum||0)+2)*2.5,0,10); // -2..+2 -> 0..10, 10%
     const productionScore=clamp(((q.publicScores?.production||0)+30)/6,0,10); // soft production scale, 10%
+    const historyValues={
+  WIN:10,
+  TOP2:8,
+  HIGH:6,
+  SAFE:4,
+  LOW:2,
+  BTM:0,
+  ELIM:-2
+};
+
+const previousHistory=(q.episodeHistory||[])
+  .map(h=>historyValues[String(h.placement||'').toUpperCase()])
+  .filter(value=>Number.isFinite(value));
+
+const historyScore=previousHistory.length
+  ? previousHistory.reduce((sum,value)=>sum+value,0)/previousHistory.length
+  : 5;
 const priorLipSyncs =
   (q.statistics.lipSyncWins || 0) +
   (q.statistics.lipSyncLosses || 0);
@@ -1645,14 +1662,15 @@ if (lip >= 9)
 
 if (lip <= 5)
     priorLipSyncPenalty *= 0.90;
-    const baseScore10=Math.round(clamp(
-      weeklyPerformance*0.40 +
-      ability*0.40 +
-      momentumScore*0.10 +
-      productionScore*0.10 -
-      priorLipSyncPenalty,
-      0,10
-    )*10)/10;
+   const baseScore10=Math.round(clamp(
+  weeklyPerformance*0.40 +
+  ability*0.30 +
+  historyScore*0.15 +
+  momentumScore*0.05 +
+  productionScore*0.10 -
+  priorLipSyncPenalty,
+  0,10
+)*10)/10;
 
     return {
       queenId:q.id,
