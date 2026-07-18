@@ -1663,8 +1663,8 @@ if (lip >= 9)
 if (lip <= 5)
     priorLipSyncPenalty *= 0.90;
    const baseScore10=Math.round(clamp(
-  weeklyPerformance*0.40 +
-  ability*0.30 +
+  weeklyPerformance*0.35 +
+  ability*0.35 +
   historyScore*0.15 +
   momentumScore*0.05 +
   productionScore*0.10 -
