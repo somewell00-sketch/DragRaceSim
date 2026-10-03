@@ -935,31 +935,58 @@ const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
 function finalePageBadge(n,label){
   return `<div class="finale-page-kicker"><span class="badge subtle">Finale ${n}/4</span><span class="badge">${escapeHtml(label)}</span></div>`;
 }
+// Crown commentary describes performance only; the decision is revealed on the next page.
+const CROWN_LIPSYNC_TEXT={
+  failed:['The delivery was uneven, with missed beats and moments of hesitation.','She struggled to keep the words and movement connected throughout the song.'],
+  partial:['Some moments connected, though the performance needed more consistency.','She found flashes of the song, but the energy came and went.'],
+  strong:['She delivered a focused performance with clear musicality.','The words and movement came together in a convincing interpretation.'],
+  outstanding:['She brought precision, feeling, and a memorable point of view to the song.','Her delivery was assured, with expressive details from verse to chorus.'],
+  legendary:['She delivered an electric, fully committed interpretation of the song.','Her performance brought exceptional musicality and moments worth remembering.']
+};
+const CROWN_LIPSYNC_STRATEGY_TEXT={
+  emotion:'She leaned into the emotion of the lyrics.',
+  comedy:'She approached the song with humor and playful expressions.',
+  sell_lyrics:'She put the words and their meaning at the center.',
+  dance:'She built her interpretation around movement and rhythm.',
+  stunts:'She added physical tricks to the performance.',
+  save_reveal:'She held her reveal for a later moment in the song.',
+  reveal_early:'She introduced a reveal early in the performance.',
+  multiple_reveals:'She used several reveals throughout the song.',
+  play_safe:'She chose a restrained approach centered on the basics.',
+  overshadow:'She used bold stage presence to draw attention.'
+};
 function finalDuelToLipSyncResult(finalDuel){
-  const ids=finalDuel.queenIds||[];
-  const scores=finalDuel.decisionScores||finalDuel.lipScores||{};
-  const vals=ids.map(id=>Number(scores[id]||0));
-  const max=Math.max(...vals,1), min=Math.min(...vals,0);
-  const rawDiff=Math.abs(max-min);
-  const diff10=rawDiff<6?0.4:(rawDiff<14?1.2:2.5);
-  const winnerId=finalDuel.winnerId;
-  const results=ids.map(id=>{
-    const won=id===winnerId;
-    const strategy=finalDuel.strategies?.[id]||'sell_lyrics';
-    return {
-      queenId:id,
-      name:qName(id),
-      score10:won?8.8:Math.max(5.2,8.8-diff10),
-      score:won?8.8:Math.max(5.2,8.8-diff10),
-      moves:{strategy}
-    };
-  }).sort((a,b)=>b.score10-a.score10);
-  return {outcome:'normal',results,survivorId:winnerId,eliminatedQueenId:finalDuel.loserId,difference:diff10};
+  const results=(finalDuel.queenIds||[]).map(id=>{
+    // Use the existing performance rating, never the season's crowning decision score.
+    const savedRating=finalDuel.finaleRatings?.[id]?.lip;
+    const rawLip=finalDuel.lipScores?.[id];
+    let rating=50; // Neutral fallback for older saves without performance data.
+    if(savedRating!=null && Number.isFinite(Number(savedRating))) rating=Number(savedRating);
+    else if(rawLip!=null && Number.isFinite(Number(rawLip))) rating=Number(rawLip)*1.55;
+    const score10=Math.max(0,Math.min(10,rating/10));
+    return {queenId:id,name:qName(id),score10,score:score10,moves:{strategy:finalDuel.strategies?.[id]||'sell_lyrics'}};
+  });
+  const values=results.map(r=>r.score10);
+  const difference=values.length>1?Math.max(...values)-Math.min(...values):0;
+  return {outcome:'normal',results,difference};
 }
 function finalLipSyncNarrative(finalDuel){
   const result=finalDuelToLipSyncResult(finalDuel);
-  if(typeof lipSyncNarrative==='function') return lipSyncNarrative(result);
-  return `<p><strong>${escapeHtml(qName(finalDuel.winnerId))}</strong> controlled the final performance.</p>`;
+  const lines=['The final song begins. Every detail matters with the crown still to be announced.'];
+  // Stable selection avoids changing commentary or consuming gameplay RNG on rerender.
+  [...result.results].sort((a,b)=>a.name.localeCompare(b.name)).forEach(r=>{
+    const tier=lipSyncExecutionTier(r.score10);
+    const bank=CROWN_LIPSYNC_TEXT[tier];
+    const seed=`${r.queenId}|${finalDuel.song?.title||''}|${r.score10}|${r.moves.strategy}`;
+    let hash=0;
+    for(let i=0;i<seed.length;i++) hash=(Math.imul(hash,31)+seed.charCodeAt(i))>>>0;
+    const strategyText=CROWN_LIPSYNC_STRATEGY_TEXT[r.moves.strategy]||'She brought her own interpretation to the song.';
+    lines.push(`${r.name}: ${strategyText} ${bank[hash%bank.length]}`);
+  });
+  lines.push(result.difference<0.6
+    ? 'The performances were closely matched. The panel takes a moment before the announcement.'
+    : 'The queens brought different performances to the stage. The panel takes a moment before the announcement.');
+  return lines.map((line,i)=>`<p${i===0?' class="lead"':''}>${formatLipSyncLine(line,result)}</p>`).join('');
 }
 function finalLipSyncDecision(finale){
   return `<p><strong>Condragulations, ${escapeHtml(qName(finale.winnerId))}. You are the winner, baby.</strong></p>`;
