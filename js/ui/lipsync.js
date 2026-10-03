@@ -270,8 +270,8 @@ function getLipSyncQualityKey(results){
   const scores = results.map(r => r.score10);
   const avg = scores.reduce((a,b) => a + b, 0) / scores.length;
 
-  if(avg >= 8.25) return 'legendary';
-  if(avg >= 7.75) return 'iconic';
+  if(avg >= 8.75) return 'legendary';
+  if(avg >= 8) return 'iconic';
   if(avg >= 7.15) return 'irregular';
   if(avg >= 6.5) return 'warm';
   if(avg >= 5.85) return 'forgettable';
@@ -295,8 +295,8 @@ const V20_LIPSYNC_TEXT={
       'The stage needed more than either queen gave.'
     ],
     top2Win:[
-      'Both queens wanted the first win badly.',
-      'The premiere win came down to the final beat.',
+      'Both queens wanted the win badly.',
+      'The win came down to the final beat.',
       'Only one queen fully seized the moment.'
     ],
     close:[
