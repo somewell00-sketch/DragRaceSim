@@ -501,7 +501,7 @@ function finaleStrategyOptionsHtml(){
 function crownSongPreviewHtml(){
   const season=gameState.season;
   if(!season?.finaleSongPreview){season.finaleSongPreview=pickLipSyncSongs(3);saveGame();}
-  return `<div class="card subtle"><h3>Upcoming Lip Sync Songs</h3>${season.finaleSongPreview.map((song,i)=>`<p><strong>${i===2?'Final':`Semifinal ${i+1}`}:</strong> ${escapeHtml(song.title)} — ${escapeHtml(song.artist)} ${(song.icons||[]).map(icon=>escapeHtml(String(icon))).join(' ')}</p>`).join('')}</div>`;
+  return `<div class="card subtle"><h3>Upcoming Lip Sync Songs</h3>${season.finaleSongPreview.map((song,i)=>`<p><strong>${i===2?'Final':`Semifinal ${i+1}`}:</strong> ${escapeHtml(song.title)} — ${escapeHtml(song.artist)} ${lipSyncEnergyLabel(song)}</p>`).join('')}</div>`;
 }
 function crownChoiceHtml(finalists){
   const season=gameState.season;
@@ -530,7 +530,7 @@ function bindCrownChoice(finalists,rerender){
     if(chooser!==gameState.playerQueenId){
       const q=gameState.queens.find(x=>x.id===chooser);
       const songs=gameState.season.finaleSongPreview;
-      choice.songIndex=returnSmackdownAutoSong && q && songs ? (Math.random()<0.5?0:1):0;
+      choice.songIndex=q && songs?.length>=2 && typeof autoLipSyncStrategy==='function' ? [0,1].map(i=>({i,score:(songs[i].tags||[]).filter(t=>strategyObj(autoLipSyncStrategy(q,songs[i])).bonusTags.includes(t)).length+Math.random()})).sort((a,b)=>b.score-a.score)[0].i : 0;
       saveGame();rerender();
     }else{
       document.querySelectorAll('.crown-song').forEach(btn=>btn.addEventListener('click',()=>{choice.songIndex=Number(btn.dataset.song);saveGame();rerender();}));
@@ -939,7 +939,7 @@ function renderFinalePart1(){
     const needSong=choice && choice.songIndex===null;
     if(needOpponent || needSong){
       const songChoice=needSong && choice.opponentId===gameState.playerQueenId
-        ? `<section class="card important"><h3>Choose Your Semifinal Song</h3><div class="options">${season.finaleSongPreview.slice(0,2).map((song,i)=>`<button class="option crown-song" data-song="${i}">${escapeHtml(song.title)} — ${escapeHtml(song.artist)}</button>`).join('')}</div></section>`:'';
+        ? `<section class="card important"><h3>Choose Your Semifinal Song</h3><div class="options">${season.finaleSongPreview.slice(0,2).map((song,i)=>`<button class="option crown-song" data-song="${i}">${escapeHtml(song.title)} — ${escapeHtml(song.artist)} <span class="song-icons">${lipSyncEnergyLabel(song)}</span></button>`).join('')}</div></section>`:'';
       setHTML(`<main class="screen"><section class="hero"><h1>Lip Sync for the Crown Draw</h1></section>${choiceMarkup}${songChoice}</main>`);
       bindCrownChoice(activeFinalists,renderFinalePart1);
       return;
