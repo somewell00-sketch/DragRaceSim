@@ -498,6 +498,45 @@ function finaleStrategyOptionsHtml(){
     return choiceButtonHtml({id,attr:'data-finale-strategy',label,desc,disabled});
   }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
 }
+function crownSongPreviewHtml(){
+  const season=gameState.season;
+  if(!season?.finaleSongPreview){season.finaleSongPreview=pickLipSyncSongs(3);saveGame();}
+  return `<div class="card subtle"><h3>Upcoming Lip Sync Songs</h3>${season.finaleSongPreview.map((song,i)=>`<p><strong>${i===2?'Final':`Semifinal ${i+1}`}:</strong> ${escapeHtml(song.title)} — ${escapeHtml(song.artist)} ${(song.icons||[]).map(icon=>escapeHtml(String(icon))).join(' ')}</p>`).join('')}</div>`;
+}
+function crownChoiceHtml(finalists){
+  const season=gameState.season;
+  if(finalists.length!==4 || getSeasonFormat()==='all_winners')return '';
+  if(!season.crownDrawId){season.crownDrawId=sample(finalists).id;saveGame();}
+  const first=finalists.find(q=>q.id===season.crownDrawId);
+  const choice=season.crownChoice;
+  if(choice)return `<div class="card subtle"><p>${escapeHtml(qName(choice.firstId))} chose ${escapeHtml(qName(choice.opponentId))} for the first semifinal.</p></div>`;
+  const playerId=gameState.playerQueenId;
+  const opponentOptions=finalists.filter(q=>q.id!==first.id);
+  if(first.id!==playerId){
+    const opponent=sample(opponentOptions);
+    season.crownChoice={firstId:first.id,opponentId:opponent.id,songIndex:null};
+    saveGame();
+    return crownChoiceHtml(finalists);
+  }
+  return `<div class="card decision-card important"><h3>Choose Your Semifinal Opponent</h3><p>You were drawn first. Choose who you want to face.</p><div class="options">${opponentOptions.map(q=>`<button class="option crown-opponent" data-opponent="${escapeHtml(q.id)}">${escapeHtml(q.name)}</button>`).join('')}</div></div>`;
+}
+function bindCrownChoice(finalists,rerender){
+  document.querySelectorAll('.crown-opponent').forEach(btn=>btn.addEventListener('click',()=>{
+    gameState.season.crownChoice={firstId:gameState.season.crownDrawId,opponentId:btn.dataset.opponent,songIndex:null};saveGame();rerender();
+  }));
+  const choice=gameState.season.crownChoice;
+  if(choice && choice.songIndex===null){
+    const chooser=choice.opponentId;
+    if(chooser!==gameState.playerQueenId){
+      const q=gameState.queens.find(x=>x.id===chooser);
+      const songs=gameState.season.finaleSongPreview;
+      choice.songIndex=returnSmackdownAutoSong && q && songs ? (Math.random()<0.5?0:1):0;
+      saveGame();rerender();
+    }else{
+      document.querySelectorAll('.crown-song').forEach(btn=>btn.addEventListener('click',()=>{choice.songIndex=Number(btn.dataset.song);saveGame();rerender();}));
+    }
+  }
+}
 function renderFinaleStrategyChoice(){
   setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Finale</span><h2>Choose your final lip sync strategy</h2><p>If your queen reaches a crown lip sync, this is the approach she will bring to the stage.</p></div><div class="card decision-card"><h3>Your approach</h3>${finaleStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderFinaleStrategyChoice));
@@ -882,7 +921,7 @@ function renderFinalePart1(){
     setHTML(`<main class="screen">
       <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>The Grand Finale Begins</h1><p>The finalists return to the stage. One final story is about to be written.</p></section>
       <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${activeFinalists.map(finaleCard).join('')}</div></section>
-      <section class="card important decision-card"><h2>Your Finale Strategy</h2><p>You are still in the race. Choose how you will perform if Ru calls your name for a crown lip sync.</p>${finaleStrategyOptionsHtml()}</section>
+      <section class="card important decision-card"><h2>Your Finale Strategy</h2><p>You are still in the race. Choose how you will perform if Ru calls your name for a crown lip sync.</p>${crownSongPreviewHtml()}${finaleStrategyOptionsHtml()}</section>
     </main>`);
     document.querySelectorAll('[data-finale-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
       gameState.season.playerFinaleStrategy=btn.dataset.finaleStrategy;
@@ -892,6 +931,20 @@ function renderFinalePart1(){
     return;
   }
 
+  if(activeFinalists.length===4 && getSeasonFormat()!=='all_winners' && !gameState.season.finale){
+    const season=gameState.season;
+    const choiceMarkup=crownChoiceHtml(activeFinalists);
+    const choice=season.crownChoice;
+    const needOpponent=!choice;
+    const needSong=choice && choice.songIndex===null;
+    if(needOpponent || needSong){
+      const songChoice=needSong && choice.opponentId===gameState.playerQueenId
+        ? `<section class="card important"><h3>Choose Your Semifinal Song</h3><div class="options">${season.finaleSongPreview.slice(0,2).map((song,i)=>`<button class="option crown-song" data-song="${i}">${escapeHtml(song.title)} — ${escapeHtml(song.artist)}</button>`).join('')}</div></section>`:'';
+      setHTML(`<main class="screen"><section class="hero"><h1>Lip Sync for the Crown Draw</h1></section>${choiceMarkup}${songChoice}</main>`);
+      bindCrownChoice(activeFinalists,renderFinalePart1);
+      return;
+    }
+  }
   const finale=prepareFinale();
   const format=finaleFormatName(finale.format);
   const finalists=finale.finalistIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);

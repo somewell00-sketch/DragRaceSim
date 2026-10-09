@@ -2326,7 +2326,7 @@ function controlledFinaleRandom(diff){
   return rand(-0.4,0.4);
 }
 function makeFinalDuel(a,b,label='Final Lip Sync'){
-  const song=sample(gameState.data?.songs||[]) || {title:'Finale Anthem',artist:'Drag Race Orchestra',energy:'high'};
+  const song=(gameState.season?.finaleSongQueue?.length ? gameState.season.finaleSongQueue.shift() : null) || sample(gameState.data?.songs||[]) || {title:'Finale Anthem',artist:'Drag Race Orchestra',energy:'high'};
   const pa=finalLipPerformance(a,song), pb=finalLipPerformance(b,song);
   const la=pa.score, lb=pb.score;
   const clutchA=finaleClutchChoke(a), clutchB=finaleClutchChoke(b);
@@ -2411,6 +2411,17 @@ function prepareFinale(){
     finale.finalistOnlyIds=[...finale.thirdFourthIds];
   } else if(format==='top4_lsfyc'){
     const shuffled=shuffle(finalists);
+    const choice=gameState.season.crownChoice;
+    if(finalists.length===4 && choice && shuffled.some(q=>q.id===choice.firstId)){
+      const first=shuffled.find(q=>q.id===choice.firstId);
+      const opponent=shuffled.find(q=>q.id===choice.opponentId && q.id!==first.id);
+      if(opponent){const rest=shuffled.filter(q=>q.id!==first.id&&q.id!==opponent.id);shuffled.splice(0,4,first,opponent,...rest);}
+    }
+    if(gameState.season.finaleSongPreview?.length===3){
+      const songs=gameState.season.finaleSongPreview;
+      const selected=choice?.songIndex===1?1:0;
+      gameState.season.finaleSongQueue=[songs[selected],songs[1-selected],songs[2]];
+    }
     const d1=makeFinalDuel(shuffled[0],shuffled[1],'Semi-final Lip Sync 1');
     const d2=makeFinalDuel(shuffled[2],shuffled[3],'Semi-final Lip Sync 2');
     finale.duels=[d1,d2];
