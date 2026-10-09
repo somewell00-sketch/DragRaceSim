@@ -505,7 +505,12 @@ function renderLalaparuzaEpisode(){
     const d=st.currentDuel, a=qById(d.callerId), b=qById(d.opponentId);
     const queenIds=[d.callerId,d.opponentId];
     const playerInDuel=queenIds.includes(playerId);
-    const autoChosen=autoStrategyMapForDuel(queenIds.filter(id=>id!==playerId),d.song);
+    if(!d.strategyByQueenId)d.strategyByQueenId={};
+    for(const id of queenIds.filter(id=>id!==playerId)){
+      if(!d.strategyByQueenId[id])d.strategyByQueenId[id]=autoLipSyncStrategy(qById(id),d.song);
+    }
+    saveGame();
+    const autoChosen=Object.assign({},d.strategyByQueenId);
     const npcLines='';
     const player=qById(playerId);
     const finalCopy=d.isFinal

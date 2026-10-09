@@ -915,6 +915,11 @@ function renderFinalePart1(){
   const activeFinalists=(typeof getSeasonFormat==='function'&&getSeasonFormat()==='all_winners'&&gameState.season?.allWinnersTop4?.length?gameState.season.allWinnersTop4.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean):gameState.queens.filter(q=>!q.isEliminated));
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   const playerIsFinalist=player && (typeof getSeasonFormat==='function'&&getSeasonFormat()==='all_winners'?activeFinalists.some(q=>q.id===player.id):!player.isEliminated);
+  // Draw the finale format once, before exposing any format-specific controls.
+  if(getSeasonFormat()!=='all_winners' && !gameState.season.finale && !gameState.season.finalePlannedFormat){
+    gameState.season.finalePlannedFormat=activeFinalists.length>=4?sample(['top4_chosen','top4_lsfyc']):'top3_cut';
+    saveGame();
+  }
   const needsPlayerStrategy=playerIsFinalist && !gameState.season?.finale && !gameState.season?.playerFinaleStrategy;
 
   if(needsPlayerStrategy){
@@ -931,7 +936,7 @@ function renderFinalePart1(){
     return;
   }
 
-  if(activeFinalists.length===4 && getSeasonFormat()!=='all_winners' && !gameState.season.finale){
+  if(activeFinalists.length===4 && getSeasonFormat()!=='all_winners' && !gameState.season.finale && gameState.season.finalePlannedFormat==='top4_lsfyc'){
     const season=gameState.season;
     const choiceMarkup=crownChoiceHtml(activeFinalists);
     const choice=season.crownChoice;
