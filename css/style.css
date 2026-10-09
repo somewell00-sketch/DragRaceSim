@@ -4954,3 +4954,8 @@ body::before{
   border-bottom:0;
   padding-top:10px;
 }
+
+/* Unified spotlight for non-elimination lip sync victories. */
+.lipsync-decision-winner .lipsync-victory-spotlight{text-align:center;margin:0 auto 1.4rem;padding:1rem;border-radius:18px;background:linear-gradient(135deg,rgba(231,174,72,.13),rgba(255,255,255,.025));border:1px solid rgba(231,174,72,.3)}
+.lipsync-victory-spotlight .winner-portrait-wrap{margin:1rem auto .2rem}
+.lipsync-decision-winner .legacy-lipsync-win{text-align:center}
