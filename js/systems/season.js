@@ -2389,7 +2389,16 @@ function prepareFinale(){
   const finalists=gameState.queens.filter(q=>!q.isEliminated);
   const format=finalists.length>=4?sample(['top4_chosen','top4_lsfyc']):'top3_cut';
   const finale={format,finalistIds:finalists.map(q=>q.id),events:[],duels:[],finalDuel:null,winnerId:null,runnerUpIds:[],finalistOnlyIds:[],thirdFourthIds:[]};
-  if(format==='top4_chosen'){
+  if(finalists.length===5 && format==='top4_lsfyc'){
+    // Five-queen crown finale: a single final duel, with every other finalist acknowledged.
+    const ranked=[...finalists].sort(compareFinaleTrackRecord);
+    const top2=ranked.slice(0,2);
+    finale.thirdFourthIds=ranked.slice(2).map(q=>q.id);
+    finale.finalistOnlyIds=[...finale.thirdFourthIds];
+    finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync');
+    finale.winnerId=finale.finalDuel.winnerId;
+    finale.runnerUpIds=[finale.finalDuel.loserId];
+  } else if(format==='top4_chosen'){
     const byHistory=[...finalists].sort(compareFinaleTrackRecord);
     const byPublic=[...finalists].sort((a,b)=>publicFinaleScore(b)-publicFinaleScore(a));
     const a=byHistory[0]; let b=byPublic.find(q=>q.id!==a.id)||byHistory[1];

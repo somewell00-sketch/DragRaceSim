@@ -900,7 +900,7 @@ function renderFinalePart1(){
   const isAllWinnersFinale=finale.format==='all_winners';
   const semiRows=isAllWinnersFinale
     ? `<section class="card"><h2>Lip Sync For The Crown Bracket</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d,'advances to the final lip sync',{reveal:true})).join('')}</section>`
-    : (finale.format==='top4_lsfyc'?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'');
+    : ((finale.format==='top4_lsfyc' && (finale.duels||[]).length)?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'');
 const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
   ? `<section class="card subtle">
       <h2>${finale.thirdFourthIds.map(id => escapeHtml(qName(id))).join(' & ')}</h2>
@@ -908,13 +908,16 @@ const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
       <p>Now, sashay away.</p>
     </section>`
   : '';
+  const top5CrownAnnouncement=finale.format==='top4_lsfyc' && finale.finalistIds.length===5 && !(finale.duels||[]).length
+    ? `<section class="card important finale-results-card"><h2>The Final Cut</h2><p>Ladies, thank you for everything you have brought to this season. Only two of you can lip sync for the crown.</p><div class="grid finale-results-grid">${(finale.thirdFourthIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean).map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong><p>Thank you for sharing your charisma, uniqueness, nerve and talent. Now, sashay away.</p></div></article>`).join('')}</div><h3>Our Final Two</h3><p><strong>${escapeHtml(crownFinalistNames)}</strong>, you are the final two queens of the season! The time has come to lip sync for the crown!</p></section>` : '';
   const secondaryRows=isAllWinnersFinale?`<section class="card"><h2>She Done Already Done Had Herses Bracket</h2>${(finale.secondaryDuels||[]).map(d=>semiFinalDuelCard(d,'advances to the bracket final',{reveal:true})).join('')}${finale.secondaryFinalDuel?semiFinalDuelCard(finale.secondaryFinalDuel,'wins the bracket',{reveal:true}):''}${allWinnersTournamentWinnerCard(finale.secondaryWinnerId,'Queen of She Done Already Done Had Herses Bracket')}</section>`:'';
   if((typeof hasMissCongeniality!=='function' || hasMissCongeniality()) && !gameState.season?.fanFavorite) calculateFanFavorite(null);
   setHTML(`<main class="screen">
     <section class="hero">${finalePageBadge(2,isAllWinnersFinale?'Brackets':'Final Cut')}<h1>${isAllWinnersFinale?'The Finale Brackets':'The Grand Finale Continues'}</h1><p>${isAllWinnersFinale?'The queens enter two lip sync tournaments before the final crown is decided.':`${escapeHtml(format)}. Ru makes the final cut before the last lip sync.`}</p></section>
     ${secondaryRows}
     ${semiRows}
-    ${sashays}
+    ${top5CrownAnnouncement}
+    ${top5CrownAnnouncement?'':sashays}
     ${fanFavoriteAnnouncementHtml()}
     <section class="card finale-top2-card">
       <h2>${escapeHtml(crownFinalistNames)}</h2>
