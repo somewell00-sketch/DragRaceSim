@@ -376,7 +376,7 @@ function smackdownResultObjectFromDuel(d){
     lalaparuzaDuel:d
   };
 }
-function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false}={}){
+function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false,reveal=true}={}){
   if(!d){
     const fallback=latestReturnSmackdownDuelFrom(null);
     if(fallback)d=fallback;
@@ -402,7 +402,7 @@ function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false}={}){
       ${typeof impactQueenCard==='function'?impactQueenCard(loser,returnSmackdown?'OUT':'STILL IN DANGER',returnSmackdown?"I'm sorry my dear.":loserLine,returnSmackdown?'sashay':'safe',returnSmackdown?'<p>This is not your moment, now sashay away.</p>':''):`<div class="card"><p><strong>${escapeHtml(qName(d.loserId))}</strong> ${escapeHtml(returnSmackdown?"I'm sorry my dear. This is not your moment, now sashay away.":loserLine)}</p></div>`}`;
   }
   if(gameState.currentEpisode)gameState.currentEpisode.song=oldSong;
-  return hero+battle+decision;
+  return hero+battle+(reveal?decision:'');
 }
 function renderLalaparuzaDuelResult(d){
   const result=initLalaparuzaState(gameState.currentEpisode);
@@ -440,18 +440,19 @@ function currentReturnSmackdownFinalResult(fallback=null){
 }
 function completeReturnSmackdownAndShow(chosen){
   const outcome=completeReturnSmackdownDuel(chosen);
+  if(!outcome)return renderReturnSmackdownEpisode();
   const duel=latestReturnSmackdownDuelFrom(outcome);
   if(duel)return renderReturnSmackdownDuelResult(duel);
   return renderReturnSmackdownResult(currentReturnSmackdownFinalResult(outcome));
 }
-function renderReturnSmackdownDuelResult(d){
+function renderReturnSmackdownDuelResult(d,reveal=false){
   const st=initReturnSmackdownState(gameState.currentEpisode);
   const isComplete=st.phase==='complete';
   const safeDuel=d || latestReturnSmackdownDuelFrom(null);
   if(!safeDuel && isComplete)return renderReturnSmackdownResult(currentReturnSmackdownFinalResult());
-  setHTML(`<main class="layout"><section class="screen">${smackdownLipSyncResultCard(safeDuel,{returnSmackdown:true})}<button id="continueAfterReturnDuel">${isComplete?'See Smackdown result':'Continue Smackdown'}</button></section>${queenSidebar()}</main>`);
+  setHTML(`<main class="layout"><section class="screen">${smackdownLipSyncResultCard(safeDuel,{returnSmackdown:true,reveal})}<button id="continueAfterReturnDuel">${!reveal?'Reveal the result':(isComplete?'See Smackdown result':'Continue Smackdown')}</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownDuelResult(safeDuel)));
-  document.querySelector('#continueAfterReturnDuel')?.addEventListener('click',()=>{ if(isComplete)renderReturnSmackdownResult(currentReturnSmackdownFinalResult()); else renderReturnSmackdownEpisode(); });
+  document.querySelector('#continueAfterReturnDuel')?.addEventListener('click',()=>{ if(!reveal)renderReturnSmackdownDuelResult(safeDuel,true); else if(isComplete)renderReturnSmackdownResult(currentReturnSmackdownFinalResult()); else renderReturnSmackdownEpisode(); });
 }
 function autoAdvanceSmackdownStep(fn,delay=900){
   window.setTimeout(()=>{ try{ fn(); }catch(e){ console.error(e); } },delay);
@@ -604,7 +605,7 @@ function renderReturnSmackdownEpisode(){
   const names=participants.map(q=>escapeHtml(q.name)).join(', ');
   const header=`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',isReunion?'The eliminated queens battle for one last title. No one returns to the competition.':'One eliminated queen can fight her way back into the competition.')}</div>`;
   const footer=`</section>${queenSidebar()}</main>`;
-  const history=(st.rounds||[]).length?`<div class="card"><h3>Duel history</h3>${st.rounds.map(r=>{const d=(r.duels||[])[0]; return d?`<p><strong>Round ${r.round}:</strong> ${escapeHtml(qName(d.winnerId))} defeated ${escapeHtml(qName(d.loserId))} to ${escapeHtml(d.song?.title||'the song')}.</p>`:'';}).join('')}</div>`:'';
+  const history=(st.rounds||[]).length?`<div class="card"><h3>Duel history</h3>${st.rounds.map(r=>(r.duels||[]).map(d=>`<details><summary>Round ${r.round}: ${escapeHtml(qName(d.queenIds[0]))} vs ${escapeHtml(qName(d.queenIds[1]))} — ${escapeHtml(d.song?.title||'Lip Sync')}</summary>${smackdownLipSyncResultCard(d,{returnSmackdown:true})}</details>`).join('')).join('')}</div>`:'';
   if(st.phase==='complete')return renderReturnSmackdownResult(ep.returnSmackdownResult||gameState.season?.returnAnnouncement?.smackdown||resolveReturnSmackdown());
   if(st.phase==='draw')beginReturnSmackdownDuel();
   const d=st.currentDuel;
@@ -654,7 +655,7 @@ function renderReturnSmackdownResult(result){
   const title=isReunion?'Queen of She Already Done Had Herses':(isRedemption?'Boot Order Lip Sync Smackdown':'Lip Sync Smackdown Return');
   const queenById=(id)=>gameState.queens.find(q=>q.id===id);
   const chip=(id,mark='')=>{const q=queenById(id); return `<div class="lala-queen-chip ${mark?`lala-${mark}`:''}">${q?queenPortraitHtml(q,'md'):''}<strong>${escapeHtml(qName(id))}</strong>${mark?`<span class="small">${escapeHtml(mark)}</span>`:''}</div>`;};
-  const duelHtml=(d)=>`<div class="lala-duel-block">${lipSyncSongCard(d.song)}<div class="lala-duel">${chip(d.queenIds[0],d.winnerId===d.queenIds[0]?'wins':'out')}<span class="vs">VS</span>${chip(d.queenIds[1],d.winnerId===d.queenIds[1]?'wins':'out')}</div></div>`;
+  const duelHtml=(d)=>`<div class="lala-duel-block"><details><summary>${escapeHtml(qName(d.queenIds[0]))} vs ${escapeHtml(qName(d.queenIds[1]))} — ${escapeHtml(d.song?.title||'Lip Sync')} (view performance)</summary>${smackdownLipSyncResultCard(d,{returnSmackdown:true})}</details></div>`;
   const rows=(result.rounds||[]).map(r=>`<div class="card lala-round-card"><h3>Round ${r.round}</h3>${r.byeId?`<div class="lala-bye">${chip(r.byeId,'bye')}</div>`:''}<div class="lala-duel-list">${(r.duels||[]).map(duelHtml).join('')}</div></div>`).join('');
   const winner=queenById(result.winnerId);
   const finalHeading=isReunion?'The tournament has a winner.':'A queen returns to the competition.';

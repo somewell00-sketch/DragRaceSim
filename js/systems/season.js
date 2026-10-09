@@ -671,8 +671,14 @@ function returnSmackdownAutoSong(chooserId){
 function completeReturnSmackdownDuel(strategyByQueenId={}){
   const ep=gameState.currentEpisode, st=initReturnSmackdownState(ep), cd=st.currentDuel;
   if(!cd)return null;
+  if(st.phase!=='strategy' || !cd.song || cd.winnerId)return null;
+  const playerId=gameState.playerQueenId;
+  if(cd.queenIds.includes(playerId) && !strategyByQueenId[playerId])return null;
   cd.strategyByQueenId=Object.assign({},strategyByQueenId);
   const a=gameState.queens.find(q=>q.id===cd.queenIds[0]), b=gameState.queens.find(q=>q.id===cd.queenIds[1]);
+  if(!a || !b)return null;
+  for(const q of [a,b])if(!cd.strategyByQueenId[q.id])cd.strategyByQueenId[q.id]=autoLipSyncStrategy(q,cd.song);
+  saveGame();
   const d=runLipSyncDuelNoStats(a,b,`Return Round ${cd.round}`,{song:cd.song,strategyByQueenId:cd.strategyByQueenId,context:'return_smackdown'});
   Object.assign(cd,{scores:d.scores,winnerId:d.winnerId,loserId:d.loserId,strategy:d.strategy,strategyLabels:d.strategyLabels,resultText:`${qName(d.winnerId)} wins and keeps fighting. ${qName(d.loserId)} is out.`});
   st.usedSongs.push(cd.song);
