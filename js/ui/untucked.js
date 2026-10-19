@@ -137,7 +137,7 @@ function renderUntuckedResult(){
   const btn=document.querySelector('#continue');
   btn.textContent='Next episode';
 }
-function autoSimulateToEnd(){while(!isFinaleReady()){generateEpisode(); if(gameState.currentEpisode.special==='lalaparuza'){resolveLalaparuza(); continue;} calculateEpisodeResults({risk:'safe'}); resolveLipSync(); applyEpisodeStats();} if(shouldOfferReunionSmackdown())resolveReunionSmackdown(); prepareFinale(); crownWinner();}
+function autoSimulateToEnd(){while(!isFinaleReady()){generateEpisode(); if(gameState.currentEpisode.special==='lalaparuza'){resolveLalaparuza(); continue;} if(gameState.currentEpisode.special==='return_smackdown'){finishReturnSmackdownSilently(gameState.currentEpisode); continue;} calculateEpisodeResults({risk:'safe'}); resolveLipSync(); applyEpisodeStats();} if(shouldOfferReunionSmackdown())resolveReunionSmackdown(); prepareFinale(); crownWinner();}
 
 
 

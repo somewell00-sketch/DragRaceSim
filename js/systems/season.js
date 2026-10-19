@@ -2461,12 +2461,14 @@ const winnerQueen = gameState.queens.find(q => q.id === finale.winnerId);
 
 if (winnerQueen) {
     winnerQueen.winner = true;
-   if (typeof saveCommunityQueen === 'function') {
+   // Only the player's own queen, only with opt-in, and only once per season
+   // (the old code re-published every winner, including NPCs and other players' queens).
+   const canPublishWinner = winnerQueen.isPlayer && winnerQueen.communityShareOptIn === true && !winnerQueen.communityWinnerSaved;
+   if (canPublishWinner && typeof saveCommunityQueen === 'function') {
+     winnerQueen.communityWinnerSaved = true;
      saveCommunityQueen(winnerQueen)
        .then(savedQueen => console.info('[COMMUNITY QUEEN SAVE]', savedQueen ? 'Winner saved' : 'Winner not saved', savedQueen))
        .catch(error => console.error('Could not save winning community queen:', error));
-   } else {
-     console.error('Could not save winning community queen: saveCommunityQueen is not available.');
    }
 }
   const allFinalists=gameState.queens.filter(q=>finale.finalistIds.includes(q.id));

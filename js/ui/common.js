@@ -89,6 +89,18 @@ function enhanceSeasonChrome(){
   }
 }
 
+function finishReturnSmackdownSilently(ep){
+  if(!ep || ep.special!=='return_smackdown')return;
+  try{
+    if(typeof resolveReturnSmackdown==='function' && !ep.returnSmackdownResult)resolveReturnSmackdown();
+  }catch(err){
+    console.error('Return smackdown could not be resolved silently:',err);
+  }
+  // Whatever happened, the twist must never fire twice.
+  if(gameState.season?.returnTwist)gameState.season.returnTwist.used=true;
+  // The interactive flow also clears the episode on "Continue" (renderReturnSmackdownResult).
+  gameState.currentEpisode=null;
+}
 function playerCanSkipToFinale(){
   const player=(gameState.queens||[]).find(q=>q.id===gameState.playerQueenId);
   return !!player?.isEliminated && gameState.season?.status!=='finished' && gameState.season?.status!=='finale';
@@ -98,6 +110,12 @@ function simulateEpisodeSilentlyForFinale(){
   if(!ep || ep.statsApplied)return;
   if(ep.special==='lalaparuza'){
     if(typeof resolveLalaparuza==='function')resolveLalaparuza();
+    return;
+  }
+  if(ep.special==='return_smackdown'){
+    // Fix: return smackdowns were never resolved while skipping, so the twist stayed
+    // "available" and generateEpisode() kept creating empty smackdown episodes.
+    finishReturnSmackdownSilently(ep);
     return;
   }
   if(!ep.placements?.length && typeof calculateEpisodeResults==='function')calculateEpisodeResults({risk:'safe'});
@@ -130,7 +148,7 @@ function finishCurrentEpisodeSilently(){
     return;
   }
   if(ep.special==='return_smackdown'){
-    if(typeof resolveReturnSmackdown==='function' && !ep.returnSmackdownResult)resolveReturnSmackdown();
+    finishReturnSmackdownSilently(ep);
     return;
   }
   ep.workroomComplete=true;

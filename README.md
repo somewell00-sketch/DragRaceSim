@@ -1,3 +1,14 @@
+# Drag Race Simulator — v31.1 Critical Fixes
+
+## What changed in v31.1
+
+- **Skip to Finale (Legacy / Assassin):** the return smackdown is now resolved while skipping. Before, it was never resolved, so ~57 empty episodes were generated and the finale got the wrong number of finalists.
+- **Community queens are validated:** every row loaded from Supabase is cleaned (stats 1–10, total ≤ 45, known type/personality, name ≤ 40 chars, hidden/control characters removed). Rows without a name are dropped.
+- **Privacy:** no more GPS prompt or OpenStreetMap lookup. The hometown is an optional, editable field (pre-filled from the time zone only). A queen is published **only** if the player ticks "Share my queen with the community". Winners are published once, and only the player's own opted-in queen.
+- **Offline-safe:** if the Supabase script fails to load, the game still runs (community features are disabled).
+- **Mobile:** fixed horizontal overflow on phones (layout grid + sidebar queen grid).
+- **Server side:** `supabase/community_queens_security.sql` adds database constraints and RLS (run it once in Supabase).
+
 # Drag Race Simulator — v31 Narrative Expansion
 
 ## What changed in v31

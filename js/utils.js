@@ -60,8 +60,9 @@ function queenShortType(q){
   return String(q?.type||'Queen').replace(/^Jack of All Trades$/,'Jack of All Trades');
 }
 function queenLocationLabel(q){
-  if(q?.isPlayer)return 'wherever you are';
-  return q?.location || 'somewhere fabulous';
+  const loc=String(q?.location||'').trim();
+  const placeholder=!loc || /^unknown city/i.test(loc) || loc==="A Fan's Fantasy";
+  return placeholder ? 'somewhere fabulous' : loc;
 }
 function queenPersonaType(q){
   const archetype=`${queenPersonalityName(q)} ${queenShortType(q)}`.trim();

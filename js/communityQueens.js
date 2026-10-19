@@ -1,7 +1,110 @@
 const SUPABASE_URL = 'https://ieicxwwapcmkaffuplfa.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_ZWRCRg4bhvPrkld0pkTcyg__dWY0VVb';
 
-const communityDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Fix: if the Supabase CDN is blocked/offline, window.supabase is undefined and the old
+// line threw, killing every function in this file. The game must still work offline.
+let communityDb = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    communityDb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  } else {
+    console.warn('Supabase is not available; community queens are disabled for this session.');
+  }
+} catch (err) {
+  console.warn('Could not create the Supabase client; community queens are disabled:', err);
+  communityDb = null;
+}
+
+// ---------------------------------------------------------------------------
+// Community data validation
+// Rows in the public table can be written by anyone holding the publishable key,
+// so nothing coming from (or going to) the database is trusted.
+// ---------------------------------------------------------------------------
+const COMMUNITY_ATTR_KEYS = ['cunt', 'lip_sync', 'makeup', 'sewing', 'runway', 'acting'];
+const COMMUNITY_ATTR_MIN = 1;
+const COMMUNITY_ATTR_MAX = 10;
+const COMMUNITY_ATTR_TOTAL_MAX = 45;
+const COMMUNITY_NAME_MAX = 40;
+const COMMUNITY_LOCATION_MAX = 60;
+
+function cleanCommunityText(value, maxLength) {
+  return String(value ?? '')
+    .normalize('NFC')
+    .replace(/[\u0000-\u001F\u007F-\u009F\u200B-\u200F\u202A-\u202E\u2066-\u2069]/g, '')
+    .replace(/[<>]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, maxLength)
+    .trim();
+}
+
+function clampCommunityAttr(value) {
+  const n = Math.round(Number(value));
+  if (!Number.isFinite(n)) return 7;
+  return Math.max(COMMUNITY_ATTR_MIN, Math.min(COMMUNITY_ATTR_MAX, n));
+}
+
+// Clamps every stat to 1–10 and scales the build down to the same 45-point cap the
+// queen creator enforces, so database rows can never be stronger than a legal queen.
+function sanitizeCommunityAttributes(raw) {
+  const attrs = {};
+  COMMUNITY_ATTR_KEYS.forEach(key => { attrs[key] = clampCommunityAttr(raw?.[key]); });
+  let total = COMMUNITY_ATTR_KEYS.reduce((sum, key) => sum + attrs[key], 0);
+  if (total > COMMUNITY_ATTR_TOTAL_MAX) {
+    const ratio = COMMUNITY_ATTR_TOTAL_MAX / total;
+    COMMUNITY_ATTR_KEYS.forEach(key => { attrs[key] = Math.max(COMMUNITY_ATTR_MIN, Math.floor(attrs[key] * ratio)); });
+    total = COMMUNITY_ATTR_KEYS.reduce((sum, key) => sum + attrs[key], 0);
+    // Floor rounding can leave a few points unused; give them back to the highest stats.
+    const order = [...COMMUNITY_ATTR_KEYS].sort((a, b) => (raw?.[b] || 0) - (raw?.[a] || 0));
+    let i = 0;
+    while (total < COMMUNITY_ATTR_TOTAL_MAX && i < order.length * 10) {
+      const key = order[i % order.length];
+      if (attrs[key] < COMMUNITY_ATTR_MAX) { attrs[key] += 1; total += 1; }
+      i += 1;
+    }
+  }
+  return attrs;
+}
+
+function knownQueenTypeName(value) {
+  const types = window.GAME_DATA?.queenTypes || [];
+  const match = types.find(t => t.name === value);
+  return match ? match.name : 'Jack of All Trades';
+}
+
+function knownPersonalityId(value) {
+  const list = window.GAME_DATA?.personalities || [];
+  const id = String(value || '').toLowerCase();
+  const legacy = { timid: 'shy', sweetheart: 'sweet', shady: 'sarcastic' };
+  const resolved = legacy[id] || id;
+  return list.some(p => p.id === resolved) ? resolved : 'confident';
+}
+
+// Returns a cleaned copy of a database row, or null when the row is unusable.
+function sanitizeCommunityRow(row) {
+  if (!row || typeof row !== 'object') return null;
+  const name = cleanCommunityText(row.name, COMMUNITY_NAME_MAX);
+  if (!name) return null;
+  const attrs = sanitizeCommunityAttributes({
+    cunt: row.cunt,
+    lip_sync: row.lip_sync ?? row.lipSync,
+    makeup: row.makeup,
+    sewing: row.sewing,
+    runway: row.runway ?? row.design,
+    acting: row.acting
+  });
+  return {
+    id: row.id,
+    created_at: row.created_at,
+    name,
+    drag_type: knownQueenTypeName(row.drag_type || row.type),
+    personality: knownPersonalityId(row.personality || row.personalityId),
+    ...attrs,
+    location: cleanCommunityText(row.location || row.country || '', COMMUNITY_LOCATION_MAX),
+    winner: isTrueLike(row.winner),
+    game_version: cleanCommunityText(row.game_version || '', 40)
+  };
+}
 
 const COUNTRY_CODE_ALIASES = {
   US: 'USA', USA: 'USA', UNITED_STATES: 'USA', UNITED_STATES_OF_AMERICA: 'USA', AMERICA: 'USA',
@@ -89,70 +192,41 @@ function locationFromTimezone(){
   return normalizeCommunityLocation(TIMEZONE_LOCATION_FALLBACKS[timezone] || 'Unknown City, XXX');
 }
 
-function getBrowserCoordinates(){
-  if (!navigator.geolocation) return Promise.resolve(null);
-  return new Promise(resolve => {
-    let settled = false;
-    const done = value => { if (!settled) { settled = true; resolve(value); } };
-    navigator.geolocation.getCurrentPosition(
-      pos => done({ latitude: pos.coords.latitude, longitude: pos.coords.longitude }),
-      () => done(null),
-      { enableHighAccuracy: false, timeout: 3500, maximumAge: 86400000 }
-    );
-    setTimeout(() => done(null), 4200);
-  });
+// Privacy fix: the game used to call navigator.geolocation as soon as the creator opened
+// and reverse-geocode the GPS position through OpenStreetMap, then publish the city.
+// Location is now only a coarse, editable guess from the browser time zone. It never
+// leaves the device unless the player explicitly opts in to sharing their queen.
+function detectUserCommunityLocation(){
+  return Promise.resolve(locationFromTimezone());
 }
 
-function cityFromAddress(address){
-  return address?.city || address?.town || address?.village || address?.municipality || address?.county || address?.state_district || address?.state || '';
+const COMMUNITY_SHARE_PREF_KEY = 'dragRaceShareQueenOptIn';
+function getCommunitySharePreference(){
+  try { return localStorage.getItem(COMMUNITY_SHARE_PREF_KEY) === 'true'; } catch (err) { return false; }
 }
-
-async function reverseGeocodeCoordinates(coords){
-  if (!coords) return '';
-  try{
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(coords.latitude)}&lon=${encodeURIComponent(coords.longitude)}&zoom=10&addressdetails=1`;
-    const response = await fetch(url, { headers: { Accept: 'application/json' } });
-    if (!response.ok) return '';
-    const data = await response.json();
-    const city = cityFromAddress(data?.address);
-    const country = normalizeCountryCode(data?.address?.country_code || data?.address?.country);
-    return city && country ? normalizeCommunityLocation(`${city}, ${country}`) : '';
-  }catch(err){
-    console.warn('Could not reverse geocode user location:', err);
-    return '';
-  }
-}
-
-async function detectUserCommunityLocation(){
-  if (cachedUserCommunityLocation) return cachedUserCommunityLocation;
-  if (userCommunityLocationPromise) return userCommunityLocationPromise;
-
-  userCommunityLocationPromise = (async()=>{
-    const preciseLocation = await reverseGeocodeCoordinates(await getBrowserCoordinates());
-    cachedUserCommunityLocation = preciseLocation || "A Fan's Fantasy";
-    return cachedUserCommunityLocation;
-  })();
-
-  return userCommunityLocationPromise;
+function setCommunitySharePreference(value){
+  try { localStorage.setItem(COMMUNITY_SHARE_PREF_KEY, value ? 'true' : 'false'); } catch (err) {}
 }
 
 function communityQueenPayload(queen) {
   const attrs = queen.attributes || {};
+  const clean = sanitizeCommunityAttributes({
+    cunt: attrs.cunt ?? queen.cunt,
+    lip_sync: attrs.lipSync ?? queen.lipSync ?? queen.lip_sync,
+    makeup: attrs.makeup ?? queen.makeup,
+    sewing: attrs.sewing ?? queen.sewing,
+    runway: attrs.runway ?? queen.runway ?? queen.design,
+    acting: attrs.acting ?? queen.acting
+  });
 
   return {
-    name: queen.name || '',
-    drag_type: queen.type || queen.dragType || '',
-    personality: queen.personalityId || queen.personality || '',
-    cunt: Number(attrs.cunt ?? queen.cunt ?? 0) || 0,
-    lip_sync: Number(attrs.lipSync ?? queen.lipSync ?? queen.lip_sync ?? 0) || 0,
-    makeup: Number(attrs.makeup ?? queen.makeup ?? 0) || 0,
-    sewing: Number(attrs.sewing ?? queen.sewing ?? 0) || 0,
-    runway: Number(attrs.runway ?? queen.runway ?? queen.design ?? 0) || 0,
-    acting: Number(attrs.acting ?? queen.acting ?? 0) || 0,
-    location: normalizeCommunityLocation(queen.location || queen.country || ''),
+    name: cleanCommunityText(queen.name, COMMUNITY_NAME_MAX),
+    drag_type: knownQueenTypeName(queen.type || queen.dragType),
+    personality: knownPersonalityId(queen.personalityId || queen.personality),
+    ...clean,
+    location: cleanCommunityText(normalizeCommunityLocation(queen.location || queen.country || ''), COMMUNITY_LOCATION_MAX),
     game_version: window.GAME_VERSION || 'dragracesim-v1',
-        winner: !!queen.winner
-
+    winner: !!queen.winner
   };
 }
 
@@ -183,6 +257,13 @@ async function saveCommunityQueen(queen) {
     console.error('Could not save community queen: queen name is missing.', queen);
     return null;
   }
+
+  // Only queens whose creator opted in are ever published.
+  if (queen.communityShareOptIn !== true) {
+    console.info('[COMMUNITY QUEEN SAVE] Skipped: the player did not opt in to sharing.');
+    return null;
+  }
+  if (!cleanCommunityText(queen.name, COMMUNITY_NAME_MAX)) return null;
 
   let { data, error } = await insertCommunityQueenPayload(communityQueenPayload(queen));
 
@@ -244,8 +325,9 @@ async function loadQueensFromTable(tableName, limit = 100, queryBuilder = null) 
     return [];
   }
 
-  console.info(`[CAST DB] Loaded ${data?.length || 0} rows from ${tableName}.`);
-  return data || [];
+  const cleanRows = (data || []).map(sanitizeCommunityRow).filter(Boolean);
+  console.info(`[CAST DB] Loaded ${cleanRows.length}/${data?.length || 0} valid rows from ${tableName}.`);
+  return cleanRows;
 }
 
 async function loadCommunityQueens(limit = 100) {
@@ -293,7 +375,8 @@ async function loadEligibleCommunityQueens(options = {}) {
   ));
 }
 
-function convertCommunityQueenToGameQueen(row, index = 0, sourcePrefix = 'community') {
+function convertCommunityQueenToGameQueen(rawRow, index = 0, sourcePrefix = 'community') {
+  const row = sanitizeCommunityRow(rawRow) || {};
   const safeName = String(row?.name || `Community Queen ${index + 1}`).trim() || `Community Queen ${index + 1}`;
   const safeType = row?.drag_type || row?.type || 'Jack of All Trades';
   const safePersonality = row?.personality || row?.personalityId || 'confident';
@@ -323,3 +406,7 @@ window.loadCommunityWinnerQueens = loadCommunityWinnerQueens;
 window.convertCommunityQueenToGameQueen = convertCommunityQueenToGameQueen;
 window.loadEligibleCommunityQueens = loadEligibleCommunityQueens;
 window.normalizeCommunityLocation = normalizeCommunityLocation;
+window.sanitizeCommunityRow = sanitizeCommunityRow;
+window.sanitizeCommunityAttributes = sanitizeCommunityAttributes;
+window.getCommunitySharePreference = getCommunitySharePreference;
+window.setCommunitySharePreference = setCommunitySharePreference;

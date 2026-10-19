@@ -101,11 +101,10 @@ async function initLocalCommunityQueenSelect(){
   if(typeof loadEligibleCommunityQueens!=='function')return;
   try{
     let location=null;
-    const userLocationPromise=typeof detectUserCommunityLocation==='function'
-      ? detectUserCommunityLocation().then(value=>{window.currentUserCommunityLocation=value;return value;}).catch(()=>null)
-      : Promise.resolve(null);
+    // Privacy fix: no automatic location lookup here. Location filtering (if ever
+    // enabled) uses the hometown the player typed in the creator.
     if(LOCAL_COMMUNITY_QUEEN_FILTERS.location===true){
-      location=await userLocationPromise;
+      location=document.querySelector('#qLocation')?.value?.trim()||null;
     }
     creatorCommunityQueens=await loadEligibleCommunityQueens({
       limit:100,
@@ -342,6 +341,8 @@ function renderQueenCreator(){
               <label class="home-field">Queen type<select id="qType">${typeOptions}</select></label>
               <label class="home-field">Personality<select id="qPersonality">${personalityOptions}</select></label>
             </div>
+            <label class="home-field creator-location-field">Hometown <small>(optional)</small><input id="qLocation" maxlength="60" placeholder="City, Country" autocomplete="off"></label>
+            <label class="creator-share-optin"><input type="checkbox" id="qShareCommunity"> <span><strong>Share my queen with the community</strong><small>Publishes her name, type, personality, stats and hometown so other players can cast her. Nothing is shared unless this is ticked.</small></span></label>
             <div class="creator-preview-copy"><strong id="creatorPreviewName">Your Queen</strong><span id="creatorPreviewMeta">Ambitious • Jack of All Trades</span></div>
           </div>
         </section>
@@ -377,15 +378,19 @@ function renderQueenCreator(){
    try{
      if(startBtn){startBtn.disabled=true; startBtn.textContent='Preparing cast...';}
      if(typeof ensureNamePartsLoaded==='function')await ensureNamePartsLoaded();
-     const userLocation = typeof detectUserCommunityLocation === 'function' ? await detectUserCommunityLocation() : 'Unknown City, XXX';
-     window.currentUserCommunityLocation = userLocation;
+     const typedLocation=(document.querySelector('#qLocation')?.value||'').trim().slice(0,60);
+     const userLocation=typedLocation || '';
+     window.currentUserCommunityLocation=userLocation;
+     const shareOptIn=!!document.querySelector('#qShareCommunity')?.checked;
+     if(typeof setCommunitySharePreference==='function')setCommunitySharePreference(shareOptIn);
      const queen=createQueenFromForm({name:document.querySelector('#qName').value.trim(),type:document.querySelector('#qType').value,personalityId:document.querySelector('#qPersonality').value,attributes,location:userLocation});
-if(typeof saveCommunityQueen === 'function'){
-  const savedQueen = await saveCommunityQueen(queen);
-  console.info('[COMMUNITY QUEEN SAVE]', savedQueen ? 'Saved before season start' : 'Not saved before season start', savedQueen);
-} else {
-  console.error('Could not save community queen: saveCommunityQueen is not available.');
-}
+     queen.communityShareOptIn=shareOptIn;
+     if(shareOptIn && typeof saveCommunityQueen==='function'){
+       // Fire-and-forget: a slow or offline database must not block the season start.
+       saveCommunityQueen(queen)
+         .then(savedQueen=>{ if(savedQueen?.id){ queen.communityRowId=savedQueen.id; } })
+         .catch(err=>console.warn('Could not save community queen:',err));
+     }
      const setup=window.pendingSeasonSetup || {castSize:'random',format:'regular'};
      await startSeason(
   queen,
@@ -399,6 +404,14 @@ if(typeof saveCommunityQueen === 'function'){
      if(startBtn){startBtn.disabled=false; startBtn.textContent='👑 Start Season 👑';}
    }
  });
+ const shareBox=document.querySelector('#qShareCommunity');
+ if(shareBox && typeof getCommunitySharePreference==='function')shareBox.checked=getCommunitySharePreference();
+ const locationInput=document.querySelector('#qLocation');
+ if(locationInput && typeof locationFromTimezone==='function'){
+   // Coarse, editable suggestion from the time zone only (no GPS, no network call).
+   const guess=locationFromTimezone();
+   if(guess && !/unknown/i.test(guess))locationInput.value=guess;
+ }
  applyTypePreset();
  updateCreatorPreview();
  updateTotal();
