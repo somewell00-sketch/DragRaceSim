@@ -117,7 +117,7 @@ window.GAME_DATA.snatchCharacters = [
   { "name": "Putin", "type": "tiny horse man" },
 
 
-  { "name": "RuPaul’s evil twin", "type": "drag entity" },
+  { "name": "RuPaul's evil twin", "type": "drag entity" },
   { "name": "Bianca Del Rio", "type": "clown roast" },
   { "name": "Trixie Mattel", "type": "piggy bank" },
   { "name": "Katya", "type": "unhinged queen" },

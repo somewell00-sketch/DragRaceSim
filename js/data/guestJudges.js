@@ -3,7 +3,7 @@ window.GAME_DATA = window.GAME_DATA || {};
 window.GAME_DATA.guestJudges = [
   {
     "name": "Lady Gaga",
-    "note": "She’s the one Italian girl from New York who will judge in a room with 100 people."
+    "note": "She's the one Italian girl from New York who will judge in a room with 100 people."
   },
 {
     "name": "Merle Ginsberg",
@@ -95,7 +95,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Anitta",
-    "note": "Twerking choreography, a business mindset, and making sure you know she’s from Honório Gurgel."
+    "note": "Twerking choreography, a business mindset, and making sure you know she's from Honório Gurgel."
   },
   {
     "name": "Pabllo Vittar",
@@ -119,7 +119,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Fantasia Barrino",
-    "note": "Soulful church vocals so intense they’ll make her take her shoes off."
+    "note": "Soulful church vocals so intense they'll make her take her shoes off."
   },
   {
     "name": "Maren Morris",
@@ -203,7 +203,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Elton John",
-    "note": "Diamond glasses and a gay legacy older than RuPaul’s original face."
+    "note": "Diamond glasses and a gay legacy older than RuPaul's original face."
   },
   {
     "name": "Harry Styles",
@@ -447,7 +447,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Alesha Dixon",
-    "note": "Confused as to why she’s on another British panel, but ready to press a fake golden buzzer."
+    "note": "Confused as to why she's on another British panel, but ready to press a fake golden buzzer."
   },
   {
     "name": "Paloma Faith",
@@ -495,7 +495,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Jinkx Monsoon",
-    "note": "Narcoleptic witch comedy and Broadway dominance. Reminding you it’s always Monsoon season."
+    "note": "Narcoleptic witch comedy and Broadway dominance. Reminding you it's always Monsoon season."
   },
   {
     "name": "Bianca Del Rio",
@@ -507,7 +507,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Bob the Drag Queen",
-    "note": "Loud wigs, comedy, and attacking queens who rely on looks because 'it’s fashion' *burp*."
+    "note": "Loud wigs, comedy, and attacking queens who rely on looks because 'it's fashion' *burp*."
   },
   {
     "name": "Sasha Velour",
@@ -691,7 +691,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Shakira",
-    "note": "Your hips might not lie, but she’s definitely checking if your tax returns do."
+    "note": "Your hips might not lie, but she's definitely checking if your tax returns do."
   },
   {
     "name": "Gloria Estefan",
@@ -743,7 +743,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "MARINA",
-    "note": "Tumblr nostalgia. Checking if your look was bought on a budget because she’s poor."
+    "note": "Tumblr nostalgia. Checking if your look was bought on a budget because she's poor."
   },
   {
     "name": "Florence Welch",
@@ -1135,7 +1135,7 @@ window.GAME_DATA.guestJudges = [
   },
   {
     "name": "Winnie Harlow",
-    "note": "Vitiligo structural silhouettes, runway styling, and checking if she’ll complain about hospitality."
+    "note": "Vitiligo structural silhouettes, runway styling, and checking if she'll complain about hospitality."
   },
   {
     "name": "Heidi Klum",

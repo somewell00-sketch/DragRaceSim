@@ -28,6 +28,17 @@ window.GAME_DATA.farewellLines = {
     acting: ['acting instincts', 'character work', 'dramatic flair', 'storytelling'],
     singing: ['voice', 'musicality', 'vocal confidence', 'stage melody'],
     social: ['heart', 'connection', 'warmth', 'presence'],
+    // v31.5: types that used to fall into "default"
+    sewing: ['stitching', 'tailoring', 'seamstress magic', 'ability to turn fabric into a fantasy'],
+    ballroom: ['ballroom realness', 'vogue', 'runway walk', 'death drops'],
+    club: ['nightlife energy', 'club kid vision', 'after-hours chaos', 'dance-floor magnetism'],
+    horror: ['beautiful horror', 'monster makeup', 'gore-geous point of view', 'nightmare fuel'],
+    cosplay: ['character transformations', 'foam-and-hot-glue genius', 'fandom fantasy', 'cosplay craftsmanship'],
+    glamour: ['old-Hollywood glamour', 'red-carpet polish', 'perfect beat', 'glamour'],
+    lipsync: ['lip sync fire', 'killer instinct on stage', 'death drops', 'performance power'],
+    influencer: ['ring-light presence', 'viral instincts', 'online empire', 'content-creator charm'],
+    hostess: ['hosting chops', 'command of the mic', 'way with a crowd', 'quick wit on the mic'],
+    versatile: ['versatility', 'range', 'all-round talent', 'ability to do a bit of everything'],
     default: ['charisma, uniqueness, nerve and talent', 'drag', 'artistry', 'spark']
   },
   qualitiesByPersonality: {
@@ -40,6 +51,20 @@ window.GAME_DATA.farewellLines = {
     shady: ['bite', 'edge', 'sharpness', 'nerve'],
     dramatic: ['drama', 'theatrics', 'emotional fire', 'grand emotion'],
     weird: ['unhinged sparkle', 'mystery', 'delightful confusion', 'cosmic nonsense'],
+    // v31.5: personalities that used to fall into "default"
+    funny: ['humor', 'timing', 'laughter', 'comic nerve'],
+    competitive: ['fire', 'drive', 'hunger', 'killer instinct'],
+    calculating: ['strategy', 'cool-headedness', 'poker-face calm', 'chess-player patience'],
+    perfectionist: ['precision', 'standards', 'attention to detail', 'discipline'],
+    reserved: ['quiet confidence', 'composure', 'mystery', 'restraint'],
+    ambitious: ['ambition', 'hunger', 'vision', 'drive'],
+    charming: ['charm', 'sparkle', 'charisma', 'magnetism'],
+    sweet: ['sweetness', 'kindness', 'warmth', 'sugar'],
+    sarcastic: ['wit', 'bite', 'dry humor', 'razor-sharp delivery'],
+    hotheaded: ['fire', 'passion', 'intensity', 'temper'],
+    fearless: ['fearlessness', 'nerve', 'guts', 'daring'],
+    humble: ['humility', 'grace', 'gratitude', 'sincerity'],
+    eccentric: ['eccentricity', 'imagination', 'strange magic', 'originality'],
     default: ['passion', 'nerve', 'heart', 'presence']
   },
   queenExitByPersonality: {
@@ -86,9 +111,9 @@ window.GAME_DATA.farewellLines = {
       '"Smart move. You just chopped the biggest threat to the crown."',
       '"Thank you, Ru. I guess my storyline for this season is officially wrapped."',
       '"A flawless blindside. As a fan of the game, I have to respect it."',
-      '"I’m already drafting my All Stars alliances in my head. Well played."',
+      '"I\'m already drafting my All Stars alliances in my head. Well played."',
       '"To my alliance: avenge me. To everyone else: sleep with one eye open."',
-      '"Thank you, Ru. I can’t wait to see how the producers edit this outcome."',
+      '"Thank you, Ru. I can\'t wait to see how the producers edit this outcome."',
       '"I gave you the track record and the TV gold. My job here is done."',
       '"Congratulations, girls. Your chances of winning just went up drastically."',
       '"I played the game, but tonight the twist played me. Respect, Mama Ru."',
@@ -181,15 +206,15 @@ window.GAME_DATA.farewellLines = {
       '"This wasn\'t the outcome I planned, but the execution was immaculate."',
       '"Excellence doesn\'t come easy, girls. It takes work. Goodbye."',
       '"Thank you, Ru. I hope you saw the artistry in my precision."',
-      '"I spent hours making this perfect. I’m glad you got to see it."',
-      '"The placement was right, the face was right. I’m content. Thank you, Ru."',
+      '"I spent hours making this perfect. I\'m glad you got to see it."',
+      '"The placement was right, the face was right. I\'m content. Thank you, Ru."',
       '"Even my exit line was rehearsed. Thank you for the stage, Mama."'
     ],
 
     reserved: [
       '"Thank you, Ru. I let my drag do the talking."',
-      '"I’m not good with goodbyes. Thank you for everything."',
-      '"I may not speak much, but I’ve heard everything. Thank you."',
+      '"I\'m not good with goodbyes. Thank you for everything."',
+      '"I may not speak much, but I\'ve heard everything. Thank you."',
       '"Quietly, I leave my mark. Thank you, Mama."',
       '"Thank you, Ru. Being here was a privilege."',
       '"I didn\'t need to scream to be seen. Goodbye, girls."',
@@ -329,5 +354,166 @@ window.GAME_DATA.farewellLines = {
     "If you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?",
     "Remember, if you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?",
     "As always, if you can't love yourself, how in the hell are you gonna love somebody else? Can I get an amen?"
-  ]
+  ],
+
+  // ===== v31.5: farewells with context =====
+  // A trigger is checked in this order: lipstick, lipSyncAssassin, ownStrength, rival, ally, firstOut.
+  // It only fires when the person it names is part of the elimination (the chooser, the opponent, the week's winner).
+  // Each trigger has three tones: shade, sweet and any. toneByPersonality says which tone a queen leans to;
+  // "any" lines are always in the mix. With no trigger, queenExitByPersonality is used, exactly as before.
+  // Variables: {name} {rival} {ally} {chooser} {chooserWins} {winner} {wins} {bottoms} {survived} {place} {type} {challenge} {song}
+  exitByTrigger: {
+    lipstick: {
+      shade: [
+        '"{chooser}, you wrote my name because you were scared of me. Remember that when you\'re crowned... oh wait."',
+        '"{chooserWins} wins and you still needed to get rid of me? That tells me everything, {chooser}."',
+        '"Enjoy that lipstick, {chooser}. It\'s the only shade you\'ll ever throw that lands."',
+        '"I didn\'t lose the lip sync. I lost a popularity contest to {chooser}. Write that down, Ru."',
+        '"{chooser} took me out because I was the competition. I\'ll take that as a compliment."'
+      ],
+      sweet: [
+        '"{chooser}, I understand. It\'s a game, and you played it. No hard feelings. Mostly."',
+        '"Thank you, {chooser}, for doing it to my face. That\'s more than some queens would do."',
+        '"I\'d have loved one more week, but {chooser} made her choice and I respect it. Thank you, Ru."',
+        '"Someone had to hold the lipstick. I\'m glad it was someone with {chooserWins} wins and not a coward."'
+      ],
+      any: [
+        '"The lipstick said my name. My drag will say it louder. Thank you, Ru."',
+        '"{chooser} had the power tonight. I\'ll have the career tomorrow."',
+        '"You can write my name on a lipstick, {chooser}, but you can\'t erase what I did here."',
+        '"All Stars is cruel and gorgeous at the same time. Thank you for having me, Ru."'
+      ]
+    },
+    lipSyncAssassin: {
+      shade: [
+        '"I was in the bottom against {winner}, who has survived {survived} lip syncs. That\'s not a lip sync, that\'s a crime scene."',
+        '"Of course I got {winner}. Production really said: let\'s make it a bloodbath."',
+        '"{winner} is a lip sync assassin. Fine. I\'m still the better drag queen."',
+        '"I didn\'t lose to {winner}. I lost to {song}."'
+      ],
+      sweet: [
+        '"Losing to {winner} is no shame. She was born for that stage. Go win it, girl."',
+        '"I had to face the lip sync assassin of the season, and I gave her a fight. I\'m proud."',
+        '"{winner}, you\'re a killer. Thank you for making my last song unforgettable."',
+        '"I fought {winner} on {song} and I gave everything. Thank you, Ru."'
+      ],
+      any: [
+        '"Nobody wants {winner} in the bottom with them. Now I know why."',
+        '"I went out against the best lip syncer in the room. That\'s a story I\'ll tell forever."',
+        '"{song} against {winner}. I knew it was over at the first death drop."'
+      ]
+    },
+    ownStrength: {
+      shade: [
+        '"Going home in a {challenge}, my lane? The judges must have been watching someone else."',
+        '"A {type} going home in her own challenge. Somebody check the scorecards."',
+        '"This was my challenge. I\'m going home because the panel wanted a storyline."',
+        '"Out in a {challenge}? That\'s the plot twist of the season, and not in a good way."'
+      ],
+      sweet: [
+        '"It hurts to go home in a {challenge}, the one I came here to win. But I\'ll come back stronger."',
+        '"My favourite challenge, and I couldn\'t make it work. That\'s drag. Thank you for the lesson, Ru."',
+        '"I trusted my strength and it let me down tonight. It happens to the best of us."',
+        '"I wanted this {challenge} so badly. Maybe I wanted it too much. Thank you, judges."'
+      ],
+      any: [
+        '"Of all the weeks to slip, it had to be my {challenge}. Drag is humbling."',
+        '"A {type} going home in a {challenge}. Write it down, it won\'t happen again."',
+        '"Tonight my strength became my weakness. I\'ll fix that. Thank you, Ru."'
+      ]
+    },
+    rival: {
+      shade: [
+        '"Of course it was {rival}. She\'s been waiting for this since day one. Enjoy it, sweetie, it\'s the only win you\'ll get."',
+        '"Leaving because of {rival} is like being beaten by a participation trophy."',
+        '"{rival}, keep my seat warm. Oh wait, you\'ll be on the stool next week."',
+        '"Tell {rival} the mirror message is for her. She knows."',
+        '"I\'m going home and {rival} is staying. Ru, that is the real tragedy tonight."'
+      ],
+      sweet: [
+        '"{rival} and I never got along, but she beat me fair. Good luck, girl. You\'ll need it."',
+        '"Maybe {rival} and I will be friends after this. Maybe."',
+        '"{rival}, I hope you win it. Then I can say I lost to the best."',
+        '"Our fight made great TV, {rival}. Thank you for the storyline."'
+      ],
+      any: [
+        '"{rival} gets to stay. The universe has a sense of humor."',
+        '"Of all the queens to lose to, it had to be {rival}."',
+        '"{rival}, this isn\'t over. Reunion, honey. Reunion."'
+      ]
+    },
+    ally: {
+      shade: [
+        '"{ally}, I had your back for weeks. Remember that when you look at that lipstick."',
+        '"Turns out my best friend in here was my biggest threat. Well played, {ally}."',
+        '"{ally} smiled at me in the workroom and stabbed me on the main stage. Love you, too."'
+      ],
+      sweet: [
+        '"{ally}, you better win this for both of us."',
+        '"If I had to go home against anyone, I\'m glad it was my sister {ally}."',
+        '"{ally}, I\'ll be screaming at the TV for you every single week."',
+        '"I found a sister in {ally}. That was worth more than any badge."'
+      ],
+      any: [
+        '"{ally}, make it to the finale. I\'ll be in the front row."',
+        '"This competition put me against {ally}. Some things even friendship can\'t fix."',
+        '"Don\'t cry, {ally}. You\'ll ruin your beat, and I\'m not there to fix it."'
+      ]
+    },
+    firstOut: {
+      shade: [
+        '"First one out? Fine. History remembers the first ones. Ask anyone."',
+        '"Going home first means I get the best seat at the viewing party."',
+        '"First out, but I\'ll be the first one booked. Watch."',
+        '"The judges clearly needed someone to make an example of. I\'m a gorgeous example."'
+      ],
+      sweet: [
+        '"I didn\'t get the run I dreamed of, but I got to walk into that werkroom. That\'s a dream."',
+        '"First out hurts, but I\'ll be cheering for every one of you."',
+        '"I\'ll be back. Every queen who went home first and came back stronger: I\'m coming for your spot."',
+        '"Thank you, Ru. One episode on this stage is more than most people ever get."'
+      ],
+      any: [
+        '"First out. Somebody had to be the cautionary tale."',
+        '"One week. One look. One lip sync. I\'ll take it."',
+        '"Out first, out loud, and out with a lot of eleganza. Thank you, Ru."'
+      ]
+    }
+  },
+
+  // Lipstick message on the werkroom mirror, read in the Untucked that follows the elimination.
+  // Same variables and tones as exitByTrigger. rival/ally lines are used only when that queen exists.
+  mirror: {
+    shade: [
+      'Watch your back, {rival}. Love, {name}.',
+      '{rival}: the crown will never fit that head. xo {name}',
+      'Bitches, I was robbed. {name}',
+      'Somebody tell the judges I said hi. — {name}',
+      'Good luck, ladies. You will need it more than I did. {name}',
+      'I left you my lipstick. You need the help. {name}'
+    ],
+    sweet: [
+      'Win it for me, {ally}! Love you. {name}',
+      'Keep shining, sisters. Love, {name}',
+      'This room changed my life. Thank you, girls. xoxo {name}',
+      'Be kind to each other. And snatch that crown. {name}',
+      'Proud of every one of you. See you at the reunion! {name}'
+    ],
+    any: [
+      'Not goodbye, just see you later. {name}',
+      '{wins} wins, {bottoms} bottoms, 1 legend. {name}',
+      'Out in {place} place. Remember the name: {name}',
+      'Have fun at the finale, I will be watching. {name}',
+      'Somebody keep my mirror warm. {name}'
+    ]
+  },
+
+  // Which tone a queen leans to when she leaves. "any" lines are always added to her pool.
+  toneByPersonality: {
+    shy: 'sweet', confident: 'shade', professional: 'any', strategic: 'shade', kind: 'sweet',
+    chaotic: 'any', dramatic: 'shade', funny: 'any', competitive: 'shade', calculating: 'shade',
+    perfectionist: 'any', reserved: 'sweet', ambitious: 'shade', charming: 'sweet', sweet: 'sweet',
+    sarcastic: 'shade', hotheaded: 'shade', fearless: 'shade', humble: 'sweet', eccentric: 'any',
+    default: 'any'
+  }
 };

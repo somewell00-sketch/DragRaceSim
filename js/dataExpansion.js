@@ -4,6 +4,30 @@
 (function(){
   const expansion = {
   "runwayDescriptions": {
+    "solid": [
+      "Good look, good walk, no gag.",
+      "Polished from wig to heel, just short of a moment.",
+      "Did the category justice and walked off with her dignity intact.",
+      "Clean lines, smart styling, nothing to apologize for.",
+      "Pretty, finished and on theme. The judges nodded, they didn't gasp.",
+      "A strong look that needed one more risk to become iconic.",
+      "Hit every mark. Missed the jaw-drop.",
+      "Sold the silhouette, even if the story was a little quiet.",
+      "Looked expensive without trying too hard.",
+      "A tidy interpretation of the category, served with confidence.",
+      "The kind of look you screenshot, but don't set as your wallpaper.",
+      "Gave the panel something to like, if not something to scream about.",
+      "Styled within an inch of its life, in a good way.",
+      "On theme, on budget, on point.",
+      "A solid TOOT that will age better than the girls around her.",
+      "Elegant, controlled and only slightly too polite.",
+      "Made the fabric behave, which is more than some of the others managed.",
+      "Strong walk, good finish, one accessory away from greatness.",
+      "Delivered the assignment with a little extra glitter on top.",
+      "A look the judges will remember kindly.",
+      "Confident in the concept and clean in the execution.",
+      "Nothing to read, plenty to like."
+    ],
     "legendary": [
     "Left everyone gagged and barely breathing.",
     "Made the other girls question their entire existence.",
@@ -1041,6 +1065,23 @@
       "{a} and {b} are the duo to watch.",
       "{a} and {b} share a sisterhood.",
       "{a} and {b} are building a lasting bond."
+    ],
+    "confrontation": [
+      "Untucked gets loud: {a} finally says to {b} what she has been saying behind her back.",
+      "{a} and {b} pick up their fight right where they left it. Nobody touches their drinks.",
+      "{a}: \"You have been coming for me since day one.\" {b}: \"Because you keep giving me material.\"",
+      "{a} brings up the werkroom comment. {b} does not apologize.",
+      "The cocktails stay full while {a} and {b} go round two."
+    ],
+    "reconciliation": [
+      "Makeover week softens things: {a} and {b} share a mirror and, finally, a laugh.",
+      "Doing someone else's makeup reminds {a} that {b} is human too. They call a truce.",
+      "{a} apologizes to {b} while gluing down a wig. It counts.",
+      "{a} and {b} talk it out over the sewing machines. The feud is on pause."
+    ],
+    "allianceTested": [
+      "{a} and {b} are on opposite sides tonight. The friendship is about to be tested.",
+      "{a} wonders whether {b} would save her if it came to it."
     ]
   },
   "confessionals": {

@@ -48,6 +48,7 @@ function assassinLipstickTable(){
 
 function renderUntucked(){
   const ep=gameState.currentEpisode;
+  ep.feedStage='untucked';
   const eliminatedIds=ep.lipSyncResult?.eliminatedQueenIds || (ep.eliminatedQueenId?[ep.eliminatedQueenId]:[]);
   const eliminatedNames=eliminatedIds.map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean);
   const playerJustEliminated=eliminatedIds.includes(gameState.playerQueenId);
@@ -74,23 +75,32 @@ function renderUntucked(){
   const eliminationChoiceBlock=(playerJustEliminated && !spectatorMode)
     ? `<div class="card important decision-card"><h3>What do you want to do now?</h3><p>Your queen has been eliminated, but the season can continue without your input.</p><div class="options"><button class="option" id="continueSpectator"><span class="choice-emoji" aria-hidden="true">👁️</span><span class="choice-copy"><strong>Continue watching as a spectator</strong><span class="small">Follow the remaining episodes, runways, lip syncs, reunion and finale.</span></span></button><button class="option" id="seeFinalResult"><span class="choice-emoji" aria-hidden="true">⏭️</span><span class="choice-copy"><strong>See final result</strong><span class="small">Skip the rest of the season and start the finale from page 1/3.</span></span></button></div></div>`
     : '';
-  const continueButton=(needsTournamentPointVote || (playerJustEliminated && !spectatorMode)) ? '' : `<button id="continue">Next episode</button>`;
+  // v31.6: once your queen is out, the lounge is not yours anymore. Spectators see the results only.
+  const spectatorView=playerJustEliminated || (playerAlreadyEliminated && spectatorMode);
+  if(playerAlreadyEliminated && spectatorMode && !playerJustEliminated)title=`Episode ${ep.number||''} results`;
+  const continueButton=(needsTournamentPointVote || (playerJustEliminated && !spectatorMode)) ? '' : `<button id="continue" class="tv-next">Next episode</button>`;
   setHTML(`<main class="layout"><section class="screen">
-    <div class="hero">
-      <span class="badge">Untucked</span>
+    <div class="hero tv-ep-title">
+      <span class="eyebrow">Episode ${escapeHtml(String(ep.number||''))} · ${escapeHtml(ep.challengeName||'')} · ${(playerAlreadyEliminated&&spectatorMode&&!playerJustEliminated)?'Results':'Untucked'}</span>
       <h2>${playerJustEliminated?'Your journey ends here.':title}</h2>
-      <p>${desc}</p>
-      
+      <p class="tv-lede">${desc}</p>
     </div>
-    <div class="card"><h3>Lounge talk</h3><p>${escapeHtml(spontaneous)}</p>${loungeBeats.length?`<h4>Story Beats</h4><ul>${loungeBeats.map(e=>`<li>${escapeHtml(e.text)}</li>`).join('')}</ul>`:''}</div>
+    <section class="tv-block" data-block="lounge"${spectatorView&&!eliminatedIds.length?' hidden':''}><h3 class="tv-bt">${spectatorView?'Goodbye':'Untucked'}</h3><div class="tv-bc">
+    ${eliminatedIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean).map(q=>{const m=(typeof mirrorMessageFor==='function')?mirrorMessageFor(q):'';return m?`<div class="card mirror-message"><h3>${typeof icon==='function'?icon('lipstick','b-drama'):'💄'} On the mirror</h3><p class="mirror-lipstick">${escapeHtml(m)}</p><p class="small">${escapeHtml(q.name)} left a message in lipstick before walking out.</p></div>`:'';}).join('')}
+    ${spectatorView?'':`<div class="card"><h3>Lounge talk</h3><p>${escapeHtml(spontaneous)}</p>${loungeBeats.length?`<h4>Story Beats</h4><ul class="tv-beats tv-lounge-beats">${loungeBeats.map(e=>`<li>${escapeHtml(e.text)}</li>`).join('')}</ul>`:''}${(()=>{const cb=typeof relationshipArcCallback==='function'?relationshipArcCallback('untucked'):'';const rb=typeof relationshipStoryBeats==='function'?relationshipStoryBeats('untucked'):'';return (cb||rb)?`<h4>Relationships</h4><ul class="relationship-beats">${cb}${rb}</ul>`:'';})()}</div>`}
+    </div></section>
+    <section class="tv-block" data-block="move"${(playerAlreadyEliminated&&spectatorMode&&!playerJustEliminated)?' hidden':''}><h3 class="tv-bt">Your move</h3><div class="tv-bc">
     ${playerObserver?`<div class="card subtle"><h3>Observer mode</h3><p>Your queen is not competing in this episode, so you do not take an Untucked action.</p></div>`:''}
-    ${(playerAlreadyEliminated && spectatorMode && !playerJustEliminated)?`<div class="card subtle"><h3>Spectator mode</h3><p>Your queen is out of the competition. You are watching how the rest of the season unfolds.</p></div>`:''}
+    <div id="tvFeed" class="tv-feed">${typeof effectFeedHtml==='function'?effectFeedHtml('untucked'):''}</div>
     <div id="untuckedChoice">${needsTournamentPointVote?'<div class="card decision-card important" id="tournamentPointVoteChoice"></div>':''}</div>
+    ${eliminationChoiceBlock}
+    </div></section>
+    <section class="tv-block" data-block="results"><h3 class="tv-bt">Results</h3><div class="tv-bc">
     ${needsTournamentPointVote?'':tournamentPointVoteTable()}
     ${needsTournamentPointVote?'':episodeResultTable()}
     ${needsTournamentPointVote?'':assassinLipstickTable()}
-    ${eliminationChoiceBlock}
-    ${continueButton}
+    </div></section>
+    <div class="tv-nav">${continueButton}</div>
   </section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(renderUntucked));
   if(needsTournamentPointVote){
@@ -105,15 +115,28 @@ function renderUntucked(){
     if(typeof isWaitingForTournamentEntrance==='function' && isWaitingForTournamentEntrance()){ renderEntrance(); return; }
     if(typeof isWaitingForPremiereEntrance==='function' && isWaitingForPremiereEntrance()){ renderEntrance(); return; }
     if(isFinaleReady()){ if(shouldOfferReunionSmackdown()) { renderReunionSmackdown(); return; } renderFinale(); return;}
+    // v31.6: fast spectator pace — the next episode plays out on its own and lands on its results screen
+    if(gameState.season?.spectatorFast && playerAlreadyEliminatedNow()){
+      for(let guard=0;guard<4;guard++){
+        generateEpisode();
+        const nep=gameState.currentEpisode;
+        if(nep.special==='lalaparuza'){resolveLalaparuza(); if(isFinaleReady())break; continue;}
+        if(nep.special==='return_smackdown'){finishReturnSmackdownSilently(nep); if(isFinaleReady())break; continue;}
+        calculateEpisodeResults({risk:'safe'}); resolveLipSync(); applyEpisodeStats(); saveGame(); renderUntucked(); return;
+      }
+      if(isFinaleReady()){ if(shouldOfferReunionSmackdown()) { renderReunionSmackdown(); return; } renderFinale(); return;}
+    }
     generateEpisode(); renderWorkroom();
   };
   document.querySelector('#continue')?.addEventListener('click',continueAfterEpisode);
-  document.querySelector('#continueSpectator')?.addEventListener('click',()=>{gameState.season.spectatorMode=true; saveGame(); continueAfterEpisode();});
+  document.querySelector('#continueSpectator')?.addEventListener('click',()=>{gameState.season.spectatorMode=true; gameState.season.spectatorFast=false; saveGame(); continueAfterEpisode();});
+  document.querySelector('#continueSpectatorFast')?.addEventListener('click',()=>{gameState.season.spectatorMode=true; gameState.season.spectatorFast=true; saveGame(); continueAfterEpisode();});
+  document.querySelector('#tvPaceToggle')?.addEventListener('click',()=>{gameState.season.spectatorFast=!gameState.season.spectatorFast; saveGame(); renderUntucked();});
   document.querySelector('#seeFinalResult')?.addEventListener('click',()=>{skipToFinaleStart();});
 }
 function untuckedEmoji(id){return {comfort:'💞',provoke:'🧨',apologize:'🕊️',quiet:'🤫',drama:'📺',alliance:'🤝'}[id]||'•';}
 function renderUntuckedChoice(){
-  const buttons=Object.entries(UNTUCKED_ACTIONS).map(([id,o])=>`<button class="option" data-untucked="${id}"><span class="choice-emoji" aria-hidden="true">${untuckedEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(o.label)}</strong><span class="small">${escapeHtml(o.description)}</span></span></button>`).join('');
+  const buttons=Object.entries(UNTUCKED_ACTIONS).map(([id,o])=>`<button class="option" data-untucked="${id}"><span class="choice-emoji" aria-hidden="true">${typeof emojiIcon==='function'?emojiIcon(untuckedEmoji(id)):untuckedEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(o.label)}</strong><span class="small">${escapeHtml(o.description)}</span></span></button>`).join('');
   document.querySelector('#untuckedChoice').innerHTML=`<div class="card decision-card"><h3>Your Untucked move</h3><p>This is social gameplay. Choose who you are becoming in the lounge.</p><div class="options">${buttons}</div><div id="untuckedTarget"></div></div>`;
   document.querySelectorAll('[data-untucked]').forEach(btn=>btn.addEventListener('click',()=>{
     const id=btn.dataset.untucked;
@@ -143,21 +166,7 @@ function autoSimulateToEnd(){while(!isFinaleReady()){generateEpisode(); if(gameS
 
 function reunionStrategyOptionsHtml(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
-  const reveals=player?.inventory?.reveals||0;
-  const strategies=[
-    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
-    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','Dance the House Down','Attack the rhythm and try to own the stage.'],
-    ['stunts','🤸 Stunts & Tricks','Go for big physical moments.'],
-    ['save_reveal','👗 Reveal During the Climax','Hold the reveal until the song hits its biggest moment.'],
-    ['reveal_early','✨ Reveal Early','Shock the judges quickly.'],
-    ['multiple_reveals','💎 Multiple Reveals','Throw every trick at the stage.'],
-    ['play_safe','😌 Play It Safe','Keep it clean and controlled.']
-  ];
-  return `<div class="options">${strategies.map(([id,label,desc])=>{
-    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
-    return choiceButtonHtml({id,attr:'data-reunion-strategy',label,desc,disabled});
-  }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
+  return lipSyncStrategyButtonsHtml({q:player,attr:'data-reunion-strategy',variant:'short',exclude:['overshadow','match_energy','signature_move']});
 }
 function renderReunionStrategyChoice(){
   setHTML(`<main class="layout"><section class="screen"><div class="hero"><span class="badge win">Reunion Smackdown</span><h2>Choose your lip sync strategy</h2><p>You were eliminated, so you compete for Queen of She Already Done Had Herses. Your strategy will apply whenever you lip sync in the bracket.</p></div><div class="card decision-card important"><h3>Your approach</h3>${reunionStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
@@ -266,3 +275,5 @@ function renderTournamentBracketResults(){
     generateEpisode(); renderWorkroom();
   });
 }
+
+function playerAlreadyEliminatedNow(){return !!gameState.queens.find(q=>q.id===gameState.playerQueenId)?.isEliminated;}

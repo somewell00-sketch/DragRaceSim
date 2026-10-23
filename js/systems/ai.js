@@ -32,17 +32,22 @@ function chooseAIRisk(q){
 }
 
 function chooseLipSyncMoves(song,q){
-  const high=song.energy==='high';
-  const emotional=song.energy!=='high';
+  // v31.6: NPCs weigh every strategy by what they are good at and how it suits the song,
+  // with personality pushing risk-takers toward big swings and consistent queens toward control.
   const p=getPersonality(q);
-  let strategy='sell_lyrics';
-  if(q.inventory?.reveals>0 && q.attributes.runway>=8 && Math.random()<0.35) strategy='save_reveal';
-  else if(q.inventory?.reveals>1 && q.attributes.runway>=8 && Math.random()<0.12) strategy='multiple_reveals';
-  else if(high && q.attributes.lipSync>=8) strategy=Math.random()<0.55?'dance':'stunts';
-  else if(emotional && q.attributes.acting>=7) strategy='emotion';
-  else if(p?.risk>=8 && Math.random()<0.20) strategy='overshadow';
-  else if(p?.risk>=8 && Math.random()<0.35) strategy='stunts';
-  else if(p?.consistency>=8) strategy='play_safe';
-  return lipSyncMovesFromStrategy(strategy, song);
+  const riskBias={minimal:-1,low:-.5,medium:0,high:1};
+  let best='sell_lyrics',bestScore=-99;
+  Object.keys(LIP_SYNC_PROFILES).forEach(id=>{
+    if(!lipSyncStrategyAvailable(id,q))return;
+    const prof=LIP_SYNC_PROFILES[id];
+    if(id==='signature_move' && ((q.attributes?.lipSync||0)<8 || Math.random()<.6))return;
+    let s=lipSyncExpectedValue(id,song,q)+(Math.random()*2-1)*1.1;
+    const rb=riskBias[prof.risk]||0;
+    if((p?.risk||5)>=8)s+=rb*.5;
+    if((p?.consistency||5)>=8)s-=rb*.4;
+    if(prof.reveals && (q.attributes?.runway||0)<7)s-=.6;
+    if(s>bestScore){bestScore=s;best=id;}
+  });
+  return lipSyncMovesFromStrategy(best, song);
 }
 

@@ -1,4 +1,6 @@
 function lipSyncEnergyLabel(song){
+  // v31.5 Part B: vector meter (stage lights + candle / sparkles / flames). The old emoji strings below are the fallback.
+  if(typeof energyMeterHtml==='function')return energyMeterHtml(song);
   const energy=String(song?.energy||'').toLowerCase();
   if(energy==='high')return '🔥 🔥 🔥 🔥 🔥';
   if(energy==='medium')return '✨ ✨ ✨';
@@ -14,7 +16,7 @@ function assassinIntroCardsHtml(ep, duelQueens){
 
   return `<div class="card assassin-intro-card">
     <h3>One All Star stands before me.<br><strong>${escapeHtml(topQueen?.name||'The challenge winner')}</strong></h3>
-    <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>   <h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+    <p>Prior to tonight, you were asked to prepare a lip sync performance of <strong>${escapeHtml(song.title||'the song')}</strong> by <strong>${escapeHtml(song.artist||'the artist')}</strong>.</p>   <h3 class="music-cue spotlight-cue">${lipSyncEnergyLabel(ep.song)}</h3>
 
     <p>If you win this lip sync, you'll earn a cash tip and the power to eliminate one of the bottom queens.</p>
     <p>But first...</p>
@@ -25,12 +27,12 @@ function assassinIntroCardsHtml(ep, duelQueens){
     <h2>${escapeHtml(assassin.name||'Lip Sync Assassin')}</h2>
     <p>A legendary lip sync assassin enters the stage.</p>
   </div>
-  <div class="hero" style="text-align:center;">
+  <div class="hero tv-ls-hero">
     ${bigMomentHeader('The time has come, for you to', 'LIP SYNC FOR YOUR LEGACY', 'win')}
     <p class="eyebrow">The music starts...</p>
     <h2>${escapeHtml(song.title||'The song')}</h2>
-    <p style="text-align:center !important; max-width:100%; display:block;">by ${escapeHtml(song.artist||'The artist')}</p>
-  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+    <p>by ${escapeHtml(song.artist||'The artist')}</p>
+  <h3 class="music-cue spotlight-cue">${lipSyncEnergyLabel(ep.song)}</h3>
   </div>`;
 }
 
@@ -67,7 +69,7 @@ function renderLipSync(){
     : (ep.special==='premiere_no_elim'
       ? "Ladies, this is your chance to snatch the first win of the season. The time has come... to lip sync for the win! Good luck... and don't fuck it up."
       : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up."))));
-  const normalLipSyncCards=`<div class="hero" style="text-align:center;">${bigMomentHeader('The time has come, for you to', (isAllWinners||isTournament||isLegacy||isAssassin)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?'win':'danger')}<h2 style="text-align:center;">${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%; display:block;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  const normalLipSyncCards=`<div class="hero tv-ls-hero">${bigMomentHeader('The time has come, for you to', (isAllWinners||isTournament||isLegacy||isAssassin)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue">${lipSyncEnergyLabel(ep.song)}</h3>
 <div class="lipsync-portraits">${bottom.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div></div><div class="card"><p>${intro}</p><p>${escapeHtml(prompt)}</p></div>`;
 const assassinCards=assassinIntroCardsHtml(ep,bottom);
   const pendingAssassinTopVote=isAssassin && isPlayerActiveInCurrentEpisode() && gameState.playerQueenId===ep.topQueenId && !ep.playerAssassinLipstickChosen;
@@ -233,23 +235,9 @@ function renderTournamentPointVoteChoice(onContinue){
 function renderLipSyncStrategyChoice(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
   const reveals=player?.inventory?.reveals||0;
-  const strategies=[
-    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
-    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','Dance the House Down','Attack the rhythm and try to own the whole stage.'],
-    ['stunts','🤸 Stunts & Tricks','Go for big physical moments. It could be iconic or messy.'],
-    ['save_reveal','👗 Save the Reveal for the Climax','Hold the reveal until the song hits its biggest moment.'],
-    ['reveal_early','✨ Reveal Early','Shock the judges quickly and hope the energy carries through.'],
-    ['multiple_reveals','💎 Multiple Reveals','Throw everything at the wall and pray it sticks.'],
-    ['overshadow','⚠️ Overshadow Your Opponent','High risk: steal the spotlight. If it lands, you gain score and your opponent loses score. If it fails, production clocks you as desperate.'],
-    ['play_safe','😌 Play It Safe','Keep it clean and controlled, but risk being forgettable.']
-  ];
   const step=document.querySelector('#step');
   step.classList.add('decision-card','important');
-  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>${(getSeasonFormat()==='legacy'||gameState.currentEpisode?.special==='tournament_bracket')?'You are in the Top 2. Choose the story you want to tell on stage.':(getSeasonFormat()==='assassin'?'You are facing the Lip Sync Assassin. Choose the story you want to tell on stage.':'You are in the Bottom. Choose the story you want to tell on stage.')}</p><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
-    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
-    return choiceButtonHtml({id,attr:'data-strategy',label,desc,disabled});
-  }).join('')}</div>`;
+  step.innerHTML=`<h3>Lip Sync Strategy</h3><p>${(getSeasonFormat()==='legacy'||gameState.currentEpisode?.special==='tournament_bracket')?'You are in the Top 2. Choose the story you want to tell on stage.':(getSeasonFormat()==='assassin'?'You are facing the Lip Sync Assassin. Choose the story you want to tell on stage.':'You are in the Bottom. Choose the story you want to tell on stage.')}</p>${lipSyncStrategyButtonsHtml({q:player,song:gameState.currentEpisode?.song,attr:'data-strategy'})}`;
   document.querySelectorAll('[data-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
     const moves=lipSyncMovesFromStrategy(btn.dataset.strategy, gameState.currentEpisode.song);
     const isAllWinnersPlayerTop2=getSeasonFormat()==='all_winners' && (gameState.currentEpisode?.top2Queens||[]).includes(gameState.playerQueenId);
@@ -264,7 +252,7 @@ function moveLabel(kind,value){
   const labels={start:{explosive:'starts explosively',controlled:'starts controlled',lyrics:'interprets the lyrics'},middle:{acrobatics:'goes for acrobatics',face:'serves face',judges:'connects with the judges'},finale:{reveal:'reveals during the climax',emotional:'ends with emotion',stunt:'risks one final stunt'}};
   return labels[kind]?.[value]||value;
 }
-function fillTemplate(text, values={}){return String(text||'').replace(/\{(\w+)\}/g,(_,key)=>values[key]??'');}
+function fillTemplate(text, values={}){return String(text||'').replace(/\{(\w+)\}/g,(_,key)=>values[key]??'').replace(/\b1 (wins|bottoms|lip syncs|times|episodes|weeks)\b/g,(m,w)=>'1 '+w.replace(/s$/,''));}
 function pickLipSyncComment(path, fallback=''){let node=gameState.data.lipSyncComments; for(const key of path){node=node?.[key];} if(Array.isArray(node)) return sample(node)||fallback; return fallback;}
 function getLipSyncQualityKey(results){
   const scores = results.map(r => r.score10);
@@ -436,7 +424,7 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The vulnerability felt earned, and the room leaned in to watch.',
       'Every glance carried weight, and the song breathed through her.',
       'She translated the lyrics into genuine feeling that reached the back of the room.',
-      'She didn’t just look sad; she made the judges remember their own exes.',
+      'She didn\'t just look sad; she made the judges remember their own exes.',
       'The vulnerability was palpable, grounding the entire stage in heavy reality.',
       'Every heavy blink told a different chapter of the same tragic story.',
       'She connected with the camera like a woman with nothing left to lose.',
@@ -506,7 +494,7 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The phrasing worked in parts, but the through-line got lost.',
       'She sold verses but lost the choruses to uncertainty.',
       'The intention came in waves — some hit, some barely registered.',
-      'She knew the words, but she didn’t quite look like she approved of them.',
+      'She knew the words, but she didn\'t quite look like she approved of them.',
       'The verses were tight, but the bridge turned into a guessing game.',
       'The mouth was moving at the right speed, but the eyes were reciting a grocery list.',
       'She nailed the high notes but mumbled through the fine print.',
@@ -685,7 +673,7 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She hit the floor like she had a personal vendetta against it.',
       'The split landed exactly on the beat, sending a shockwave through the panel.',
       'She tossed her body into the air with complete, terrifying confidence.',
-      'The stunts weren’t desperation; they were calculated strikes.',
+      'The stunts weren\'t desperation; they were calculated strikes.',
       'A flawlessly executed dip that proved she knows exactly where her center of gravity is.'
     ],
     outstanding: [
@@ -999,8 +987,8 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'She avoided disaster but also avoided greatness.',
       'The performance was solid, but solid doesn\'t win.',
       'She colored inside the lines, but forgot to use any bright colors.',
-      'It was a perfectly adequate performance that won’t make anyone mad, or excited.',
-      'She stood her ground, but she didn’t conquer any new territory.',
+      'It was a perfectly adequate performance that won\'t make anyone mad, or excited.',
+      'She stood her ground, but she didn\'t conquer any new territory.',
       'The execution was mathematically correct, but emotionally vacant.',
       'She did exactly what was required to not end up in a compilation video.'
     ],
@@ -1082,9 +1070,9 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The overshadowing worked in parts but hurt the whole.',
       'She blocked her opponent once or twice, but it looked accidental instead of dominant.',
       'She tried to step in front, but her opponent just danced around her.',
-      'The aggression was there, but she didn’t have the choreography to back it up.',
-      'She tried to hog the camera, but the camera didn’t seem particularly interested.',
-      'She got in her opponent’s face, but the other queen just smiled through it.'
+      'The aggression was there, but she didn\'t have the choreography to back it up.',
+      'She tried to hog the camera, but the camera didn\'t seem particularly interested.',
+      'She got in her opponent\'s face, but the other queen just smiled through it.'
     ],
     strong: [
       'She stole the spotlight without losing the song, and her opponent visibly lost ground.',
@@ -1094,7 +1082,7 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
       'The tactic worked — her opponent faded while she rose.',
       'She locked her opponent in the background, treating her like an uncredited backup dancer.',
       'Every time the other queen tried to stunt, she stepped into the frame and took the moment.',
-      'She didn’t just perform; she actively reduced her opponent to a footnote.',
+      'She didn\'t just perform; she actively reduced her opponent to a footnote.',
       'She cornered the stage, forcing the other queen into the dark spots of the lighting grid.',
       'She hijacked the judges\' eyes, making it physically impossible to look at the other side of the stage.'
     ],
@@ -1137,7 +1125,7 @@ const V20_LIPSYNC_EXECUTION_TEXT = {
 
 function strategyResultTextFor(r, won){
   const strategy=r.moves?.strategy||'sell_lyrics';
-  const tier=lipSyncExecutionTier(r.executionQuality ?? r.weeklyPerformance ?? r.score10);
+  const tier=lipSyncTierFor(r);
   return shortPick(
     V20_LIPSYNC_EXECUTION_TEXT[strategy]?.[tier],
     shortPick(V20_LIPSYNC_TEXT.strategy[strategy]?.[won?'win':'lose'], lipSyncStrategyText(strategy))
@@ -1195,9 +1183,49 @@ function lipSyncResultPortraits(result){
   return `<div class="lipsync-portraits result-portraits">${qs.map(q=>`<div class="lipsync-queen">${queenPortraitHtml(q,'xl')}<strong>${escapeHtml(q.name)}</strong></div>`).join('<span class="vs">VS</span>')}</div>`;
 }
 
+// v31.5 round 2: a RuPaul-style stamp on how the player's chosen strategy landed (not who wins)
+const TV_LS_STRATEGY_LABEL={emotion:'Sell the Emotion',sell_lyrics:'Sell the Lyrics',dance:'Dance the House Down',stunts:'Stunts & Tricks',save_reveal:'Save the Reveal',reveal_early:'Reveal Early',multiple_reveals:'Multiple Reveals',overshadow:'Overshadow Your Opponent',play_safe:'Play It Safe',comedy:'Comedy Lip Sync',play_to_audience:'Play to the Audience',signature_move:'Signature Move',match_energy:'Match Her Energy'};
+function lipSyncPlayerStrategyStamp(result){
+  const r=(result?.results||[]).find(x=>x.queenId===gameState.playerQueenId);
+  if(!r||!r.moves?.strategy)return '';
+  const tier=lipSyncTierFor(r);
+  const o=r.lsOutcome||(tier==='failed'?'disaster':tier==='partial'?'slip':tier==='legendary'?'iconic':'clean');
+  const state=o==='disaster'?'no':o==='slip'?'clean':'ok';
+  const stamp={iconic:'Iconic!',clean:'Clean',slip:'Slip',disaster:'Disaster'}[o];
+  const label=(typeof lipSyncStrategyLabel==='function'&&LIP_SYNC_STRATEGIES[r.moves.strategy]?lipSyncStrategyLabel(r.moves.strategy):TV_LS_STRATEGY_LABEL[r.moves.strategy])||'Lip sync strategy';
+  const fit=r.lsFit?{great:'Perfect for the song',good:'Good fit for the song',ok:'Neutral fit for the song',poor:'Wrong for the song'}[r.lsFit]:'';
+  return `<div class="card tv-walk-result tv-walk-${state}"><div class="tv-walk-copy"><span class="eyebrow">Your strategy</span><h3>${escapeHtml(label)}</h3>${fit?`<p class="small">${escapeHtml(fit)}</p>`:''}</div><span class="tv-stamp tv-stamp-${state}" role="img" aria-label="${escapeHtml(stamp)}">${escapeHtml(stamp)}</span></div>`;
+}
 function lipSyncNarrative(result){
   const c=buildLipSyncCommentary(result);
-  return c.lines.map((line,i)=>`<p${i===0?' class="lead"':''}>${formatLipSyncLine(line,result)}</p>`).join('');
+  // v31.6: who was cheering from the side of the stage (relationships now help a little in the lip sync)
+  const cheer=(result?.results||[]).filter(r=>(r.supporterIds||[]).length>=2).map(r=>{
+    const names=r.supporterIds.slice(0,3).map(id=>gameState.queens.find(q=>q.id===id)?.name).filter(Boolean);
+    return names.length>=2?`<p class="lipsync-cheer small">From the side of the stage, ${escapeHtml(names.slice(0,-1).join(', '))} and ${escapeHtml(names.slice(-1)[0])} were screaming for ${escapeHtml(r.name)}.</p>`:'';
+  }).join('');
+  const events=lipSyncEventLines(result).map(line=>`<p class="lipsync-event">${formatLipSyncLine(line,result)}</p>`).join('');
+  return c.lines.map((line,i)=>`<p${i===0?' class="lead"':''}>${formatLipSyncLine(line,result)}</p>`).join('')+events+cheer;
+}
+function lipSyncSurvivorNarration(result){
+  // v31.5: queens who already won a lip sync get a survivor tag and a line, instead of a hidden score penalty.
+  const bank=gameState.data?.lipSyncComments?.survivor;
+  if(!bank)return '';
+  // only lip syncs for your life: in a top-2 lip sync nobody is "surviving"
+  if(['legacyElimination','assassinElimination','tournamentPoints','top2Win','allWinnersTopAllStar'].includes(result?.outcome))return '';
+  const ep=gameState.currentEpisode||{};
+  ep.survivorLines=ep.survivorLines||{};
+  const out=result?.eliminatedQueenIds||(result?.eliminatedQueenId?[result.eliminatedQueenId]:[]);
+  return (result?.results||[]).filter(r=>(Number(r.priorLipSyncWins)||0)>=1).map(r=>{
+    const won=!out.includes(r.queenId);
+    const key=r.queenId+':'+(won?'win':'lose');
+    if(!ep.survivorLines[key]){
+      const n=Number(r.priorLipSyncWins)||0;
+      const times=n===1?'once':n===2?'twice':n+' times';
+      ep.survivorLines[key]=fillTemplate(shortPick(bank[won?'win':'lose'],''),{name:r.name,n:String(n),times});
+      if(n===1)ep.survivorLines[key]=ep.survivorLines[key].replace(/\b1 lip sync wins\b/g,'1 lip sync win').replace(/\b1 lip syncs\b/g,'1 lip sync').replace(/\b1 wins\b/g,'1 win');
+    }
+    return ep.survivorLines[key]?`<p class="lipsync-survivor"><span class="badge arc">${escapeHtml(bank.tag||'Lip sync survivor')}</span> ${escapeHtml(ep.survivorLines[key])}</p>`:'';
+  }).join('');
 }
 
 function farewellData(){
@@ -1206,8 +1234,16 @@ function farewellData(){
 function normKey(value){
   return String(value||'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
 }
-function farewellTypeKey(q){
+function farewellTypeKey(q, group='talentsByType'){
   const t=normKey(q?.type || q?.queenType || q?.typeName);
+  // v31.5: every queen type now has its own bank; the old keyword matches stay as the fallback.
+  const exact=[
+    ['sewing','sewing'],['ballroom','ballroom'],['club','club'],['horror','horror'],['cosplay','cosplay'],['glamour','glamour'],
+    ['lip sync','lipsync'],['lipsync','lipsync'],['social media','influencer'],['influencer','influencer'],['tiktok','influencer'],
+    ['hostess','hostess'],['jack of all trades','versatile']
+  ];
+  const bank=farewellData()?.[group]||{};
+  for(const [needle,key] of exact){if(t.includes(needle) && bank[key])return key;}
   if(t.includes('weird'))return 'weird';
   if(t.includes('fashion')||t.includes('look')||t.includes('runway'))return 'fashion';
   if(t.includes('comedy')||t.includes('comic'))return 'comedy';
@@ -1221,9 +1257,16 @@ function farewellTypeKey(q){
   if(t.includes('social')||t.includes('congenial'))return 'social';
   return 'default';
 }
-function farewellPersonalityKey(q){
+function farewellPersonalityKey(q, group){
   const raw=q?.personality?.id || q?.personalityId || q?.personality?.name || q?.personality || '';
   const k=normKey(raw);
+  // v31.5: use the personality's own key when the bank has it (13 personalities used to fall into "default").
+  if(group){
+    const bank=farewellData()?.[group]||{};
+    const id=k.replace(/\s+/g,'');
+    const aliases={hotheaded:['hotheaded','hot-headed']};
+    for(const cand of [k,id,...(aliases[id]||[])]){if(cand && bank[cand])return cand;}
+  }
   if(k.includes('shy'))return 'shy';
   if(k.includes('confident')||k.includes('bold'))return 'confident';
   if(k.includes('professional')||k.includes('focused'))return 'professional';
@@ -1243,12 +1286,100 @@ function farewellPick(group,key,fallback=''){
 function ruFarewellThanks(q){
   const data=farewellData();
   const template=shortPick(data.rupaulThanks, 'Thank you for sharing your {talent} with {quality}.');
-  const talent=farewellPick('talentsByType', farewellTypeKey(q), 'drag');
-  const quality=farewellPick('qualitiesByPersonality', farewellPersonalityKey(q), 'heart');
+  const talent=farewellPick('talentsByType', farewellTypeKey(q,'talentsByType'), 'drag');
+  const quality=farewellPick('qualitiesByPersonality', farewellPersonalityKey(q,'qualitiesByPersonality'), 'heart');
   return fillTemplate(template,{talent,quality});
 }
 function queenExitQuote(q){
-  return farewellPick('queenExitByPersonality', farewellPersonalityKey(q), 'This is not the end of my story.');
+  // v31.5: a contextual line when something in this elimination calls for it; otherwise the personality line, as before.
+  // The line is written once per episode so re-renders show the same farewell.
+  const ep=gameState.currentEpisode;
+  if(ep && q?.id){
+    ep.exitQuotes=ep.exitQuotes||{};
+    if(ep.exitQuotes[q.id])return ep.exitQuotes[q.id];
+    // 3 in 4 farewells use the context when there is one; the rest keep the personality lines in rotation.
+    const line=(Math.random()<0.75?contextualExitLine(q):'') || farewellPick('queenExitByPersonality', farewellPersonalityKey(q,'queenExitByPersonality'), 'This is not the end of my story.');
+    ep.exitQuotes[q.id]=line;
+    return line;
+  }
+  return farewellPick('queenExitByPersonality', farewellPersonalityKey(q,'queenExitByPersonality'), 'This is not the end of my story.');
+}
+function ordinalPlace(n){const v=n%100;if(v>=11&&v<=13)return n+'th';return n+({1:'st',2:'nd',3:'rd'}[n%10]||'th');}
+function farewellExitContext(q){
+  const ep=gameState.currentEpisode||{};
+  const r=ep.lipSyncResult||{};
+  const byId=id=>gameState.queens.find(x=>x.id===id);
+  const affinity=(from,to)=>Number(gameState.relationships?.[from]?.[to]?.affinity)||0;
+  const opponentId=(r.results||[]).map(x=>x.queenId).find(id=>id && id!==q.id && !(r.eliminatedQueenIds||[]).includes(id)) || r.survivorId;
+  const opponent=opponentId==='lip_sync_assassin' ? (ep.lipSyncAssassin||null) : byId(opponentId);
+  let chooser=null, lipstick=false;
+  if(r.outcome==='legacyElimination' && r.eliminatedQueenId===q.id){chooser=byId(r.survivorId); lipstick=true;}
+  if(r.outcome==='assassinElimination' && r.eliminatedQueenId===q.id){lipstick=true; chooser=r.assassinWon?{name:'the other queens',statistics:{wins:0},id:null}:byId(r.topQueenId);}
+  const weekWinners=(ep.placements||[]).filter(p=>p.placement==='WIN').map(p=>byId(p.queenId)).filter(Boolean);
+  const involved=[chooser,opponent,...weekWinners].filter(x=>x && x.id && x.id!==q.id && gameState.queens.some(g=>g.id===x.id));
+  // a season-long rivalry/alliance arc counts even if today's numbers are milder
+  const arcWith=x=>typeof relationshipArcBetween==='function'?relationshipArcBetween(q.id,x.id):null;
+  const rival=involved.filter(x=>affinity(q.id,x.id)<=-25 || arcWith(x)?.type==='rival').sort((a,b)=>affinity(q.id,a.id)-affinity(q.id,b.id))[0]||null;
+  const ally=involved.filter(x=>affinity(q.id,x.id)>=35 || arcWith(x)?.type==='ally').sort((a,b)=>affinity(q.id,b.id)-affinity(q.id,a.id))[0]||null;
+  const challenge=(gameState.data?.challenges||[]).find(c=>c.id===ep.challengeType);
+  const weights=challenge?.weights||{};
+  const lane=Object.keys(weights).sort((a,b)=>weights[b]-weights[a])[0];
+  const attrs=q.attributes||{};
+  const best=Object.keys(attrs).sort((a,b)=>(attrs[b]||0)-(attrs[a]||0))[0];
+  const ownStrength=!!(lane && best===lane && (attrs[lane]||0)>=8 && (weights[lane]||0)>=0.35);
+  const isLsa=x=>x && (x.isAssassin || x.id==='lip_sync_assassin' || (Number(x.statistics?.lipSyncWins)||0)>=2 || (typeof getQueenNarrativeTags==='function' && getQueenNarrativeTags(x).some(t=>t.tag===NARRATIVE_TAGS?.LIP_SYNC_ASSASSIN)));
+  const firstOut=(gameState.eliminatedQueens||[]).filter(e=>e.id!==q.id && !(r.eliminatedQueenIds||[]).includes(e.id)).length===0;
+  const st=q.statistics||{};
+  const active=(gameState.queens||[]).filter(x=>!x.isEliminated && x.id!==q.id).length;
+  const vars={name:q.name, rival:rival?.name||'', ally:ally?.name||'', chooser:chooser?.name||'', chooserWins:String(chooser?.statistics?.wins||0),
+    winner:(opponent?.name || weekWinners[0]?.name || ''), wins:String(st.wins||0), bottoms:String(st.bottoms||0), survived:String(opponent?.statistics?.lipSyncWins||0),
+    place:ordinalPlace(active+1), type:String(q.type||'queen'), challenge:String(ep.challengeName||'challenge'), song:String(ep.song?.title||'that song')};
+  const triggers=[];
+  if(lipstick && chooser)triggers.push('lipstick');
+  if(!lipstick && isLsa(opponent))triggers.push('lipSyncAssassin');
+  if(ownStrength)triggers.push('ownStrength');
+  if(rival)triggers.push('rival');
+  if(ally)triggers.push('ally');
+  if(firstOut)triggers.push('firstOut');
+  return {triggers,vars};
+}
+function farewellTonePool(bank, q){
+  const tones=farewellData()?.toneByPersonality||{};
+  const key=farewellPersonalityKey(q,'toneByPersonality');
+  const tone=tones[key]||tones.default||'any';
+  const pool=[...(bank?.any||[])];
+  if(tone==='any')pool.push(...(bank?.shade||[]),...(bank?.sweet||[]));
+  else pool.push(...(bank?.[tone]||[]));
+  return pool;
+}
+function contextualExitLine(q){
+  const data=farewellData();
+  if(!data?.exitByTrigger)return '';
+  const {triggers,vars}=farewellExitContext(q);
+  for(const t of triggers){
+    const pool=farewellTonePool(data.exitByTrigger[t],q).filter(line=>(line.match(/\{(\w+)\}/g)||[]).every(v=>vars[v.slice(1,-1)]));
+    const line=shortPick(pool,'');
+    if(line)return fillTemplate(line,vars);
+  }
+  return '';
+}
+function mirrorMessageFor(q){
+  const data=farewellData();
+  if(!data?.mirror || !q)return '';
+  const ep=gameState.currentEpisode||{};
+  ep.mirrorMessages=ep.mirrorMessages||{};
+  if(ep.mirrorMessages[q.id])return ep.mirrorMessages[q.id];
+  const {vars}=farewellExitContext(q);
+  // rival/ally: anyone she clearly loves or hates in the cast, not only the queens in this elimination
+  const aff=id=>Number(gameState.relationships?.[q.id]?.[id]?.affinity)||0;
+  const others=(gameState.queens||[]).filter(x=>!x.isEliminated && x.id!==q.id);
+  if(!vars.rival){const r=others.filter(x=>aff(x.id)<=-25).sort((a,b)=>aff(a.id)-aff(b.id))[0]; if(r)vars.rival=r.name;}
+  if(!vars.ally){const a=others.filter(x=>aff(x.id)>=35).sort((a,b)=>aff(b.id)-aff(a.id))[0]; if(a)vars.ally=a.name;}
+  const pool=farewellTonePool(data.mirror,q).filter(line=>(line.match(/\{(\w+)\}/g)||[]).every(v=>vars[v.slice(1,-1)]));
+  const line=shortPick(pool,'');
+  const text=line?fillTemplate(line,vars):'';
+  ep.mirrorMessages[q.id]=text;
+  return text;
 }
 function rupaulDecisionIntro(){
   return shortPick(farewellData().rupaulIntros, 'I made my decision...');
@@ -1259,15 +1390,14 @@ function rupaulFinalLine(){
 function impactQueenCard(q, label, line, variant='default', extra=''){
   if(!q)return '';
   const safeVariant=String(variant||'default').replace(/[^a-z0-9_-]/gi,'');
-  return `<div class="card lipsync-impact-card lipsync-impact-${safeVariant}">
-    <div class="lipsync-impact-portrait">${queenPortraitHtml(q,'xl')}</div>
-    <div class="lipsync-impact-copy">
-      <p class="lipsync-impact-label">${escapeHtml(label||'')}</p>
-      <h2>${escapeHtml(q.name||'Queen')}</h2>
-      <p class="lipsync-impact-line"><strong>${escapeHtml(line||'')}</strong></p>
-      ${extra||''}
-    </div>
-  </div>`;
+  // v31.5 Part B: verdict band "NAME, SHANTAY, YOU STAY." — the only loud element on screen.
+  // A sashay card's farewell (Ru's thanks + the queen's last words) is tagged so the screen can move it
+  // into the FAREWELL block; nothing in it is changed.
+  const isOut=safeVariant==='sashay';
+  return `<div class="tv-band tv-band-${safeVariant} lipsync-impact-card lipsync-impact-${safeVariant}">
+    <div class="tv-band-head">${queenPortraitHtml(q,'sm')}<div class="tv-band-copy"><span class="tv-band-label">${escapeHtml(label||'')}</span><span class="tv-band-line">${escapeHtml(q.name||'Queen')}, ${escapeHtml(line||'')}</span></div></div>
+    ${isOut?'':(extra||'')}
+  </div>${isOut&&extra?`<div class="tv-farewell" data-queen="${escapeHtml(q.name||'')}"><span class="tv-farewell-name">${escapeHtml(q.name||'')}</span>${extra}</div>`:''}`;
 }
 function standardLsfylDecisionCards(result){
   if(result.outcome==='tripleBottom'){
@@ -1289,11 +1419,11 @@ function standardLsfylDecisionCards(result){
   }
   if(result.outcome==='doubleShantay'){
     const queens=[...result.results].map(r=>gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
-    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p></div>` + queens.map(q=>impactQueenCard(q,'DOUBLE SHANTAY','You both stay.','shantay')).join('');
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p></div>` + queens.map(q=>impactQueenCard(q,'DOUBLE SHANTAY','Shantay, you stay.','shantay','<p>Shantay, you both stay.</p>')).join('');
   }
   if(result.outcome==='doubleSashay'){
     const queens=[...result.results].map(r=>gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
-    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>I’m sorry, my dears, but neither of you survived this lip sync.</strong></p></div>` + queens.map(q=>impactQueenCard(q,'SASHAY AWAY','Sashay away.','sashay',`<p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote>`)).join('');
+    return `<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${escapeHtml(rupaulDecisionIntro())}</p><p><strong>I'm sorry, my dears, but neither of you survived this lip sync.</strong></p></div>` + queens.map(q=>impactQueenCard(q,'SASHAY AWAY','Sashay away.','sashay',`<p>${escapeHtml(ruFarewellThanks(q))}</p><blockquote>${escapeHtml(queenExitQuote(q))}</blockquote>`)).join('');
   }
   const survivor=gameState.queens.find(q=>q.id===result.survivorId);
   const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
@@ -1308,7 +1438,7 @@ function lipSyncDecisionCards(result){
       ? (gameState.currentEpisode?.lipSyncAssassin||{name:'Lip Sync Assassin'})
       : gameState.queens.find(q=>q.id===result.survivorId);
     const title={legacyElimination:'LIP SYNC WINNER',assassinElimination:'LIP SYNC WINNER',tournamentPoints:'EXTRA POINT WON',top2Win:'PREMIERE WINNER',allWinnersTopAllStar:'TOP ALL STAR OF THE WEEK'}[result.outcome];
-    const spotlight=winner?`<div class="lipsync-victory-spotlight">${bigMomentHeader('Condragulations, '+winner.name,title,'win')}${winner.id!=='lip_sync_assassin'?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}</div>`:'';
+    const spotlight=winner?`<div class="lipsync-victory-spotlight">${tvWinnerSpotlight(winner,title,{portrait:winner.id!=='lip_sync_assassin'})}</div>`:'';
     return `<div class="card lipsync-decision-winner">${spotlight}${lipSyncDecisionText(result)}</div>`;
   }
   return standardLsfylDecisionCards(result);
@@ -1337,7 +1467,7 @@ function finalAmenCard(){
     <p class="amen-response"><strong>AMEN!</strong></p>
     <p class="small">Now let the music play</p>
 
-  <p class="rupaul-music-cue">💡 ✦ 🎶 ${title} by ${artist} 🎶 ✦ 💡</p>
+  <p class="rupaul-music-cue">${typeof icon==='function'?icon('spot','e-spot')+icon('note'):'💡 ✦ 🎶'} ${title} by ${artist} ${typeof icon==='function'?icon('note')+icon('spot','e-spot flip'):'🎶 ✦ 💡'}</p>
 
   </div>`;
 }
@@ -1406,7 +1536,7 @@ function lipSyncDecisionText(result){
     return `<p class="legacy-lipsync-win"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}! You are the winner of the premiere.</strong></p><p><strong>${escapeHtml(loser?.name||'The other top queen')}</strong>, you are safe to slay another day.</p>`;
   }
   if(result.outcome==='doubleShantay'){const names=[...result.results].sort((a,b)=>a.name.localeCompare(b.name)).map(r=>escapeHtml(r.name)); return `<p><strong>${names[0]} and ${names[1]}, Shantay, you both stay.</strong></p><p>No queen goes home tonight.</p>`;}
-  if(result.outcome==='doubleSashay'){const names=[...result.results].sort((a,b)=>a.name.localeCompare(b.name)).map(r=>escapeHtml(r.name)); return `<p><strong>${names[0]} and ${names[1]}, I’m sorry, my dears, but neither of you survived this lip sync.</strong></p><p>Sashay away.</p>`;}
+  if(result.outcome==='doubleSashay'){const names=[...result.results].sort((a,b)=>a.name.localeCompare(b.name)).map(r=>escapeHtml(r.name)); return `<p><strong>${names[0]} and ${names[1]}, I'm sorry, my dears, but neither of you survived this lip sync.</strong></p><p>Sashay away.</p>`;}
   if(result.outcome==='tripleBottom'){
     const eliminated=gameState.queens.find(q=>q.id===result.eliminatedQueenId);
     const safeNames=(result.results||[]).filter(r=>r.queenId!==result.eliminatedQueenId).map(r=>escapeHtml(r.name)).join(' and ');
@@ -1531,22 +1661,148 @@ function renderLipSyncResult(result){
         : "Ladies, this is your last chance to impress me and save yourselves from elimination. The time has come... to lip sync for your lives! Good luck... and don't fuck it up.")));
   const resultQueens=(result?.results||[]).map(r=>r.queenId==='lip_sync_assassin' ? (ep.lipSyncAssassin||{id:'lip_sync_assassin',name:'Lip Sync Assassin',isAssassin:true,type:'Lip Sync Assassin',attributes:{lipSync:8,cunt:8}}) : gameState.queens.find(q=>q.id===r.queenId)).filter(Boolean).sort((a,b)=>a.name.localeCompare(b.name));
   const introBlock=isAssassin ? (ep.assassinIntroShown ? '' : assassinIntroCardsHtml(ep,resultQueens)) : `<div class="card"><p>${escapeHtml(intro)}</p><p>${escapeHtml(prompt)}</p></div>`;
-  const resultHero=isAssassin ? '' : `<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', (isAllWinners||isTournament||isLegacy||isAssassin)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p style="text-align:center !important; max-width:100%;">by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue"  style="text-align:center !important; width:100%; display:block;">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>
+  const resultHero=isAssassin ? '' : `<div class="hero tv-ls-hero">${bigMomentHeader('The music starts...', (isAllWinners||isTournament||isLegacy||isAssassin)?'LIP SYNC FOR YOUR LEGACY':(ep.special==='premiere_no_elim'?'LIP SYNC FOR THE WIN':'LIP SYNC FOR YOUR LIFE'), (ep.special==='premiere_no_elim'||isLegacy||isAssassin||isTournament||isAllWinners)?'win':'danger')}<h2>${escapeHtml(ep.song.title)}</h2><p>by ${escapeHtml(ep.song.artist)}</p>  <h3 class="music-cue spotlight-cue" >${lipSyncEnergyLabel(ep.song)}</h3>
 </div>`;
   const pendingAllWinnersStar=result?.outcome==='allWinnersTopAllStar' && ep?.waitingForAllWinnersStarChoice;
   const pendingAllWinnersBlock=result?.outcome==='allWinnersTopAllStar' && result.survivorId===gameState.playerQueenId && ep?.waitingForAllWinnersBlockChoice && !ep?.playerAllWinnersBlockChosen;
   const pendingAllWinnersChoice=pendingAllWinnersStar || pendingAllWinnersBlock;
+  // v31.5 Part B: four TV blocks — PERFORMANCE, VERDICT, FAREWELL, OUTRO — with everything that was on this
+  // screen before. The verdict is revealed only when asked for, so scrolling never spoils it.
+  const revealed=!!ep.tvVerdictRevealed || pendingAllWinnersChoice;
+  const tvBlock=(id,title,inner,hidden)=>`<section class="tv-block" data-block="${id}"${hidden?' hidden':''}><h3 class="tv-bt">${title}</h3><div class="tv-bc">${inner}</div></section>`;
   document.querySelector('.screen').innerHTML=`${resultHero}
-  ${introBlock}
-  <div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lipSyncEnergyLabel(ep.song)} 💡 💡</h3>${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>
-  ${lipSyncDecisionCards(result)}
+  ${tvBlock('performance','Performance',`${introBlock}
+  <div class="card music-card lipsync-battle-card">${lipSyncResultPortraits(result)}<div class="commentary-block">${lipSyncNarrative(result)}</div></div>${lipSyncPlayerStrategyStamp(result)}`,false)}
+  ${tvBlock('verdict','Verdict',`${lipSyncDecisionCards(result)}${lipSyncSurvivorNarration(result)}
   ${renderAllWinnersGiftStarChoice(result)}
-  ${renderAllWinnersBlockChoice(result)}
-  ${pendingAllWinnersChoice?'':finalAmenCard()}
-  ${pendingAllWinnersChoice?'':'<button id="continue">Continue</button>'}`;
+  ${renderAllWinnersBlockChoice(result)}`,!revealed)}
+  ${tvBlock('farewell','Farewell','',!revealed)}
+  ${pendingAllWinnersChoice?'':tvBlock('outro','Outro',finalAmenCard(),!revealed)}
+  <div class="tv-nav">${revealed?'':'<button id="tvRevealVerdict" class="tv-next">Reveal the verdict</button>'}
+  ${pendingAllWinnersChoice?'':`<button id="continue" class="tv-next"${revealed?'':' hidden'}>Continue</button>`}</div>`;
+  const farewellBlock=document.querySelector('.tv-block[data-block="farewell"] .tv-bc');
+  document.querySelectorAll('.tv-block[data-block="verdict"] .tv-farewell, .tv-block[data-block="verdict"] .lipstick-farewell').forEach(n=>farewellBlock.appendChild(n));
+  if(!farewellBlock.children.length)farewellBlock.closest('.tv-block').remove();
+  document.querySelector('#tvRevealVerdict')?.addEventListener('click',()=>{
+    ep.tvVerdictRevealed=true; saveGame();
+    document.querySelectorAll('.tv-block[hidden]').forEach(b=>b.hidden=false);
+    document.querySelector('#tvRevealVerdict').remove();
+    const c=document.querySelector('#continue'); if(c)c.hidden=false;
+    document.querySelector('.tv-block[data-block="verdict"]')?.scrollIntoView({block:'start'});
+  });
   scrollToTop();
   bindAllWinnersGiftStarChoice(result);
   bindAllWinnersBlockChoice(result);
   const continueBtn=document.querySelector('#continue');
   if(continueBtn)continueBtn.addEventListener('click',renderUntucked);
+}
+
+// ---------- v31.6: lip sync strategies, one list for every lip sync ----------
+// The original descriptions are kept word for word (long = bottom lip sync, short = finale / smackdown).
+const LS_STRATEGY_COPY={
+  emotion:{long:'Lead with vulnerability and make every beat feel personal.'},
+  sell_lyrics:{long:'Use face, timing, and intention to make the song feel written for you.'},
+  dance:{long:'Attack the rhythm and try to own the whole stage.',short:'Attack the rhythm and try to own the stage.'},
+  stunts:{long:'Go for big physical moments. It could be iconic or messy.',short:'Go for big physical moments.'},
+  save_reveal:{long:'Hold the reveal until the song hits its biggest moment.',shortLabel:'Reveal During the Climax'},
+  reveal_early:{long:'Shock the judges quickly and hope the energy carries through.',short:'Shock the judges quickly.'},
+  multiple_reveals:{long:'Throw everything at the wall and pray it sticks.',short:'Throw every trick at the stage.'},
+  overshadow:{long:'High risk: steal the spotlight. If it lands, you gain score and your opponent loses score. If it fails, production clocks you as desperate.'},
+  play_safe:{long:'Keep it clean and controlled, but risk being forgettable.',short:'Keep it clean and controlled.'},
+  comedy:{long:'Play the song for laughs. Slow ballads fight you; anything with a groove lets the jokes land.'},
+  play_to_audience:{long:'Perform for the crowd, not the panel. The fans will love you, the judges a little less.'},
+  signature_move:{long:'The move you have been hiding all season. You only get to pull it once.'},
+  match_energy:{long:'Read your opponent and answer every move. The stronger she is, the better it works.'}
+};
+const LS_STRATEGY_ORDER=['emotion','sell_lyrics','dance','comedy','play_to_audience','match_energy','stunts','signature_move','save_reveal','reveal_early','multiple_reveals','overshadow','play_safe'];
+function lsChip(text,tone){return `<span class="tv-lschip tv-lschip-${tone}">${escapeHtml(text)}</span>`;}
+function lipSyncStrategyChipsHtml(id,q,song){
+  const prof=(typeof LIP_SYNC_PROFILES!=='undefined'&&LIP_SYNC_PROFILES[id])||{};
+  const chips=[];
+  if(song&&typeof lipSyncFitLabel==='function'){
+    const f=lipSyncFitLabel(id,song);
+    chips.push(lsChip({great:'Great for this song',good:'Good for this song',ok:'Neutral for this song',poor:'Wrong for this song'}[f],f==='great'||f==='good'?'up':f==='poor'?'down':'flat'));
+  }
+  if(prof.risk)chips.push(lsChip({minimal:'Almost no risk',low:'Low risk',medium:'Medium risk',high:'High risk'}[prof.risk],prof.risk==='high'?'down':'flat'));
+  if(prof.reveals)chips.push(lsChip(prof.reveals>1?`Uses ${prof.reveals} reveals`:'Uses 1 reveal','flat'));
+  if(prof.energy)chips.push(lsChip('Tiring','flat'));
+  if(prof.oncePerSeason)chips.push(lsChip('Once per season','flat'));
+  return chips.length?`<span class="tv-lschips">${chips.join('')}</span>`:'';
+}
+function lipSyncStrategyButtonsHtml({q, song=null, attr='data-strategy', variant='long', exclude=[]}){
+  const reveals=q?.inventory?.reveals||0;
+  return `<div class="options">${LS_STRATEGY_ORDER.filter(id=>!exclude.includes(id)).map(id=>{
+    const c=LS_STRATEGY_COPY[id]||{};
+    const label=(variant==='short'&&c.shortLabel)||(typeof lipSyncStrategyLabel==='function'?lipSyncStrategyLabel(id):id);
+    const desc=(variant==='short'&&c.short)||c.long||'';
+    const prof=(typeof LIP_SYNC_PROFILES!=='undefined'&&LIP_SYNC_PROFILES[id])||{};
+    const disabled=((prof.reveals&&reveals<prof.reveals)||(prof.oncePerSeason&&q?.signatureMoveUsed))?'disabled':'';
+    return choiceButtonHtml({id,attr,label,desc,disabled,extraHtml:lipSyncStrategyChipsHtml(id,q,song)});
+  }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
+}
+
+// how the result reads: outcome -> existing text tiers (nothing removed)
+function lipSyncTierFor(r){
+  const o=r?.lsOutcome;
+  if(o==='iconic')return 'legendary';
+  if(o==='clean')return (Number(r.weeklyPerformance)||0)>=8?'outstanding':'strong';
+  if(o==='slip')return 'partial';
+  if(o==='disaster')return 'failed';
+  return lipSyncExecutionTier(r?.executionQuality ?? r?.weeklyPerformance ?? r?.score10);
+}
+Object.assign(V20_LIPSYNC_EXECUTION_TEXT,{
+  comedy:{
+    failed:['The jokes arrived one beat too late, and the song kept walking without her.','She went for laughs and the panel gave her polite silence.','The comedy fought the song instead of riding it.','Every bit felt planned, and none of them felt funny.'],
+    partial:['A couple of the jokes landed; the rest of the song needed more lip sync.','She got one big laugh and then lost the thread.','The comedy was there, but the mouth was not always on the words.'],
+    strong:['She found the joke inside the song and never dropped the lyrics.','The panel laughed, and the lip sync stayed sharp underneath it.','The comic timing matched the beat.'],
+    outstanding:['She turned the song into a sketch and still nailed every word.','The judges were laughing and clapping at the same time.','Every bit was timed to the music like it had been rehearsed for weeks.'],
+    legendary:['She made the whole panel cry laughing without missing a single lyric.','That was comedy and lip sync at the same level. Rare, and iconic.','The song will never sound the same again, and that is a compliment.']
+  },
+  play_to_audience:{
+    failed:['She played to the crowd, but the crowd was not hers tonight.','She kept turning away from the panel, and it showed.','The audience cheered once; the judges never warmed up.'],
+    partial:['The crowd loved her more than the judges did.','She owned the room but forgot who was deciding.','The energy was real, the precision less so.'],
+    strong:['She brought the audience with her, and the panel followed.','The crowd screamed on every hit, and she fed off it.','She made the studio feel like a stadium.'],
+    outstanding:['The audience was on its feet before the chorus.','She turned the room into her fan club, one lyric at a time.','The judges could not ignore what the crowd was feeling.'],
+    legendary:['The audience screamed so loud the music almost disappeared.','She performed like the whole world was watching, and it felt like it was.','That was a fan-favorite moment in real time.']
+  },
+  signature_move:{
+    failed:['The move she saved all season did not land when it mattered.','She went for the signature moment and the timing betrayed her.','The big move came out wrong, and she never recovered.'],
+    partial:['The signature move landed, but the rest of the song was thin.','One great moment does not make a whole lip sync.','She saved everything for one beat and paid for it in the verses.'],
+    strong:['The move she had been hiding finally came out, and it was worth the wait.','The signature moment landed right on the beat.','She built the whole song around one move, and the move delivered.'],
+    outstanding:['Nobody saw the move coming. The panel gasped.','The signature moment hit exactly when the song exploded.','She saved it for the right night.'],
+    legendary:['The move she had been saving all season became the moment of the season.','The room went silent, then lost its mind.','That is the clip everyone will be talking about tomorrow.']
+  },
+  match_energy:{
+    failed:['She waited to answer her opponent and ended up a step behind all song.','Matching energy only works if you bring your own.','She kept reacting and never started anything.'],
+    partial:['She answered some moves, but the conversation was one-sided.','The back-and-forth was there in flashes.','She matched the beats but not the attitude.'],
+    strong:['Every move her opponent made, she answered with one of her own.','She read the stage and kept pace beat for beat.','It became a real conversation, and she held her side.'],
+    outstanding:['She mirrored, answered, and then raised the stakes.','Every time her opponent went up, she went higher.','The panel watched a duel, and she was winning it.'],
+    legendary:['She took everything her opponent threw and threw it back harder.','That was a lip sync conversation and she had the last word.','She matched the energy and then owned it.']
+  }
+});
+Object.assign(V20_LIPSYNC_TEXT.strategy,{
+  comedy:{win:['The jokes landed on the beat.','She made the panel laugh and kept the lyrics sharp.'],lose:['The comedy never found the song.','The laughs did not come.']},
+  play_to_audience:{win:['The crowd carried her.','She made the room hers.'],lose:['The crowd cheered; the panel did not.','She played to the wrong audience.']},
+  signature_move:{win:['The saved move was worth the wait.','Her signature moment landed.'],lose:['The big move came out wrong.','One moment was not enough.']},
+  match_energy:{win:['She answered every move.','She matched the energy and raised it.'],lose:['She stayed one step behind.','She reacted instead of leading.']}
+});
+const LS_EVENT_LINES={
+  wig_fall:['{name}\'s wig flew off mid-chorus, and she had to decide in a second whether to keep going.','The wig came off. {name} kept lip syncing, but the room saw it.'],
+  wig_under_wig:['{name} pulled her wig off on purpose and there was another one underneath. The panel screamed.'],
+  fall:['{name} landed one trick badly and limped through the last chorus. That is going to hurt tomorrow.','A stunt went wrong and {name} hit the floor harder than she wanted.'],
+  stuck_reveal:['{name}\'s reveal got stuck halfway, and the moment was gone.','The reveal would not release. {name} pulled, and pulled, and the song kept going.'],
+  death_drop:['{name} hit the death drop right on the beat, and the panel jumped out of their seats.'],
+  ru_moved:['Ru was wiping tears by the end of {name}\'s lip sync.'],
+  panel_laughs:['The judges were laughing so hard Michelle had to cover her face during {name}\'s bit.'],
+  signature:['{name} finally pulled the move she had been saving all season.'],
+  no_reveal:['{name} planned a reveal she did not have left, and the plan fell apart on stage.']
+};
+function lipSyncEventLines(result){
+  const ep=gameState.currentEpisode||{};
+  ep.lsEventLines=ep.lsEventLines||{};
+  return (result?.results||[]).flatMap(r=>(r.lsEvents||[]).map(ev=>{
+    const key=r.queenId+':'+ev;
+    if(!ep.lsEventLines[key]){const bank=LS_EVENT_LINES[ev];if(!bank)return '';ep.lsEventLines[key]=fillTemplate(shortPick(bank,''),{name:r.name});}
+    return ep.lsEventLines[key];
+  })).filter(Boolean);
 }

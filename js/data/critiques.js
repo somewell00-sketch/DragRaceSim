@@ -34,7 +34,7 @@ window.GAME_DATA.critiques = {
       "The runway was ready for you, but you weren't ready for it.",
       "It gave less 'superstar' and more 'local bar talent show'.",
       "An absolute mess from start to finish.",
-      "I’m not mad, I’m just disappointed.",
+      "I'm not mad, I'm just disappointed.",
       "You're coasting, and the wheels are starting to fall off.",
       "We lost the queen we fell in love with on week one."
     ]

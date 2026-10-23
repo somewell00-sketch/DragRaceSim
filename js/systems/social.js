@@ -354,7 +354,14 @@ if(kind==='keepWarm'){
   };
 }
   if(kind==='askHelp' && target){
-    return {effects:{challengeBonus:1.2,stress:-8,confidence:4,affinity:20,respect:6,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.`};
+    // v31.6: the help is worth what the relationship is worth (+1.5 for a stranger, up to +3.5 for a close ally)
+    const aff=Number(gameState.relationships?.[target.id]?.[player?.id]?.affinity)||0;
+    if(aff<=-25){
+      return {refused:true,effects:{stress:5,confidence:-2,affinity:-4},note:`You ask ${target.name} for help. She looks you up and down and says she is "a little busy." Noted.`};
+    }
+    const bonus=Math.round(clamp(1.5+aff/25,1.5,3.5)*10)/10;
+    const warm=aff>=40?' She clearly wants you to do well.':'';
+    return {effects:{challengeBonus:bonus,stress:-8,confidence:4,affinity:20,respect:6,fans:1.25,queens:1.25},note:`You ask ${target.name} for help. Your challenge prep improves, the relationship gets warmer, and she also gains a useful challenge boost.${warm}`};
   }
   if(kind==='comfort' && target){
     return {effects:{fans:4,confidence:2,momentum:1,affinity:22,respect:9,queens:2},note:`You comfort ${target.name}. Trust increases, she calms down, and the audience gets a sincere moment.`};
@@ -390,6 +397,7 @@ function applyTargetedPrepChoice(choice,target){
   if(choice.dynamicEffect==='askHelp' && target){
     const built=buildDynamicPlayerEffects('askHelp',target);
     applyPlayerEffects(built.effects,built.note,target.id);
+    if(built.refused){episodeSocialNote('workroom',built.note);return;}
     applyQueenEffects(target,{challengeBonus:0.8,confidence:3,stress:-3,production:1.25,fans:2.5,queens:1.25},`${target.name} gets a warm helper moment after helping you prepare.`,gameState.playerQueenId);
     addStoryFlag(target.id,'warm_moment',`${target.name} helped the player prepare.`,1);
     episodeSocialNote('workroom',built.note);
@@ -454,7 +462,42 @@ function applySkippedUntuckedPenalty(){
 
 function applyPlayerEffects(effects={}, note='', targetId=null){
   const result=applyChoiceEffects(effects,{targetId,note,source:'player-choice'});
+  recordPlayerEffectFeed(effects,note,targetId);
   return result;
+}
+// v31.6: what a choice did, shown right under it as arrows (fans and production stay hidden until the end)
+function playerEffectChips(effects={},targetId=null){
+  const n=k=>Number(effects[k])||0;
+  const chips=[];
+  const arrow=(v,big,up)=>(v>0?'▲':'▼').repeat(Math.abs(v)>=big?2:1);
+  const perf=n('performance')+n('challengeBonus');
+  if(perf)chips.push({k:'Challenge',a:arrow(perf,3),good:perf>0});
+  if(n('runway'))chips.push({k:'Runway',a:arrow(n('runway'),5),good:n('runway')>0});
+  if(n('energy'))chips.push({k:'Energy',a:arrow(n('energy'),10),good:n('energy')>0});
+  if(n('stress'))chips.push({k:'Stress',a:arrow(n('stress'),8),good:n('stress')<0});
+  if(n('confidence'))chips.push({k:'Confidence',a:arrow(n('confidence'),5),good:n('confidence')>0});
+  const t=targetId?gameState.queens.find(q=>q.id===targetId):null;
+  if(t && n('affinity'))chips.push({k:t.name,a:arrow(n('affinity'),25),good:n('affinity')>0});
+  if(Array.isArray(effects.relationships)&&effects.relationships.length){
+    const tot=effects.relationships.reduce((a,r)=>a+(Number(r.affinity)||0),0);
+    if(tot)chips.push({k:effects.relationships.length+' queens',a:arrow(tot,40),good:tot>0});
+  }
+  return chips;
+}
+function recordPlayerEffectFeed(effects,note,targetId){
+  const ep=gameState.currentEpisode;if(!ep||!note)return;
+  const chips=playerEffectChips(effects,targetId);
+  if(!chips.length)return;
+  ep.effectFeed=ep.effectFeed||[];
+  ep.effectFeed.push({stage:ep.feedStage||'workroom',note,chips});
+  if(ep.effectFeed.length>12)ep.effectFeed.shift();
+  const box=document.querySelector('#tvFeed');if(box)box.innerHTML=effectFeedHtml(ep.feedStage||'workroom');
+}
+function effectChipsHtml(chips){return `<div class="tv-effect-chips">${(chips||[]).map(c=>`<span class="tv-echip ${c.tone||(c.good?'up':'down')}">${c.a} ${escapeHtml(c.k)}</span>`).join('')}</div>`;}
+function lastEffectChipsHtml(stage){const it=(gameState.currentEpisode?.effectFeed||[]).filter(x=>x.stage===stage).slice(-1)[0];return it?effectChipsHtml(it.chips):'';}
+function effectFeedHtml(stage){
+  const items=(gameState.currentEpisode?.effectFeed||[]).filter(x=>x.stage===stage);
+  return items.map(x=>`<div class="tv-effect"><p>${escapeHtml(x.note)}</p><div class="tv-effect-chips">${x.chips.map(c=>`<span class="tv-echip ${c.good?'up':'down'}">${c.a} ${escapeHtml(c.k)}</span>`).join('')}</div></div>`).join('');
 }
 
 
@@ -465,17 +508,24 @@ function applySabotageAttempt(targetId){
   if(!player || !target || !ep)return;
   ensureQueenSocialStats(player);
   ensureQueenV14Stats(target);
-  const success=Math.random()>=0.35;
+  // v31.6: sabotage depends on nerve (C.U.N.T), the target's guard and how much the room already watches you
+  const cunt=Number(player.attributes?.cunt)||5;
+  const targetProfile=(typeof getPersonalityProfile==='function')?getPersonalityProfile(target):{};
+  const guard=['calculating','strategic','perfectionist','professional'].includes(target.personalityId)?0.12:0;
+  const watched=(player.publicScores?.queens||0)<=-15?0.08:0;
+  const chance=clamp(0.45+(cunt-5)*0.05-guard-watched,0.2,0.85);
+  const success=Math.random()<chance;
+  ep.sabotageChance=Math.round(chance*100);
   ep.sabotageAttempt={targetId:target.id,targetName:target.name,success,backfire:!success};
   if(success){
     const note=`Your sabotage lands. ${target.name} takes a challenge penalty, gets stressed, and the relationship gets much worse.`;
     applyPlayerEffects({production:10.5,fans:-1.25,stress:4,affinity:-49,respect:-20,queens:-1.25},note,target.id);
-    applyQueenEffects(target,{challengeBonus:-4.0,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
+    applyQueenEffects(target,{challengeBonus:-Math.round((2.2+Math.max(0,cunt-5)*0.3)*10)/10,stress:16,confidence:-6,momentum:-1},`${player.name}'s sabotage throws ${target.name} off before the challenge.`,player.id);
     maybeVillainEdit(player,0.22,`successfully sabotaged ${target.name}`);
     episodeSocialNote('workroom',note);
   }else{
     const note=`Your sabotage fails. Production notices the attempt, ${target.name} dislikes you even more, and your respect in the room drops.`;
-    applyPlayerEffects({production:9,fans:-2.5,queens:-5,stress:6,affinity:-55,respect:-26},note,target.id);
+    applyPlayerEffects({production:9,fans:-2.5,queens:-5,stress:6,performance:-1.5,affinity:-55,respect:-26},note,target.id);
     addStoryFlag(player.id,'villain_spark',`failed sabotage attempt against ${target.name}`,1);
     maybeVillainEdit(player,0.16,`failed sabotage attempt against ${target.name}`);
     episodeSocialNote('workroom',note);
@@ -503,14 +553,7 @@ function episodeScopedQueens(excludePlayer=false){
   }
   return pool;
 }
-function isPlayerInCurrentEpisode(){
-  const ep=gameState.currentEpisode;
-  if(ep?.special==='tournament_bracket' && Array.isArray(ep.participantIds) && ep.participantIds.length){
-    return ep.participantIds.includes(gameState.playerQueenId);
-  }
-  const player=getPlayerQueen();
-  return !!player && !player.isEliminated;
-}
+// v31.5: isPlayerInCurrentEpisode lives in js/systems/season.js (that copy was the one in use).
 function fillSocialText(t, a, b){
   const guestJudge = gameState.currentEpisode?.guestJudge?.name || 'the guest judge';
 
@@ -551,7 +594,7 @@ function generateWorkroomSocialEvents(){
       : 'gives you a note that unlocks the challenge a little.'
   );
 }
-      applyPlayerEffects(ev.effects,text,a.id);
+      applyChoiceEffects(ev.effects,{targetId:a.id,note:text,source:'social-event'});
       ensureEpisodeEffects().socialEventNotes.push(text);
     } else {
       text=fillSocialText(ev.text,a,b);
@@ -569,6 +612,19 @@ function generateWorkroomSocialEvents(){
       }
     }
     events.push({id:ev.id,text,type:ev.type});
+  }
+  // v31.6: an ally can step in on her own in a hard week
+  if(player && isPlayerInCurrentEpisode()){
+    const last=(player.episodeHistory||[]).slice(-1)[0]?.placement;
+    const chance=0.18+(['LOW','BTM'].includes(String(last||'').toUpperCase())?0.25:0)+((player.stress||0)>=60?0.15:0);
+    const allies=active.filter(q=>q.id!==player.id && (Number(gameState.relationships?.[q.id]?.[player.id]?.affinity)||0)>=45);
+    if(allies.length && Math.random()<chance){
+      const ally=allies.sort((x,y)=>(gameState.relationships?.[y.id]?.[player.id]?.affinity||0)-(gameState.relationships?.[x.id]?.[player.id]?.affinity||0))[0];
+      const text=`${ally.name} pulls up a chair at your station and helps you fix the hard part. Friends in this workroom are worth gold.`;
+      applyPlayerEffects({challengeBonus:1.5,stress:-6,affinity:6},text,ally.id);
+      ensureEpisodeEffects().socialEventNotes.push(text);
+      events.push({id:'ally_help',text,type:'help'});
+    }
   }
   ep.socialEvents=events;
   saveGame();
@@ -828,7 +884,7 @@ const UNTUCKED_NPC_EVENTS = [
   {text:'{a} comforts {b} in the corner of the lounge.', effects:{affinity:23,respect:9,stress:-3,fans:2.6,queens:2}},
   {text:'{a} confronts {b} about fake compliments.', effects:{affinity:-26,respect:-10,stress:5,production:3.8,fans:-1.25,queens:-1}},
   {text:'{a} apologizes to {b}, and the room actually believes it.', effects:{affinity:20,respect:10,stress:-2,queens:2,fans:1}},
-  {text:'{a} and {b} make a tiny pact to watch each other’s backs.', effects:{affinity:21,respect:13,queens:2}},
+  {text:'{a} and {b} make a tiny pact to watch each other\'s backs.', effects:{affinity:21,respect:13,queens:2}},
   {text:'{a} throws a little shade at {b}, and everyone pretends not to hear.', effects:{affinity:-15,respect:-4,stress:2,production:2.6,queens:-0.5}},
   {text:'{a} admits she underestimated {b}.', effects:{respect:19,affinity:9,queens:1.5}},
   {text:'{a} says {b} is getting a winner edit, and the lounge goes quiet.', effects:{affinity:-11,respect:11,stress:3,production:3.8,queens:-0.5}},
@@ -1001,16 +1057,27 @@ function generateNpcSocialEvents(stage='workroom'){
   const events=[];
   for(let i=0;i<count;i++){
     const a=sample(active);
-    const b=sample(active.filter(q=>q.id!==a?.id));
-    if(!a||!b)continue;
+    if(!a)continue;
     const ev=pickNpcSocialEventForQueen(pool,a);
+    // v31.6: rivals get the shade and the sabotage, allies get the help
+    const others=active.filter(q=>q.id!==a.id);
+    const affTo=o=>(Number(gameState.relationships?.[a.id]?.[o.id]?.affinity)||0)+rand(-15,15);
+    const hostile=['conflict','shade','jealousy','sabotage'].includes(ev.type);
+    const friendly=['comfort','friendship','mentor','alliance'].includes(ev.type);
+    const b=hostile?others.slice().sort((x,y)=>affTo(x)-affTo(y))[0]:(friendly?others.slice().sort((x,y)=>affTo(y)-affTo(x))[0]:sample(others));
+    if(!b)continue;
     const text=fillSocialText(ev.text,a,b);
     applyQueenEffects(a,ev.effects,text,b.id);
     // Target absorbs stress/performance side of the event when relevant.
     const targetEffects={};
     if(ev.effects.performance)targetEffects.performance=ev.effects.performance;
     if(ev.effects.stress)targetEffects.stress=ev.effects.stress;
-    if(ev.type==='sabotage')targetEffects.performance=-1;
+    if(ev.type==='sabotage'){
+      const rivalry=Math.max(0,-(Number(gameState.relationships?.[a.id]?.[b.id]?.affinity)||0));
+      targetEffects.performance=-Math.round(clamp(2+rivalry/40,2,4)*10)/10;
+      targetEffects.stress=(targetEffects.stress||0)+6;
+      if(b.id===gameState.playerQueenId){ep.playerSabotagedBy=a.id;}
+    }
     applyQueenEffects(b,targetEffects,'',a.id);
     events.push({text,type:ev.type||stage,a:a.id,b:b.id});
   }

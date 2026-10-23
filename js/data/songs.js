@@ -2179,3 +2179,17 @@ window.GAME_DATA.songs = [
   {"title": "What If I Forgive Myself?", "artist": "Reese Witherspoon as Cheryl Strayed", "energy": "low"}
   
 ];
+
+// v31.5: the crown lip sync is always a high-energy anthem from this pool (title + artist must match
+// a song above; anything missing is skipped, and if none match a random high-energy song is used).
+window.GAME_DATA.crownAnthems = [
+  ['Champion','RuPaul'],['Born This Way','Lady Gaga'],['I Will Survive','Gloria Gaynor'],['Run the World','Beyoncé'],
+  ['Express Yourself','Madonna'],['Vogue','Madonna'],['Hung Up','Madonna'],['I\'m Every Woman','Chaka Khan'],
+  ['I\'m Every Woman','Whitney Houston'],['Respect','Aretha Franklin'],['Holding Out for a Hero','Bonnie Tyler'],
+  ['Stronger (What Doesn\'t Kill You)','Kelly Clarkson'],['Fighter','Christina Aguilera'],['Titanium','Sia'],['Unstoppable','Sia'],
+  ['Roar','Katy Perry'],['Firework','Katy Perry'],['Edge of Glory','Lady Gaga'],['Rain on Me','Lady Gaga & Ariana Grande'],
+  ['Break My Soul','Beyoncé'],['Lady Marmalade','P!nk, Lil\' Kim, Christina Aguilera & Mýa'],['It\'s Raining Men','The Weather Girls'],
+  ['Don\'t Stop Me Now','Queen'],['Dancing Queen','ABBA'],['Rhythm Nation','Janet Jackson'],['Call Me Mother','RuPaul'],
+  ['Glamazon','RuPaul'],['Sissy That Walk','RuPaul'],['Supermodel (You Better Work)','RuPaul'],['Queen of the Universe','RuPaul']
+];
+

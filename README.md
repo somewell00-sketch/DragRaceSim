@@ -1,3 +1,18 @@
+# Drag Race Simulator — v31.5 Part A: performance + CSS consolidation
+
+No visual change in this step: every element's computed style was compared against v31.4, step by step, across full seasons in all five formats (Regular, Legacy, Assassin, Brackets, All Winners) at 1280px and 390px.
+
+## White flashes
+- Removed `content-visibility:auto` + `contain-intrinsic-size` from the `.perf-mode` cards. The 220px placeholders resized cards while scrolling and after each screen change, which is what flashed.
+- Removed the two `backdrop-filter:blur()` rules (and the `backdrop-filter:none` overrides that existed only to cancel them).
+- `assets/header.jpg`: one fixed layer (`body::before`) on its own compositing layer, preloaded once from `index.html`.
+- `index.html` paints the page black before the stylesheet arrives (`color-scheme: dark` + a one-line inline style), so the first frame is no longer white.
+
+## css/style.css
+- 614 declarations that could never win (same selector, same property, overridden later) and 152 rules left empty were removed.
+- One **DESIGN TOKENS** `:root` block at the top: every colour used more than once is a token (`--c-pink`, `--c-pink-rgb` for `rgba(var(--c-pink-rgb),.2)`), and the two old `:root` blocks were merged into it.
+- `!important`: from 1,055 down to about 350. Each one was removed only after checking, on every screen of every test season, that the computed value did not change. The ones left are either really needed (they win over a later or more specific rule) or sit on screens/states the tests can't reach (hover, focus, disabled), so they were kept on purpose.
+
 # Drag Race Simulator — v31.1 Critical Fixes
 
 ## What changed in v31.1

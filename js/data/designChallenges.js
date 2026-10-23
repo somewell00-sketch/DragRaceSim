@@ -803,7 +803,7 @@ window.GAME_DATA.designChallenges = [
     { title: "Summer Solstice", prompt: "Design a vibrant, golden look to celebrate the height of light." },
     { title: "Autumn of Life", prompt: "Use dry leaves and rust tones in an elegant mourning garment." },
     { title: "Nuclear Winter", prompt: "Create a survival fantasy for an eternal frozen winter." },
-    { title: "Vernal Bloom", prompt: "Create a look inspired by spring’s first bloom, with petals, fresh greens, and soft romantic movement." }
+    { title: "Vernal Bloom", prompt: "Create a look inspired by spring's first bloom, with petals, fresh greens, and soft romantic movement." }
   ]
 },
 

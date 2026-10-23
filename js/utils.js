@@ -108,7 +108,9 @@ function currentEpisodeTeamForQueen(qId){
 }
 function queenTeamMarkerHtml(q){
   const info=currentEpisodeTeamForQueen(q?.id);
-  return info ? `<span class="team-name-marker team-marker-${info.index}" title="${escapeHtml(info.team?.name||'Team')}">${escapeHtml(info.marker)}</span>` : '';
+  // v31.5 Part B: the team shape (bow, diamond, burst...) in the team colour instead of the emoji
+  const mark=info && typeof teamIcon==='function' ? teamIcon(info.index) : escapeHtml(info?.marker||'');
+  return info ? `<span class="team-name-marker team-marker-${info.index}" title="${escapeHtml(info.team?.name||'Team')}">${mark}</span>` : '';
 }
 function queenTeamNameHtml(q){
   const name=escapeHtml(q?.name||'Queen');
@@ -126,13 +128,17 @@ function queenPortraitHtml(q, size='md', extraClass=''){
     : `background:linear-gradient(135deg, ${typeColor(q)} 0%, ${typeColor(q)} 48%, ${personalityColor(q)} 52%, ${personalityColor(q)} 100%)`;
   const title=`${q?.name||'Queen'} — ${queenPersonaType(q)}`;
   const playerClass=q?.isPlayer?' player-portrait':'';
-  const teamClass=queenTeamClass(q);
-  return `<span class="queen-portrait portrait-${escapeHtml(size)}${playerClass}${teamClass} ${escapeHtml(extraClass)}" style="${style}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}"></span>`;
+  // v31.5 Part B: diagonal only (type | personality). Your queen gets a crown on top, a team gets a seal
+  // in the corner; each marker has its own spot so they never overlap. The old ring border is gone.
+  const team=currentEpisodeTeamForQueen(q?.id);
+  const crown=q?.isPlayer && typeof icon==='function' ? `<span class="qp-crown" aria-hidden="true">${icon('crown')}</span>` : '';
+  const seal=team && typeof emojiIcon==='function' ? `<span class="qp-seal team-seal-${team.index}" title="${escapeHtml(team.team?.name||'Team')}">${typeof teamIcon==='function'?teamIcon(team.index):emojiIcon(team.marker)}</span>` : '';
+  return `<span class="queen-portrait portrait-${escapeHtml(size)}${playerClass}${team?' has-team':''} ${escapeHtml(extraClass)}" style="${style}" title="${escapeHtml(title)}" aria-label="${escapeHtml(title)}">${crown}${seal}</span>`;
 }
 
 function queenDisplayName(q){
   const name=queenTeamNameHtml(q);
-  return q?.isPlayer ? `${name} <span class="player-crown" title="Your queen">👑</span>` : name;
+  return q?.isPlayer ? `${name} <span class="player-crown" title="Your queen">${typeof icon==='function'?icon('crown'):'👑'}</span>` : name;
 }
 
 function escapeHtml(s){return String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
@@ -142,7 +148,7 @@ function stripLeadingEmojiLabel(label){
 }
 function defaultChoiceEmoji(id,label=''){
   const map={
-    emotion:'❤️', sell_lyrics:'🎭', dance:'💃', stunts:'🤸', save_reveal:'👗', reveal_early:'✨', multiple_reveals:'💎', play_safe:'😌',
+    emotion:'❤️', sell_lyrics:'🎭', dance:'💃', stunts:'🤸', save_reveal:'👗', reveal_early:'✨', multiple_reveals:'💎', play_safe:'😌', comedy:'😂', play_to_audience:'🎤', signature_move:'⭐', match_energy:'🔥', overshadow:'⚠️',
     continueSpectator:'👁️', seeFinalResult:'⏭️', explain:'💬', humble:'🙏', confident:'👑', funny:'😂', honest:'🫀',
     comfort:'💞', provoke:'🧨', apologize:'🕊️', quiet:'🤫', drama:'📺', alliance:'🤝'
   };
@@ -150,8 +156,8 @@ function defaultChoiceEmoji(id,label=''){
   const first=String(label||'').trim().split(/\s+/)[0]||'';
   return /^\p{Extended_Pictographic}/u.test(first)?first:'✦';
 }
-function choiceButtonHtml({id, attr, label, desc='', disabled='', emoji=''}){
+function choiceButtonHtml({id, attr, label, desc='', disabled='', emoji='', iconHtml='', extraHtml=''}){
   const icon=emoji || defaultChoiceEmoji(id,label);
   const clean=stripLeadingEmojiLabel(label);
-  return `<button class="option" ${attr}="${escapeHtml(id)}" ${disabled||''}><span class="choice-emoji" aria-hidden="true">${escapeHtml(icon)}</span><span class="choice-copy"><strong>${escapeHtml(clean)}</strong><span class="small">${escapeHtml(desc||'')}</span></span></button>`;
+  return `<button class="option" ${attr}="${escapeHtml(id)}" ${disabled||''}><span class="choice-emoji" aria-hidden="true">${iconHtml||(typeof emojiIcon==='function'?emojiIcon(icon):escapeHtml(icon))}</span><span class="choice-copy"><strong>${escapeHtml(clean)}</strong><span class="small">${escapeHtml(desc||'')}</span>${extraHtml||''}</span></button>`;
 }

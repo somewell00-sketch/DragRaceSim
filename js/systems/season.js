@@ -8,9 +8,7 @@ function usesGroupVote(format=getSeasonFormat()){return format==='assassin' || i
 function hasEliminationsDuringSeason(format=getSeasonFormat()){return format==='regular' || format==='legacy' || format==='assassin' || isTournamentFormat(format);}
 function hasMissCongeniality(format=getSeasonFormat()){return format==='regular';}
 
-function isLegacyCompetitiveEpisode(ep){
-  return ['legacy','assassin'].includes(getSeasonFormat()) && !['premiere_no_elim','lalaparuza'].includes(ep?.special);
-}
+// v31.5: isLegacyCompetitiveEpisode lives in js/systems/judging.js (that copy was the one in use).
 
 
 function ensureAllWinnersQueenState(q){
@@ -227,17 +225,7 @@ function tallyVotes(votesObj){
   return tally;
 }
 
-function resolveVoteResult(votesObj, tieBreakerChoice, bottomIds){
-  const tally=tallyVotes(votesObj);
-  const entries=Object.entries(tally).filter(([id])=>(bottomIds||[]).includes(id));
-  if(!entries.length)return (bottomIds||[])[0]||null;
-  const max=Math.max(...entries.map(([,v])=>v));
-  const tied=entries.filter(([,v])=>v===max).map(([id])=>id);
-  if(tied.length===1)return tied[0];
-  if(tieBreakerChoice && tied.includes(tieBreakerChoice))return tieBreakerChoice;
-  const ranked=(bottomIds||[]).filter(id=>tied.includes(id)).sort((a,b)=>bottomPerformanceRankScore(b,bottomIds)-bottomPerformanceRankScore(a,bottomIds));
-  return ranked[0]||tied[0];
-}
+// v31.5: unused resolveVoteResult removed.
 
 function createLipSyncAssassin(){
   let name='Lip Sync Assassin';
@@ -331,13 +319,7 @@ function getMostVotedQueenIds(votesByQueenId){
   const max=Math.max(...entries.map(([,v])=>Number(v)||0));
   return entries.filter(([,v])=>(Number(v)||0)===max).map(([id])=>id);
 }
-function resolveVoteResult(votesByQueenId, tieBreakerQueenId, bottomIds=[]){
-  const tiedIds=getMostVotedQueenIds(votesByQueenId).filter(id=>!bottomIds.length || bottomIds.includes(id));
-  if(tiedIds.length<=1)return tiedIds[0]||bottomIds[0]||null;
-  const tieBreakerChoice=storedVoteFor(tieBreakerQueenId);
-  if(tieBreakerChoice && tiedIds.includes(tieBreakerChoice))return tieBreakerChoice;
-  return tiedIds[0];
-}
+// v31.5: unused resolveVoteResult removed.
 function createQueenFromForm(form){return {legendStars:0,blocked:false,blockedBy:null,blocksReceived:0,blocksGiven:0,id:'player_'+Date.now(),name:form.name||'Your Queen',type:form.type,personalityId:form.personalityId,isPlayer:true,location:form.location||window.currentUserCommunityLocation||'Unknown City, XXX',isEliminated:false,attributes:form.attributes,momentum:0,confidence:5,ambition:form.ambition||3,energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:form.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
 function hydrateQueen(q){return {legendStars:0,blocked:false,blockedBy:null,blocksReceived:0,blocksGiven:0,...JSON.parse(JSON.stringify(q)),isPlayer:false,isEliminated:false,momentum:0,confidence:5,ambition:q.ambition||randomAmbition(),energy:80,stress:20,publicScores:{production:0,queens:0,fans:0},inventory:{reveals:3},portrait:q.portrait||{type:'gradient',image:null},statistics:{wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0},episodeHistory:[],confessionals:[],performanceArc:null,tournamentPoints:0};}
 function cloneAttributes(attrs){return JSON.parse(JSON.stringify(attrs||{cunt:7,lipSync:7,makeup:7,sewing:7,runway:7,acting:7}));}
@@ -1140,6 +1122,7 @@ function resetQueenForNewSeason(q, isPlayer=false){
   clean.stress=20;
   clean.publicScores={production:0,queens:0,fans:0};
   clean.inventory={reveals:3};
+  clean.signatureMoveUsed=false;
   clean.statistics={wins:0,highs:0,safes:0,lows:0,bottoms:0,lipSyncWins:0,lipSyncLosses:0,miniChallengeWins:0,episodesCompeted:0};
   clean.episodeHistory=[];
   clean.confessionals=[];
@@ -1258,34 +1241,40 @@ function createSeasonChallengePlan(startCount=14, finaleSize=4){
   const reservedCounts=[rumixCount, ballFallbackCount].filter(n=>counts.includes(n));
 
   const inRange=(min,max)=>counts.filter(n=>n<=max&&n>=min&&!reservedCounts.includes(n));
- const designOptions=inRange(8,14);
-const snatchOptions=inRange(7,10);
-const makeoverOptions=inRange(5,6);
-const roastOptions=inRange(5,7);
-const rusicalOptions=inRange(5,10);
-const required=['design','snatchgame','makeover','roast','rusical'];
-  let best={};
-  for(let attempt=0; attempt<300; attempt++){
-    const plan={};
-    if(counts.includes(rumixCount))plan[rumixCount]=finalPerformanceChallenge;
-    if(counts.includes(ballFallbackCount))plan[ballFallbackCount]='ball';
-
-    const design=sample(designOptions.filter(n=>!plan[n])); if(!design)continue; plan[design]='design';
-const snatch=sample(snatchOptions.filter(n=>!plan[n])); if(!snatch)continue; plan[snatch]='snatchgame';
-const makeover=sample(makeoverOptions.filter(n=>!plan[n])); if(!makeover)continue; plan[makeover]='makeover';
-const roast=sample(roastOptions.filter(n=>!plan[n])); if(!roast)continue; plan[roast]='roast';
-const rusical=sample(rusicalOptions.filter(n=>!plan[n])); if(!rusical)continue; plan[rusical]='rusical';
-    const planned=Object.values(plan);
-    if(!required.every(id=>planned.includes(id)))continue;
-    const ordered=counts.filter(n=>plan[n]).sort((a,b)=>b-a);
-    const hasFamilyClash=ordered.some((n,i)=>i>0 && challengeFamily(plan[n])===challengeFamily(plan[ordered[i-1]]));
-    if(!hasFamilyClash)return plan;
-    best=plan;
+  // v31.5: same windows as before, but Design and Snatch Game are guaranteed even in 8-9 queen casts.
+  // Before, small casts had 3-4 free slots for 5 required challenges, every attempt failed and the
+  // season ran with no plan at all. Now the optional ones (Rusical, then Roast, then Makeover) are
+  // dropped one by one until the plan fits.
+  const free=counts.filter(n=>!reservedCounts.includes(n));
+  const widen=(opts,min)=>opts.length?opts:free.filter(n=>n>=min);
+  const options={
+    design:widen(inRange(8,14),finaleSize+2),
+    snatchgame:widen(inRange(7,10),finaleSize+2),
+    makeover:widen(inRange(5,6),0).filter(n=>n<=7).length?widen(inRange(5,6),0).filter(n=>n<=7):[],
+    roast:inRange(5,8),
+    rusical:inRange(5,10)
+  };
+  // Every combination of the optional ones, largest first; Makeover > Roast > Rusical when sizes tie.
+  const optional=['makeover','roast','rusical'];
+  const subsets=[];
+  for(let mask=7;mask>=0;mask--)subsets.push(['design','snatchgame',...optional.filter((_,i)=>mask&(1<<(2-i)))]);
+  subsets.sort((a,b)=>b.length-a.length);
+  const base=()=>{const plan={};if(counts.includes(rumixCount))plan[rumixCount]=finalPerformanceChallenge;if(counts.includes(ballFallbackCount))plan[ballFallbackCount]='ball';return plan;};
+  for(const required of subsets){
+    let best=null;
+    for(let attempt=0; attempt<300; attempt++){
+      const plan=base();
+      let ok=true;
+      for(const id of required){const n=sample(options[id].filter(x=>!plan[x])); if(!n){ok=false;break;} plan[n]=id;}
+      if(!ok)continue;
+      const ordered=counts.filter(n=>plan[n]).sort((a,b)=>b-a);
+      const hasFamilyClash=ordered.some((n,i)=>i>0 && challengeFamily(plan[n])===challengeFamily(plan[ordered[i-1]]));
+      if(!hasFamilyClash)return plan;
+      best=plan;
+    }
+    if(best)return best;
   }
-
-  if(counts.includes(rumixCount))best[rumixCount]=finalPerformanceChallenge;
-  if(counts.includes(ballFallbackCount) && !best[ballFallbackCount])best[ballFallbackCount]='ball';
-  return best;
+  return base();
 }
 function alreadyUsedChallenge(id){return gameState.episodeHistory.some(ep=>ep.challengeType===id);}
 function isUniqueSeasonChallenge(challengeOrId){
@@ -1315,6 +1304,11 @@ function requiredChallengeForActiveCount(activeCount){
   if(activeCount===finaleSize+2 && !alreadyUsedChallenge('ball'))return 'ball';
 
   if(planned && !alreadyUsedChallenge(planned))return planned;
+  // v31.5: a double sashay (or any multi-elimination) can jump over a planned count. Pick up the
+  // highest skipped challenge that has not happened yet, so Makeover / Snatch Game are not lost.
+  const plan=gameState.season?.challengePlan||{};
+  const skipped=Object.keys(plan).map(Number).filter(n=>n>activeCount && plan[n] && !['rumix','music_video','ball'].includes(plan[n]) && !alreadyUsedChallenge(plan[n])).sort((a,b)=>b-a);
+  if(skipped.length && activeCount>finaleSize+2)return plan[skipped[0]];
   return null;
 }
 function pickChallengeByRules(activeCount){
@@ -1341,6 +1335,7 @@ function pickChallengeByRules(activeCount){
     if(c.id==='makeover'&&!(activeCount<=6&&activeCount>=5))return false;
     if(c.id==='roast'&&activeCount>7)return false;
     if(c.id==='political_debate'&&activeCount>8)return false;
+    if(c.id==='ball'&&activeCount>Math.max(9,finaleSize+4))return false; // v31.5: no Ball in episode 3 with 13 queens
     if(last && (c.id===last.challengeType || challengeFamily(c.id)===lastFamily))return false;
     return true;
   });
@@ -1356,6 +1351,7 @@ function pickChallengeByRules(activeCount){
       if(c.id==='makeover'&&!(activeCount<=6&&activeCount>=5))return false;
       if(c.id==='roast'&&activeCount>7)return false;
       if(c.id==='political_debate'&&activeCount>8)return false;
+      if(c.id==='ball'&&activeCount>Math.max(9,finaleSize+4))return false;
       return true;
     });
   }
@@ -1686,6 +1682,9 @@ function buildTeamsForEpisodeWithFormation(structure, active, miniWinner){
     const pickOrder=[];
     if(!needsPlayerFormation)teams=autoAssignAllTeams(structure,active,'captains',{captainIds,pickOrder});
     var formationPickOrder=pickOrder;
+  }else if(method==='free_choice' && structure.id!=='fashion_wars' && active.some(q=>q.id===gameState.playerQueenId)){
+    // v31.6: in free choice the player builds her own pair or team from the queens willing to work with her
+    needsPlayerFormation=true;
   }else{
     teams=autoAssignAllTeams(structure,active,method,{});
   }
@@ -1769,6 +1768,14 @@ function buildTeamsForEpisode(structure, active){
 }
 function teamAffinityBonus(qId, ep){
   if(!ep?.teams?.length)return 0;
+  // v31.6: when the challenge is judged individually, working next to a friend (or an enemy) still shows a little
+  if(ep.judgingMode!=='team'){
+    const team=ep.teams.find(t=>t.queenIds.includes(qId));
+    if(!team||team.queenIds.length<2)return 0;
+    const rels=team.queenIds.filter(id=>id!==qId).map(id=>gameState.relationships?.[qId]?.[id]?.affinity||0);
+    const avg=rels.reduce((a,b)=>a+b,0)/rels.length;
+    return avg>=40?1:avg<=-40?-1:0;
+  }
   const team=ep.teams.find(t=>t.queenIds.includes(qId));
   if(!team || team.queenIds.length<2)return 0;
   const rels=team.queenIds.filter(id=>id!==qId).map(id=>gameState.relationships?.[qId]?.[id]?.affinity||0);
@@ -1808,12 +1815,19 @@ function teamAverageAffinity(team, ep){
   return count?sum/count:0;
 }
 function teamChemistryBonus(team, ep){
+  // v31.6: chemistry counts more (up to ±5 on the team score)
   const avg=teamAverageAffinity(team, ep);
-  if(avg>=55)return 3;
-  if(avg>=25)return 1.5;
-  if(avg<=-55)return -3;
-  if(avg<=-25)return -1.5;
+  if(avg>=60)return 5;
+  if(avg>=35)return 3;
+  if(avg>=15)return 1.5;
+  if(avg<=-60)return -5;
+  if(avg<=-35)return -3;
+  if(avg<=-15)return -1.5;
   return 0;
+}
+function teamChemistryLabel(team, ep){
+  const v=teamChemistryBonus(team, ep);
+  return v>=3?'strong':v>0?'good':v<=-3?'toxic':v<0?'messy':'neutral';
 }
 function teamJudgingLabel(ep){
   if(!ep?.teams?.length)return 'Individual critiques';
@@ -2109,6 +2123,7 @@ function shouldOfferReunionSmackdown(){
 }
 
 function generateEpisode(){
+  if(gameState.season)delete gameState.season.activeEntrance;
   const inTournamentGroups=isTournamentFormat(getSeasonFormat()) && gameState.season?.brackets?.stage!=='final';
   const returnTwistEpisode=inTournamentGroups?null:processReturnTwistsBeforeEpisode();
   if(returnTwistEpisode)return returnTwistEpisode;
@@ -2331,9 +2346,22 @@ function controlledFinaleRandom(diff){
   if(diff<12)return rand(-1.25,1.25);
   return rand(-0.4,0.4);
 }
-function makeFinalDuel(a,b,label='Final Lip Sync'){
-  const song=(gameState.season?.finaleSongQueue?.length ? gameState.season.finaleSongQueue.shift() : null) || sample(gameState.data?.songs||[]) || {title:'Finale Anthem',artist:'Drag Race Orchestra',energy:'high'};
+// v31.5: crown anthems (js/data/songs.js -> crownAnthems)
+function crownAnthemPool(){
+  const songs=gameState.data?.songs||[];
+  const list=(gameState.data?.crownAnthems||[]).map(([t,ar])=>songs.find(s=>s.title===t && s.artist===ar)).filter(Boolean);
+  return list.length?list:songs.filter(s=>s.energy==='high');
+}
+function crownAnthemOptions(n=2){return shuffle(crownAnthemPool()).slice(0,n).map(s=>({...s,tags:s.tags||[s.mood,s.energy].filter(Boolean)}));}
+function chosenCrownSong(){const s=gameState.season||{};return s.finaleCrownSong || (s.finaleSongPreview?.length===3?s.finaleSongPreview[2]:null) || pickCrownAnthem();}
+function pickCrownAnthem(){return crownAnthemOptions(1)[0] || {title:'Champion',artist:'RuPaul',energy:'high'};}
+function makeFinalDuel(a,b,label='Final Lip Sync',opts={}){
+  const song=opts.song || (gameState.season?.finaleSongQueue?.length ? gameState.season.finaleSongQueue.shift() : null) || (label==='Final Lip Sync'?pickCrownAnthem():null) || sample(gameState.data?.songs||[]) || {title:'Finale Anthem',artist:'Drag Race Orchestra',energy:'high'};
+  // per-duel strategy chosen by the player (v31.5); falls back to the season-wide one
+  const savedStrategy=gameState.season?.playerFinaleStrategy;
+  if(opts.playerStrategy && gameState.season)gameState.season.playerFinaleStrategy=opts.playerStrategy;
   const pa=finalLipPerformance(a,song), pb=finalLipPerformance(b,song);
+  if(opts.playerStrategy && gameState.season){if(savedStrategy)gameState.season.playerFinaleStrategy=savedStrategy; else delete gameState.season.playerFinaleStrategy;}
   const la=pa.score, lb=pb.score;
   const clutchA=finaleClutchChoke(a), clutchB=finaleClutchChoke(b);
   let sa=finalDecisionScore(a,la,b,clutchA), sb=finalDecisionScore(b,lb,a,clutchB);
@@ -2389,6 +2417,14 @@ function prepareAllWinnersFinale(){
   return finale;
 }
 
+// v31.5: who will lip sync for the crown, using the same rules as prepareFinale, so the player can
+// choose the song and strategy before the duel is decided.
+function finaleCrownPairPreview(finalists, format){
+  if(finalists.length===5 && format==='top4_lsfyc'){return [...finalists].sort(compareFinaleTrackRecord).slice(0,2);}
+  if(format==='top4_chosen'){const byHistory=[...finalists].sort(compareFinaleTrackRecord);const byPublic=[...finalists].sort((a,b)=>publicFinaleScore(b)-publicFinaleScore(a));const a=byHistory[0];const b=byPublic.find(q=>q.id!==a.id)||byHistory[1];return [a,b];}
+  if(format==='top4_lsfyc')return null;
+  return [...finalists].sort(compareFinaleTrackRecord).slice(0,2);
+}
 function prepareFinale(){
   if(gameState.season.finale)return gameState.season.finale;
   if(getSeasonFormat()==='all_winners'){const finale=prepareAllWinnersFinale(); gameState.season.status='finale'; gameState.season.finale=finale; saveGame(); return finale;}
@@ -2401,7 +2437,7 @@ function prepareFinale(){
     const top2=ranked.slice(0,2);
     finale.thirdFourthIds=ranked.slice(2).map(q=>q.id);
     finale.finalistOnlyIds=[...finale.thirdFourthIds];
-    finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync');
+    finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync',{song:chosenCrownSong(),playerStrategy:gameState.season.finaleDuelStrategy?.final});
     finale.winnerId=finale.finalDuel.winnerId;
     finale.runnerUpIds=[finale.finalDuel.loserId];
   } else if(format==='top4_chosen'){
@@ -2411,7 +2447,7 @@ function prepareFinale(){
     finale.events.push(`${a.name} is called forward for the strongest track record.`);
     finale.events.push(`${b.name} is called forward for the strongest connection with the audience and production.`);
     finale.thirdFourthIds=finalists.filter(q=>q.id!==a.id&&q.id!==b.id).map(q=>q.id);
-    finale.finalDuel=makeFinalDuel(a,b,'Final Lip Sync');
+    finale.finalDuel=makeFinalDuel(a,b,'Final Lip Sync',{song:chosenCrownSong(),playerStrategy:gameState.season.finaleDuelStrategy?.final});
     finale.winnerId=finale.finalDuel.winnerId;
     finale.runnerUpIds=[finale.finalDuel.loserId];
     finale.finalistOnlyIds=[...finale.thirdFourthIds];
@@ -2428,11 +2464,12 @@ function prepareFinale(){
       const selected=choice?.songIndex===1?1:0;
       gameState.season.finaleSongQueue=[songs[selected],songs[1-selected],songs[2]];
     }
-    const d1=makeFinalDuel(shuffled[0],shuffled[1],'Semi-final Lip Sync 1');
-    const d2=makeFinalDuel(shuffled[2],shuffled[3],'Semi-final Lip Sync 2');
+    const progress=gameState.season.finaleProgress;
+    const d1=progress?.semis?.[0] || makeFinalDuel(shuffled[0],shuffled[1],'Semi-final Lip Sync 1');
+    const d2=progress?.semis?.[1] || makeFinalDuel(shuffled[2],shuffled[3],'Semi-final Lip Sync 2');
     finale.duels=[d1,d2];
     const f1=gameState.queens.find(q=>q.id===d1.winnerId), f2=gameState.queens.find(q=>q.id===d2.winnerId);
-    finale.finalDuel=makeFinalDuel(f1,f2,'Final Lip Sync');
+    finale.finalDuel=makeFinalDuel(f1,f2,'Final Lip Sync',{song:chosenCrownSong(),playerStrategy:gameState.season.finaleDuelStrategy?.final});
     finale.winnerId=finale.finalDuel.winnerId;
     finale.thirdFourthIds=[d1.loserId,d2.loserId];
     finale.runnerUpIds=[finale.finalDuel.loserId];
@@ -2443,7 +2480,7 @@ function prepareFinale(){
     const top2=ranked.slice(0,2);
     finale.events.push(`<h2>${cut.name}</h2><p>I'm sorry, my dear, but this is not your time.</p>`);
     finale.thirdFourthIds=[cut.id];
-    finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync');
+    finale.finalDuel=makeFinalDuel(top2[0],top2[1],'Final Lip Sync',{song:chosenCrownSong(),playerStrategy:gameState.season.finaleDuelStrategy?.final});
     finale.winnerId=finale.finalDuel.winnerId;
     finale.runnerUpIds=[finale.finalDuel.loserId];
     finale.finalistOnlyIds=[cut.id];
@@ -2494,7 +2531,11 @@ const LALA_LIP_SYNC_STRATEGIES=[
   {id:'reveal_early',label:'Reveal Early',description:'Shock the judges quickly and hope the energy carries through.',bonusTags:['reveal','performance'],risk:true},
   {id:'multiple_reveals',label:'Multiple Reveals',description:'Throw everything at the wall and pray it sticks.',bonusTags:['reveal','performance'],risk:true},
   {id:'overshadow',label:'Overshadow Your Opponent',description:'High risk: steal the spotlight.',bonusTags:['performance','high'],risk:true},
-  {id:'play_safe',label:'Play It Safe',description:'Keep it clean and controlled, but risk being forgettable.',bonusTags:['safe'],risk:false}
+  {id:'play_safe',label:'Play It Safe',description:'Keep it clean and controlled, but risk being forgettable.',bonusTags:['safe'],risk:false},
+  {id:'comedy',label:'Comedy Lip Sync',description:'Play the song for laughs and make the panel your audience.',bonusTags:['comedy','pop','medium'],risk:true},
+  {id:'play_to_audience',label:'Play to the Audience',description:'Perform for the crowd, not the panel.',bonusTags:['pop','dance','high'],risk:false},
+  {id:'signature_move',label:'Signature Move',description:'The move you have been hiding all season.',bonusTags:['performance','high'],risk:true},
+  {id:'match_energy',label:'Match Her Energy',description:'Read your opponent and answer every move.',bonusTags:['performance'],risk:false}
 ];
 function lipSyncStrategies(){return LALA_LIP_SYNC_STRATEGIES;}
 function pickLipSyncSongs(count){
@@ -2517,6 +2558,10 @@ function autoLipSyncStrategy(q,song){
     if(st.id==='sell_lyrics')score+=(attrs.acting||5)/3+(attrs.lipSync||5)/3;
     if(st.id==='emotion')score+=(attrs.acting||5)/3+(attrs.cunt||0)/4;
     if(st.id==='overshadow')score+=(attrs.cunt||5)/2;
+    if(st.id==='comedy')score+=(attrs.acting||5)/3+(attrs.lipSync||5)/4;
+    if(st.id==='play_to_audience')score+=(attrs.cunt||5)/3+(attrs.lipSync||5)/4;
+    if(st.id==='signature_move')score+=((attrs.lipSync||5)>=8&&!q.signatureMoveUsed)?(attrs.lipSync||5)/2:-5;
+    if(st.id==='match_energy')score+=(attrs.lipSync||5)/3;
     if(['save_reveal','reveal_early','multiple_reveals'].includes(st.id))score+=(q.inventory?.reveals||0)?4:0;
     if(st.id==='play_safe')score+=q.stress>60?3:0;
     if(st.risk && q.stress>70)score-=2;
@@ -2541,6 +2586,10 @@ function simpleLipSyncScoreFor(q,opts={}){
   if(st.id==='sell_lyrics')strategyBonus+=(q.attributes?.acting||q.attributes?.lipSync||5)*0.07;
   if(st.id==='emotion')strategyBonus+=(q.attributes?.acting||5)*0.08;
   if(st.id==='overshadow')strategyBonus+=(q.attributes?.cunt||5)*0.08;
+  if(st.id==='comedy')strategyBonus+=(q.attributes?.acting||5)*0.08;
+  if(st.id==='play_to_audience')strategyBonus+=(q.attributes?.cunt||5)*0.08;
+  if(st.id==='signature_move')strategyBonus+=(q.attributes?.lipSync||5)*0.1;
+  if(st.id==='match_energy')strategyBonus+=(q.attributes?.lipSync||5)*0.07;
   if(['save_reveal','reveal_early','multiple_reveals'].includes(st.id))strategyBonus+=(q.inventory?.reveals||0)?1.2:-0.4;
   if(st.id==='play_safe')strategyBonus= Math.min(strategyBonus+0.4,0.9);
   if(st.risk && Math.random()<0.22)strategyBonus-=rand(0.6,1.8);

@@ -16,7 +16,10 @@ const NARRATIVE_TAGS = {
   COMEDY:'comedy queen',
   PERFORMER:'performer',
   FADING:'fading',
-  SURVIVOR:'survivor'
+  SURVIVOR:'survivor',
+  LATE_BLOOMER:'late bloomer',
+  PEAKED:'peaked too early',
+  MOTHER:'the mother'
 };
 function queenHistory(q){return q?.episodeHistory||[];}
 function placementCounts(q){
@@ -28,25 +31,14 @@ function trackRecordPower(q){
   const c=placementCounts(q);
   return c.win*4.2 + c.high*2.5 + c.safe*0.8 + c.low*(-1) + c.btm*(-2.5) + c.elim*(-5) + (q.momentum||0)*1.2;
 }
-function currentFrontRunnerIds(){
-  const active=(gameState.queens||[]).filter(q=>!q.isEliminated);
-  if(!active.length)return [];
-  const scored=active.map(q=>({id:q.id,score:trackRecordPower(q)}));
-  const max=Math.max(...scored.map(s=>s.score));
-  return scored.filter(s=>s.score>=max-0.5).map(s=>s.id);
-}
+// v31.5: currentFrontRunnerIds lives in js/ui/common.js (that copy was the one in use).
 function avgRelationshipScore(q){
   const rels=Object.values(gameState.relationships?.[q.id]||{});
   if(!rels.length)return 0;
   return rels.reduce((t,r)=>t+(r.affinity||0)+(r.respect||0)*.6,0)/rels.length;
 }
 
-function worstRelationshipQueenId(){
-  const queens=gameState.queens||[];
-  if(!queens.length)return null;
-  const scored=queens.map(q=>({id:q.id,score:avgRelationshipScore(q)})).sort((a,b)=>a.score-b.score);
-  return scored[0]?.id||null;
-}
+// v31.5: worstRelationshipQueenId lives in js/ui/summary.js (that copy was the one in use).
 function runwayAverage(q){
   const vals=queenHistory(q).map(h=>Number(h.runway||h.runwayScore||0)).filter(Boolean);
   if(!vals.length)return q.attributes?.runway||0;
@@ -111,6 +103,19 @@ function calculateNarrativeTags(q){
   if(challengeStrength(q,['girlgroup','talentshow','rusical'])>=3 || type.includes('perform')||type.includes('dance'))addNarrativeTag(scores,NARRATIVE_TAGS.PERFORMER,3,'performance strengths');
   if(trend<=-3 && (wins+highs)>=2)addNarrativeTag(scores,NARRATIVE_TAGS.FADING,3,'early spark is cooling');
   if(bottoms>=2)addNarrativeTag(scores,NARRATIVE_TAGS.SURVIVOR,Math.min(5,bottoms),'survived danger repeatedly');
+  // v31.6: new stories
+  const placementsSeq=history.filter(h=>h.episode!=='Finale').map(h=>String(h.placement||'').toUpperCase());
+  const firstWinIdx=placementsSeq.indexOf('WIN');
+  const half=Math.max(3,Math.ceil((gameState.settings?.episodeTarget||10)/2));
+  if(firstWinIdx>=half && placementsSeq.slice(0,firstWinIdx).filter(p=>p==='HIGH'||p==='TOP2').length<=1)addNarrativeTag(scores,NARRATIVE_TAGS.LATE_BLOOMER,4,'first win came late in the season');
+  if(firstWinIdx>=0 && firstWinIdx<3){
+    const lastWin=placementsSeq.lastIndexOf('WIN');
+    const after=placementsSeq.slice(lastWin+1);
+    if(after.length>=3 && after.filter(p=>['LOW','BTM'].includes(p)).length>=2 && !after.some(p=>['WIN','HIGH','TOP2'].includes(p)))addNarrativeTag(scores,NARRATIVE_TAGS.PEAKED,4,'early wins, then the bottom');
+  }
+  const received=(gameState.queens||[]).filter(o=>o.id!==q.id&&!o.isEliminated).map(o=>Number(gameState.relationships?.[o.id]?.[q.id]?.affinity)||0);
+  const receivedAvg=received.length?received.reduce((a,b)=>a+b,0)/received.length:0;
+  if(receivedAvg>=30 && (flagStrength('warm_moment')>=1 || personality==='kind' || personality==='sweet'))addNarrativeTag(scores,NARRATIVE_TAGS.MOTHER,2+Math.min(3,receivedAvg/25),'the cast leans on her');
 
   const tags=Object.entries(scores)
     .filter(([k])=>k!=='_reasons')
@@ -513,6 +518,54 @@ function ruNarrativeComment(q, placement){
       ]
     },
     
+    [NARRATIVE_TAGS.LATE_BLOOMER]: {
+      positive: [
+        'It took you a while to bloom, but honey, look at you now.',
+        'Some queens peak early. You were saving it for when it counts.',
+        'Welcome to the top. We were wondering when you would arrive.',
+        'This is the queen we hoped was in there all along.',
+        'Late to the party, but you came dressed for it.',
+        'The slow burn is officially on fire.'
+      ],
+      negative: [
+        'You found your stride. Do not lose it now.',
+        'You showed us what you can do. Now do it again.',
+        'Blooming late is fine. Wilting is not.',
+        'The momentum was real last week. Where did it go?'
+      ]
+    },
+    [NARRATIVE_TAGS.PEAKED]: {
+      positive: [
+        'There she is. We have missed that queen.',
+        'This is the queen who won early. Welcome back.',
+        'You remembered how to win. Hold on to that.',
+        'The early spark is back, and it suits you.'
+      ],
+      negative: [
+        'You came out of the gate strong. Lately, the gate has been winning.',
+        'Your early wins bought you time. That time is running out.',
+        'We know what you are capable of, because you showed us in week one.',
+        'The first episodes were yours. What happened?',
+        'You set the bar high, and now you keep walking under it.',
+        'An early crown-contender should not live in the bottom.'
+      ]
+    },
+    [NARRATIVE_TAGS.MOTHER]: {
+      positive: [
+        'Everybody in that workroom leans on you, and tonight you leaned into yourself.',
+        'You take care of everyone. Tonight, the judges took care of you.',
+        'The mother of the season, serving like it.',
+        'Kindness and talent in the same wig. Dangerous.',
+        'The girls adore you. After tonight, so do we.'
+      ],
+      negative: [
+        'You are so busy helping everyone else that you forgot to help yourself.',
+        'Being everybody\'s mother does not win a crown.',
+        'The other queens love you. The judges need to love the work.',
+        'You hold the room together. Now hold the stage.',
+        'Save some of that care for your own look.'
+      ]
+    },
     [NARRATIVE_TAGS.SURVIVOR]: {
       positive: [
         'You have proven you know how to fight for your place here.',
@@ -551,9 +604,9 @@ if (pick) {
   const tone = bottom ? 'negative' : 'positive';
   const source = external[pick] || lines[pick];
   const pool = source?.[tone] || source?.positive || source?.negative || [];
-  return sample(pool);
+  return (typeof freshCritiquePick==="function"?freshCritiquePick:sample)(pool);
 }
-  if(bottom)return sample([
+  if(bottom)return (typeof freshCritiquePick==="function"?freshCritiquePick:sample)([
     'This competition is getting tougher, and I need you to fight.',
     'We need more from you, because I believe there is more there.',
     'You barely survived this week. Step it up.',
@@ -575,8 +628,8 @@ if (pick) {
     'Don\'t let this define you. Use it to fuel you.',
     'Take this critique and let it light a fire under you.'
   ]);
-  if(positive)return sample(['This week, you made a real impression.','You should feel proud of what you showed us.']);
-  return sample([
+  if(positive)return (typeof freshCritiquePick==="function"?freshCritiquePick:sample)(['This week, you made a real impression.','You should feel proud of what you showed us.','You gave us something to talk about.','That was a smart, confident week.','You made the panel sit up tonight.']);
+  return (typeof freshCritiquePick==="function"?freshCritiquePick:sample)([
     'This week, you made a real impression.',
     'You should feel proud of what you showed us.',
     'You absolutely delivered this week.',
@@ -663,4 +716,73 @@ function narrativeEventForEpisode(stage='workroom'){
   }
   ep[key]={text,type:picked.t.type||'narrative',queenId:picked.q.id};
   return ep[key];
+}
+
+// v31.6: one tag system for the whole game. Each queen gets at most one tag per family, so a queen can no
+// longer be "front-runner" and "invisible edit" at once. The Ru lines above still read the scored engine;
+// the track record, the season recap and the post-season reception read this profile.
+const SEASON_TAG_FAMILIES=['trajectory','edit','signature','final'];
+function seasonTagProfile(q){
+  if(!q)return {trajectory:'steady competitor',edit:'',signature:'',final:'',list:['steady competitor']};
+  const scores=Object.fromEntries((calculateNarrativeTags(q)||[]).map(t=>[t.tag,t.strength]));
+  const T=NARRATIVE_TAGS, has=t=>(scores[t]||0)>0;
+  const st=q.statistics||{}, pub=q.publicScores||{};
+  const wins=st.wins||0, highs=st.highs||0, bottoms=st.bottoms||0, lipWins=st.lipSyncWins||0;
+  const prod=pub.production||0, fans=pub.fans||0;
+  const hist=(q.episodeHistory||[]).filter(h=>h.episode!=='Finale');
+  const received=(gameState.queens||[]).filter(o=>o.id!==q.id).map(o=>Number(gameState.relationships?.[o.id]?.[q.id]?.affinity)||0);
+  const receivedAvg=received.length?received.reduce((a,b)=>a+b,0)/received.length:0;
+  const isFront=typeof currentFrontRunnerIds==='function' && currentFrontRunnerIds().includes(q.id);
+  // trajectory: exactly one
+  let trajectory='steady competitor';
+  if(isFront)trajectory='front-runner';
+  else if(has(T.PEAKED))trajectory='peaked too early';
+  else if(has(T.LATE_BLOOMER))trajectory='late bloomer';
+  else if(has(T.REDEMPTION) && wins+highs>=2)trajectory='redemption arc';
+  else if(wins>=3 || (wins>=2 && highs>=2))trajectory='competitive threat';
+  else if(has(T.RISING))trajectory='underdog';
+  else if(bottoms>=2)trajectory='survivor';
+  else if(has(T.FADING))trajectory='fading';
+  // edit: at most one, strongest story wins, with the incompatible pairs ruled out
+  const editCands=[];
+  const villainFlags=(q.storyFlags||[]).filter(f=>['villain_edit','villain_spark','argument'].includes(f.type)).length;
+  if(((scores[T.VILLAIN]||0)>=4 && receivedAvg<-8) || (prod>=14 && receivedAvg<=-18) || villainFlags>=3)editCands.push(['villain edit',(scores[T.VILLAIN]||3)+Math.max(0,-receivedAvg/10)]);
+  // fan favorite and production darling go to the top two of the cast only (they are rankings, not thresholds)
+  const rankOf=(key)=>[...(gameState.queens||[])].sort((a,b)=>(b.publicScores?.[key]||0)-(a.publicScores?.[key]||0)).findIndex(x=>x.id===q.id);
+  if(fans>=20 && rankOf('fans')<=1)editCands.push(['fan favorite',3+fans/12]);
+  if(prod>=22 && rankOf('production')<=1)editCands.push(['production darling',3+prod/15]);
+  if(!['front-runner','competitive threat'].includes(trajectory)){
+    if(prod<=-12 && fans<12)editCands.push(['invisible edit',2+Math.abs(prod)/12]);
+    else if(hist.length>=4 && wins===0 && highs<=1 && Math.abs(prod)<8 && fans<9 && bottoms<2)editCands.push(['filler queen',2]);
+  }
+  editCands.sort((a,b)=>b[1]-a[1]);
+  let edit=editCands[0]?.[0]||'';
+  if(edit==='villain edit' && editCands.some(c=>c[0]==='fan favorite') && fans>=30)edit='fan favorite';
+  // signature: at most one, earned on stage
+  let signature='';
+  const strength=(types)=>typeof challengeStrength==='function'?challengeStrength(q,types):0;
+  const maxLipWins=Math.max(0,...(gameState.queens||[]).map(x=>x.statistics?.lipSyncWins||0));
+  if(lipWins>=3 || (lipWins>=2 && lipWins===maxLipWins))signature='lip sync assassin';
+  else if(has(T.MOTHER) && receivedAvg>=30)signature='the mother';
+  else if(strength(['snatchgame','roast','comedy','improv','political_debate'])>=3)signature='comedy queen';
+  else if(strength(['design','ball','makeover','fashion_wars'])>=3)signature='fashion queen';
+  else if(strength(['girlgroup','talent','rusical','dance','rumix','music_video'])>=3)signature='performer';
+  else if(wins>=1 && bottoms>=2)signature='wildcard';
+  // final (season over only)
+  let final='';
+  const season=gameState.season||{};
+  if(season.status==='finished'){
+    const winner=(gameState.queens||[]).find(x=>x.id===season.winnerId);
+    const winnerWins=winner?.statistics?.wins||0;
+    if(q.id!==season.winnerId){
+      // one robbed queen per season at most: the non-winner with the most wins, if she out-won the winner
+      const others=(gameState.queens||[]).filter(x=>x.id!==season.winnerId);
+      const best=others.sort((a,b)=>(b.statistics?.wins||0)-(a.statistics?.wins||0)||(b.statistics?.highs||0)-(a.statistics?.highs||0))[0];
+      if(best?.id===q.id && wins>winnerWins && wins>=2)final='robbed queen';
+    }
+    if(!final && season.fanFavorite?.winnerId===q.id)final='miss congeniality';
+  }
+  const order=trajectory==='steady competitor'&&edit?[edit,signature,final,trajectory]:[trajectory,edit,signature,final];
+  const list=[...new Set(order.filter(Boolean))];
+  return {trajectory,edit,signature,final,list};
 }

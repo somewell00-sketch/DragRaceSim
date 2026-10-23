@@ -100,25 +100,9 @@ function worstRelationshipQueenId(){
   return scored[0]?.id||null;
 }
 function seasonArcTags(q){
-  const st=q?.statistics||{}, fans=q.publicScores?.fans||0, prod=q.publicScores?.production||0, cast=q.publicScores?.queens||0;
-  const tags=[];
-  if(frontRunnerIds().includes(q.id)) tags.push('front-runner');
-  if((st.lipSyncWins||0)>=2) tags.push('lip sync assassin');
-  if((st.wins||0)+(st.highs||0)>=3 && q.id!==gameState.season?.winnerId && fans>=19) tags.push('robbed queen');
-  if(fans>=30 && cast>=-10) tags.push('fan favorite');
-  if(prod>=16 && cast<=-20 && fans>=-10) tags.push('villain edit');
-  if(q.id===worstRelationshipQueenId() && castRelationshipAverage(q)<10) tags.push('villain');
-  if(fans<9 && prod<5 && (st.wins||0)===0 && (st.highs||0)<=1 && (st.bottoms||0)<3) tags.push('filler queen');
-  if(prod>=26) tags.push('production darling');
-  if(prod<=-15 && fans<19) tags.push('invisible edit');
-  if(cast>=24) tags.push('workroom favorite');
-  if(cast<=-35) tags.push('cast villain');
-  if(!tags.length){
-    if((st.wins||0)>=2) tags.push('competitive threat');
-    else if((st.bottoms||0)>=3) tags.push('survivor');
-    else tags.push('steady competitor');
-  }
-  return [...new Set(tags)];
+  // v31.6: the single tag system lives in js/systems/narrative.js (seasonTagProfile)
+  if(typeof seasonTagProfile==='function')return seasonTagProfile(q).list;
+  return ['steady competitor'];
 }
 function mainSeasonArc(q){return seasonArcTags(q)[0]||'steady competitor';}
 function summaryPick(lines){
@@ -372,6 +356,11 @@ function postSeasonReception(q){
   if(tags.includes('villain edit') || tags.includes('villain')) closing='Not every queen is loved, but some queens make television. You made television.';
   if(tags.includes('filler queen')) closing='You competed, but the season often moved around you instead of through you.';
   if(tags.includes('front-runner')) closing='Your track record made you one of the queens the others had to measure themselves against.';
+  if(tags.includes('late bloomer')) closing='You took your time to bloom, and the second half of the season belonged to you.';
+  if(tags.includes('peaked too early')) closing='Your early wins set a bar the rest of your season kept chasing.';
+  if(tags.includes('the mother')) closing='The cast leaned on you all season, and that is its own kind of legacy.';
+  if(tags.includes('invisible edit')) closing='The edit rarely found you, but the work you did is still on the record.';
+  if(tags.includes('miss congeniality')) closing='The queens chose you as Miss Congeniality, and that says a lot about how you played.';
   const receptionBlock=(icon,title,tier,body)=>`<article class="reception-item">
       <div class="reception-kicker">${icon} ${escapeHtml(title)}</div>
       <h3 class="reception-label">${escapeHtml(tier.label)}</h3>
@@ -482,25 +471,11 @@ function renderAllStarsFormatSelection(){
 
 function finaleStrategyOptionsHtml(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
-  const reveals=player?.inventory?.reveals||0;
-  const strategies=[
-    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
-    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','Dance the House Down','Attack the rhythm and try to own the stage.'],
-    ['stunts','🤸 Stunts & Tricks','Go for big physical moments.'],
-    ['save_reveal','👗 Reveal During the Climax','Hold the reveal until the song hits its biggest moment.'],
-    ['reveal_early','✨ Reveal Early','Shock the judges quickly.'],
-    ['multiple_reveals','💎 Multiple Reveals','Throw every trick at the stage.'],
-    ['play_safe','😌 Play It Safe','Keep it clean and controlled.']
-  ];
-  return `<div class="options">${strategies.map(([id,label,desc])=>{
-    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
-    return choiceButtonHtml({id,attr:'data-finale-strategy',label,desc,disabled});
-  }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
+  return lipSyncStrategyButtonsHtml({q:player,attr:'data-finale-strategy',variant:'short',exclude:['overshadow','match_energy','signature_move']});
 }
 function crownSongPreviewHtml(){
   const season=gameState.season;
-  if(!season?.finaleSongPreview){season.finaleSongPreview=pickLipSyncSongs(3);saveGame();}
+  if(!season?.finaleSongPreview){season.finaleSongPreview=pickLipSyncSongs(2).concat([typeof pickCrownAnthem==='function'?pickCrownAnthem():pickLipSyncSongs(1)[0]]);saveGame();}
   return `<div class="card subtle"><h3>Upcoming Lip Sync Songs</h3>${season.finaleSongPreview.map((song,i)=>`<p><strong>${i===2?'Final':`Semifinal ${i+1}`}:</strong> ${escapeHtml(song.title)} — ${escapeHtml(song.artist)} ${lipSyncEnergyLabel(song)}</p>`).join('')}</div>`;
 }
 function crownChoiceHtml(finalists){
@@ -748,9 +723,10 @@ function finaleSeasonFooter(){
 }
 
 function finaleRoleBadge(role){
-  if(role==='WINNER') return '<span class="badge winner">👑 WINNER</span>';
-  if(role==='RUNNERUP') return '<span class="badge runner">🥈 RUNNER-UP</span>';
-  return '<span class="badge finalist">⭐ FINALIST</span>';
+  const ic=(n)=>typeof icon==='function'?icon(n):'';
+  if(role==='WINNER') return `<span class="tv-tag tv-tag-winner">${ic('crown')}Winner</span>`;
+  if(role==='RUNNERUP') return `<span class="tv-tag tv-tag-runner">${ic('medal')}Runner-up</span>`;
+  return `<span class="tv-tag tv-tag-finalist">${ic('star')}Finalist</span>`;
 }
 function finaleCard(q){
   const st=q.statistics||{};
@@ -766,10 +742,12 @@ function finalDuelScoreRows(finalDuel){
 }
 function renderFinale(){
   const stage=gameState.season?.finaleStage || FINALE_GRAND;
+  // v31.5 Part B: the season recap opens the finale
+  if((stage===FINALE_GRAND || stage==='grand') && !gameState.season?.recapAtFinaleSeen && typeof renderSeasonRecap==='function' && (gameState.episodeHistory||[]).length)return renderSeasonRecap({finale:true});
   if(stage===FINALE_GRAND || stage==='grand') return renderFinaleGrandFinale();
   if(stage===FINALE_INTRO || stage==='intro') return renderFinalePart1();
   if(stage===FINALE_LIPSYNC || stage==='lip_sync') return renderFinalePart2();
-  if(stage===FINALE_RESULTS || stage==='results') return renderSummary();
+  if(stage===FINALE_RESULTS || stage==='results') return (!gameState.season.winnerRevealDone&&typeof renderWinnerReveal==='function')?renderWinnerReveal():renderSummary();
   return renderFinaleGrandFinale();
 }
 
@@ -794,7 +772,7 @@ function eliminatedQueensForFinaleReturn(){
 function finaleReturnLine(q){
   const last=(q.episodeHistory||[]).slice().reverse().find(h=>['ELIM','BTM','LOW'].includes(h.placement)) || {};
   const ep=last.episode && last.episode!=='Finale' ? `Ep. ${escapeHtml(last.episode)}` : 'Finale stage';
-  return `<li><strong>${escapeHtml(q.name)}</strong> returns to the stage <span class="small">(${ep})</span></li>`;
+  return `<li>${queenPortraitHtml(q,'xs')}<span><strong>${escapeHtml(q.name)}</strong> returns to the stage</span><span class="small">${ep}</span></li>`;
 }
 
 function relationshipVoteScore(voter, candidate){
@@ -867,7 +845,7 @@ function fanFavoriteAnnouncementHtml(){
   const playerPick=gameState.queens.find(q=>q.id===fan.playerVoteId);
   const tieLine=(fan.tiedIds||[]).length>1 ? '<p class="small">The vote was tied, so production favorite broke the tie.</p>' : '';
   return `<section class="card important fan-favorite-reveal">
-    <h2>⭐ Miss Congeniality</h2>
+    <h2>Miss Congeniality</h2>
     <p>The queens have voted${playerPick?`, and your vote went to <strong>${escapeHtml(playerPick.name)}</strong>`:''}.</p>
     <p>The Miss Congeniality of the season is...</p>
     <p class="fan-favorite-winner-name"><strong>${escapeHtml(winner?.name||'A queen')}!</strong></p>
@@ -879,14 +857,16 @@ function renderFinaleGrandFinale(){
   const returning=eliminatedQueensForFinaleReturn();
   const showMissCongeniality=typeof hasMissCongeniality==='function'?hasMissCongeniality():true;
   const existingVote=showMissCongeniality?gameState.season?.fanFavorite:{winnerId:null};
-  const voteOptions=(gameState.queens||[]).filter(q=>q.id!==gameState.playerQueenId).slice().sort((a,b)=>a.name.localeCompare(b.name));
+  // v31.5 round 2: best relationship with you first, worst last
+  const relScore=id=>{const r=gameState.relationships?.[id]?.[gameState.playerQueenId];return r?(Number(r.affinity)||0)*0.65+(Number(r.respect)||0)*0.35:0;};
+  const voteOptions=(gameState.queens||[]).filter(q=>q.id!==gameState.playerQueenId).slice().sort((a,b)=>relScore(b.id)-relScore(a.id)||a.name.localeCompare(b.name));
   const voteHtml=showMissCongeniality
     ? (existingVote
       ? `<p>The votes have been locked.</p><p class="small">Your vote: ${escapeHtml(qName(existingVote.playerVoteId))}</p>`
-      : `<p>Who has your vote for Miss Congeniality?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:q.isEliminated?'Eliminated queen':'Finalist',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`)
+      : `<p>Who has your vote for Miss Congeniality?</p><div class="options fan-favorite-options">${voteOptions.map(q=>choiceButtonHtml({id:q.id,attr:'data-fan-favorite-vote',label:q.name,desc:`${q.isEliminated?'Eliminated queen':'Finalist'} · ${typeof MOOD_LABEL==='object'?MOOD_LABEL[relationshipMoodTier(gameState.relationships?.[q.id]?.[gameState.playerQueenId]?.affinity,gameState.relationships?.[q.id]?.[gameState.playerQueenId]?.respect)]:''}`,iconHtml:typeof moodIconHtml==='function'?moodIconHtml(q.id):'',emoji:playerRelationshipLabel(q.id)})).join('')}</div>`)
     : `<p class="small">This format skips Miss Congeniality voting.</p>`;
   setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>Grand Finale</h1><p>Welcome to the Grand Finale. Tonight, the full cast returns before the crown is decided.</p></section>
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 1/4 · Grand Finale</span><h2>Grand Finale</h2><p class="tv-lede">Welcome to the Grand Finale. Tonight, the full cast returns before the crown is decided.</p></div>
     <section class="card">
       <h2>Welcome Back, Queens</h2>
       <p>From the first queen to leave to the last queen before the finale, the cast returns to the stage and receives their applause.</p>
@@ -896,8 +876,8 @@ function renderFinaleGrandFinale(){
       <h2>Miss Congeniality Vote</h2>
       ${voteHtml}
     </section>`:''}
-    <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
-    ${(existingVote||!showMissCongeniality)?'<button id="continueFinaleIntro">Continue</button>':''}
+    <section class="card finale-results-card"><h2>Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${finalists.map(finaleCard).join('')}</div></section>
+    ${(existingVote||!showMissCongeniality)?'<div class="tv-nav"><button id="continueFinaleIntro" class="tv-next">Continue</button></div>':''}
   </main>`);
   document.querySelectorAll('[data-fan-favorite-vote]').forEach(btn=>btn.addEventListener('click',()=>{
     calculateFanFavorite(btn.dataset.fanFavoriteVote);
@@ -920,12 +900,13 @@ function renderFinalePart1(){
     gameState.season.finalePlannedFormat=activeFinalists.length>=4?sample(['top4_chosen','top4_lsfyc']):'top3_cut';
     saveGame();
   }
-  const needsPlayerStrategy=playerIsFinalist && !gameState.season?.finale && !gameState.season?.playerFinaleStrategy;
+  // v31.5: the strategy is now chosen before each lip sync (finaleInteractiveStep); the old single choice is kept for saves that already have it.
+  const needsPlayerStrategy=false && playerIsFinalist && !gameState.season?.finale && !gameState.season?.playerFinaleStrategy;
 
   if(needsPlayerStrategy){
     setHTML(`<main class="screen">
       <section class="hero">${finalePageBadge(1,'Grand Finale')}<h1>The Grand Finale Begins</h1><p>The finalists return to the stage. One final story is about to be written.</p></section>
-      <section class="card finale-results-card"><h2>👑 Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${activeFinalists.map(finaleCard).join('')}</div></section>
+      <section class="card finale-results-card"><h2>Finalists</h2>${finaleSectionHeading('Meet the Finalists')}<div class="grid finale-finalists">${activeFinalists.map(finaleCard).join('')}</div></section>
       <section class="card important decision-card"><h2>Your Finale Strategy</h2><p>You are still in the race. Choose how you will perform if Ru calls your name for a crown lip sync.</p>${crownSongPreviewHtml()}${finaleStrategyOptionsHtml()}</section>
     </main>`);
     document.querySelectorAll('[data-finale-strategy]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -938,6 +919,8 @@ function renderFinalePart1(){
 
   if(activeFinalists.length===4 && getSeasonFormat()!=='all_winners' && !gameState.season.finale && gameState.season.finalePlannedFormat==='top4_lsfyc'){
     const season=gameState.season;
+    // v31.5: the song preview used to be created on the old one-time strategy screen; create it here.
+    const previewMarkup=crownSongPreviewHtml();
     const choiceMarkup=crownChoiceHtml(activeFinalists);
     const choice=season.crownChoice;
     const needOpponent=!choice;
@@ -945,11 +928,12 @@ function renderFinalePart1(){
     if(needOpponent || needSong){
       const songChoice=needSong && choice.opponentId===gameState.playerQueenId
         ? `<section class="card important"><h3>Choose Your Semifinal Song</h3><div class="options">${season.finaleSongPreview.slice(0,2).map((song,i)=>`<button class="option crown-song" data-song="${i}">${escapeHtml(song.title)} — ${escapeHtml(song.artist)} <span class="song-icons">${lipSyncEnergyLabel(song)}</span></button>`).join('')}</div></section>`:'';
-      setHTML(`<main class="screen"><section class="hero"><h1>Lip Sync for the Crown Draw</h1></section>${choiceMarkup}${songChoice}</main>`);
+      setHTML(`<main class="screen"><div class="hero tv-ep-title"><span class="eyebrow">Finale 2/4 · The draw</span><h2>Lip Sync for the Crown Draw</h2></div>${previewMarkup}${choiceMarkup}${songChoice}</main>`);
       bindCrownChoice(activeFinalists,renderFinalePart1);
       return;
     }
   }
+  if(playerIsFinalist && finaleInteractiveStep(activeFinalists))return;
   const finale=prepareFinale();
   const format=finaleFormatName(finale.format);
   const finalists=finale.finalistIds.map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean);
@@ -957,8 +941,8 @@ function renderFinalePart1(){
   const crownFinalistNames=crownFinalists.map(q=>q.name).join(' & ');
   const isAllWinnersFinale=finale.format==='all_winners';
   const semiRows=isAllWinnersFinale
-    ? `<section class="card"><h2>Lip Sync For The Crown Bracket</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d,'advances to the final lip sync',{reveal:true})).join('')}</section>`
-    : ((finale.format==='top4_lsfyc' && (finale.duels||[]).length)?`<section class="card"><h2>Lip Sync for the Crown: Semi-finals</h2>${(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')}</section>`:'');
+    ? tvFinaleBlock('bracket','Crown bracket',(finale.duels||[]).map(d=>semiFinalDuelCard(d,'advances to the final lip sync',{reveal:true})).join(''))
+    : ((finale.format==='top4_lsfyc' && (finale.duels||[]).length)?tvFinaleBlock('semis','Semi-finals',(finale.duels||[]).map(d=>semiFinalDuelCard(d)).join('')):'');
 const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
   ? `<section class="card subtle">
       <h2>${finale.thirdFourthIds.map(id => escapeHtml(qName(id))).join(' & ')}</h2>
@@ -968,23 +952,18 @@ const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
   : '';
   const top5CrownAnnouncement=finale.format==='top4_lsfyc' && finale.finalistIds.length===5 && !(finale.duels||[]).length
     ? `<section class="card important finale-results-card"><h2>The Final Cut</h2><p>Ladies, thank you for everything you have brought to this season. Only two of you can lip sync for the crown.</p><div class="grid finale-results-grid">${(finale.thirdFourthIds||[]).map(id=>gameState.queens.find(q=>q.id===id)).filter(Boolean).map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong><p>Thank you for sharing your charisma, uniqueness, nerve and talent. Now, sashay away.</p></div></article>`).join('')}</div><h3>Our Final Two</h3><p><strong>${escapeHtml(crownFinalistNames)}</strong>, you are the final two queens of the season! The time has come to lip sync for the crown!</p></section>` : '';
-  const secondaryRows=isAllWinnersFinale?`<section class="card"><h2>She Done Already Done Had Herses Bracket</h2>${(finale.secondaryDuels||[]).map(d=>semiFinalDuelCard(d,'advances to the bracket final',{reveal:true})).join('')}${finale.secondaryFinalDuel?semiFinalDuelCard(finale.secondaryFinalDuel,'wins the bracket',{reveal:true}):''}${allWinnersTournamentWinnerCard(finale.secondaryWinnerId,'Queen of She Done Already Done Had Herses Bracket')}</section>`:'';
+  const secondaryRows=isAllWinnersFinale?tvFinaleBlock('herses','Had Herses bracket',`${(finale.secondaryDuels||[]).map(d=>semiFinalDuelCard(d,'advances to the bracket final',{reveal:true})).join('')}${finale.secondaryFinalDuel?semiFinalDuelCard(finale.secondaryFinalDuel,'wins the bracket',{reveal:true}):''}${allWinnersTournamentWinnerCard(finale.secondaryWinnerId,'Queen of She Done Already Done Had Herses Bracket')}`):'';
   if((typeof hasMissCongeniality!=='function' || hasMissCongeniality()) && !gameState.season?.fanFavorite) calculateFanFavorite(null);
-  setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(2,isAllWinnersFinale?'Brackets':'Final Cut')}<h1>${isAllWinnersFinale?'The Finale Brackets':'The Grand Finale Continues'}</h1><p>${isAllWinnersFinale?'The queens enter two lip sync tournaments before the final crown is decided.':`${escapeHtml(format)}. Ru makes the final cut before the last lip sync.`}</p></section>
+  setHTML(`<main class="screen tv-finale">
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 2/4 · ${isAllWinnersFinale?'Brackets':'Final cut'}</span><h2>${isAllWinnersFinale?'The Finale Brackets':'The Grand Finale Continues'}</h2><p class="tv-lede">${isAllWinnersFinale?'The queens enter two lip sync tournaments before the final crown is decided.':`${escapeHtml(format)}. Ru makes the final cut before the last lip sync.`}</p></div>
     ${secondaryRows}
     ${semiRows}
     ${top5CrownAnnouncement}
     ${top5CrownAnnouncement?'':sashays}
     ${fanFavoriteAnnouncementHtml()}
-    <section class="card finale-top2-card">
-      <h2>${escapeHtml(crownFinalistNames)}</h2>
-      <p>The time has come...</p>
-      <p>for you to lip sync...</p>
-      <p><strong>FOR THE CROWN!</strong></p>
-      <p><em>Good luck, and don't fuck it up.</em></p>
-    </section>
-    <button id="toFinalLipSync">Continue to the Final Lip Sync</button>
+    ${tvStageVs({ids:finale.finalDuel?.queenIds||[],kicker:'Our final two',variant:'crown'})}
+    <div class="card tv-ru-speech"><span class="tv-speaker">RuPaul</span><p>${escapeHtml(crownFinalistNames)}… the time has come for you to lip sync… for the crown!</p><p class="tv-ru-close">Good luck, and don't fuck it up.</p></div>
+    <div class="tv-nav"><button id="toFinalLipSync" class="tv-next">Continue to the Final Lip Sync</button></div>
   </main>`);
   document.querySelector('#toFinalLipSync').addEventListener('click',()=>{
     gameState.season.finaleStage=FINALE_LIPSYNC;
@@ -993,6 +972,81 @@ const sashays = (!isAllWinnersFinale && (finale.thirdFourthIds || []).length)
   });
 }
 
+// ===== v31.5: interactive finale — choose the strategy before each lip sync and the crown song for the final =====
+function finaleInteractiveStep(activeFinalists){
+  const season=gameState.season;
+  if(!season || season.finale || getSeasonFormat()==='all_winners')return false;
+  const playerId=gameState.playerQueenId;
+  season.finaleDuelStrategy=season.finaleDuelStrategy||{};
+  const strategies=season.finaleDuelStrategy;
+  const q=id=>gameState.queens.find(x=>x.id===id);
+  const format=season.finalePlannedFormat;
+  let finalPair=null;
+  if(format==='top4_lsfyc' && activeFinalists.length===4){
+    const progress=season.finaleProgress=season.finaleProgress||{order:null,semis:[],seen:0};
+    if(!progress.order){
+      const shuffled=shuffle(activeFinalists);
+      const choice=season.crownChoice;
+      if(choice && shuffled.some(x=>x.id===choice.firstId)){const first=shuffled.find(x=>x.id===choice.firstId);const opp=shuffled.find(x=>x.id===choice.opponentId&&x.id!==first.id);if(opp){const rest=shuffled.filter(x=>x.id!==first.id&&x.id!==opp.id);shuffled.splice(0,4,first,opp,...rest);}}
+      progress.order=shuffled.map(x=>x.id);
+      const songs=season.finaleSongPreview||[];
+      const sel=season.crownChoice?.songIndex===1?1:0;
+      progress.songs=songs.length===3?[songs[sel],songs[1-sel]]:pickLipSyncSongs(2);
+      if(songs.length===3 && !season.finaleCrownSongOptions)season.finaleCrownSongOptions=[songs[2],...crownAnthemOptions(3).filter(x=>x.title!==songs[2].title)].slice(0,2);
+      saveGame();
+    }
+    for(let i=0;i<2;i++){
+      const pair=progress.order.slice(i*2,i*2+2);
+      if(!progress.semis[i]){
+        const key='semi'+(i+1);
+        if(pair.includes(playerId) && !strategies[key]){renderFinaleDuelChoice({key,label:`Semi-final Lip Sync ${i+1}`,pair,song:progress.songs[i]});return true;}
+        progress.semis[i]=makeFinalDuel(q(pair[0]),q(pair[1]),`Semi-final Lip Sync ${i+1}`,{song:progress.songs[i],playerStrategy:strategies[key]});
+        saveGame();
+      }
+      if(progress.seen<=i){renderFinaleDuelResult(progress.semis[i],()=>{progress.seen=i+1;saveGame();renderFinalePart1();});return true;}
+    }
+    finalPair=[progress.semis[0].winnerId,progress.semis[1].winnerId];
+  }else{
+    const pair=finaleCrownPairPreview(activeFinalists, format||'top3_cut');
+    finalPair=pair?pair.map(x=>x.id):null;
+  }
+  if(finalPair && finalPair.includes(playerId) && !strategies.final){
+    if(!season.finaleCrownSongOptions){season.finaleCrownSongOptions=crownAnthemOptions(2);saveGame();}
+    renderFinaleDuelChoice({key:'final',label:'Lip Sync for the Crown',pair:finalPair,songOptions:season.finaleCrownSongOptions});
+    return true;
+  }
+  return false;
+}
+function renderFinaleDuelChoice({key,label,pair,song,songOptions}){
+  const season=gameState.season;
+  const opponent=gameState.queens.find(x=>x.id===pair.find(id=>id!==gameState.playerQueenId));
+  const pendingSong=songOptions && season.finaleCrownSong===undefined;
+  const songBlock=songOptions
+    ? `<section class="card important decision-card"><h3>Choose the crown song</h3><p>Every crown deserves an anthem. Pick the song you will lip sync to.</p><div class="options">${songOptions.map((sg,i)=>`<button class="option crown-anthem${season.finaleCrownSong?.title===sg.title?' selected':''}" data-anthem="${i}"><span class="choice-copy"><strong>${escapeHtml(sg.title)}</strong><span class="choice-desc">${escapeHtml(sg.artist)} ${lipSyncEnergyLabel(sg)}</span></span></button>`).join('')}</div></section>`
+    : '';
+  const strategyBlock=pendingSong?'':`<section class="card important decision-card"><h3>Your strategy for this lip sync</h3>${finaleStrategyOptionsHtml()}</section>`;
+  const chosenSong=song||season.finaleCrownSong||null;
+  setHTML(`<main class="screen tv-finale">
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 2/4 · ${escapeHtml(label)}</span><h2>${key==='final'?'Lip sync for the crown':escapeHtml(label)}</h2><p class="tv-lede">You are up against <strong>${escapeHtml(opponent?.name||'your opponent')}</strong>.</p></div>
+    ${tvStageVs({ids:pair,kicker:key==='final'?'For the crown':label,song:chosenSong,variant:key==='final'?'crown':'semi'})}
+    ${songOptions?tvFinaleBlock('song','Song',songBlock):''}
+    ${tvFinaleBlock('move','Your move',strategyBlock)}
+  </main>`);
+  document.querySelectorAll('.crown-anthem').forEach(btn=>btn.addEventListener('click',()=>{season.finaleCrownSong=songOptions[Number(btn.dataset.anthem)];saveGame();renderFinalePart1();}));
+  document.querySelectorAll('[data-finale-strategy]').forEach(btn=>btn.addEventListener('click',()=>{season.finaleDuelStrategy[key]=btn.dataset.finaleStrategy;saveGame();renderFinalePart1();}));
+}
+function renderFinaleDuelResult(duel,next){
+  const shown=!!duel.tvRevealed;
+  setHTML(`<main class="screen tv-finale">
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 2/4 · Lip sync for the crown</span><h2>${escapeHtml(duel.label)}</h2></div>
+    ${tvStageVs({ids:duel.queenIds,kicker:duel.label,song:duel.song,variant:'semi',winnerId:duel.winnerId,reveal:shown})}
+    ${tvFinaleBlock('performance','Performance',`<div class="card"><div class="commentary-block">${finalLipSyncNarrative(duel)}</div></div>${tvFinaleDuelStamp(duel)}`)}
+    ${shown?tvFinaleBlock('verdict','Verdict',tvFinaleVerdictBands(duel,'Your work this season helped define the competition. But this is not your moment.')):''}
+    <div class="tv-nav">${shown?'<button id="finaleDuelNext" class="tv-next">Continue</button>':'<button id="tvDuelReveal" class="tv-next">Reveal the verdict</button>'}</div>
+  </main>`);
+  document.querySelector('#tvDuelReveal')?.addEventListener('click',()=>{duel.tvRevealed=true;saveGame();renderFinaleDuelResult(duel,next);document.querySelector('.tv-block[data-block="verdict"]')?.scrollIntoView({block:'start'});});
+  document.querySelector('#finaleDuelNext')?.addEventListener('click',()=>{window.scrollTo(0,0);next();});
+}
 function finalePageBadge(n,label){
   return `<div class="finale-page-kicker"><span class="badge subtle">Finale ${n}/4</span><span class="badge">${escapeHtml(label)}</span></div>`;
 }
@@ -1014,7 +1068,10 @@ const CROWN_LIPSYNC_STRATEGY_TEXT={
   reveal_early:'She introduced a reveal early in the performance.',
   multiple_reveals:'She used several reveals throughout the song.',
   play_safe:'She chose a restrained approach centered on the basics.',
-  overshadow:'She used bold stage presence to draw attention.'
+  overshadow:'She used bold stage presence to draw attention.',
+  play_to_audience:'She performed for the crowd as much as for the panel.',
+  signature_move:'She built the song around a move she had been saving.',
+  match_energy:'She answered her opponent move for move.'
 };
 function finalDuelToLipSyncResult(finalDuel){
   const results=(finalDuel.queenIds||[]).map(id=>{
@@ -1033,7 +1090,7 @@ function finalDuelToLipSyncResult(finalDuel){
 }
 function finalLipSyncNarrative(finalDuel){
   const result=finalDuelToLipSyncResult(finalDuel);
-  const lines=['The final song begins. Every detail matters with the crown still to be announced.'];
+  const lines=[/^Semi-final/i.test(finalDuel.label||'')?'The music starts. Only one of them walks on to the crown.':'The final song begins. Every detail matters with the crown still to be announced.'];
   // Stable selection avoids changing commentary or consuming gameplay RNG on rerender.
   [...result.results].sort((a,b)=>a.name.localeCompare(b.name)).forEach(r=>{
     const tier=lipSyncExecutionTier(r.score10);
@@ -1066,7 +1123,7 @@ function finaleDuelPortraitVs(d,options={}){
 function allWinnersTournamentWinnerCard(winnerId,title){
   const q=gameState.queens.find(x=>x.id===winnerId);
   if(!q)return '';
-  return `<div class="card reunion-winner-card all-winners-title-card"><h3>${escapeHtml(title)}</h3><div class="winner-portrait-wrap">${queenPortraitHtml(q,'xl','winner-portrait')}</div><p><strong>${escapeHtml(q.name)}</strong></p></div>`;
+  return `<div class="card reunion-winner-card all-winners-title-card">${tvWinnerSpotlight(q,title)}</div>`;
 }
 function finaleDuelDecisionCard(d){
   const winnerId=d.winnerId;
@@ -1074,28 +1131,29 @@ function finaleDuelDecisionCard(d){
   return `<div class="finale-duel-decision-card"><p><strong>${escapeHtml(qName(winnerId))}</strong>, shantay you stay.</p><p><strong>${escapeHtml(qName(loserId))}</strong>, I'm sorry my dear, but this is not your moment.</p></div>`;
 }
 function semiFinalDuelCard(d, advanceText='advances to the final lip sync', options={}){
+  // v31.6: the same stage as the interactive finale, in a compact size, so every final lip sync looks alike
   const reveal=options.reveal!==false;
-  const song=d.song?`<h3>${escapeHtml(d.song.title)} <span>by ${escapeHtml(d.song.artist)}</span></h3>`:'<h3>Lip Sync</h3>';
-  const revealLine=reveal?finaleDuelDecisionCard(d):`<p class="small finale-duel-hidden-result">The result will be revealed after the lip sync.</p>`;
-  return `<div class="finale-duel-card compact"><div class="finale-duel-title">${song}<p class="small">${escapeHtml(d.label)}</p></div>${finaleDuelPortraitVs(d,{reveal})}${revealLine}</div>`;
+  if(typeof tvStageVs!=='function')return '';
+  const stage=tvStageVs({ids:d.queenIds||[],kicker:d.label||'Lip sync',song:d.song,variant:'semi',winnerId:d.winnerId,reveal}).replace('class="tv-stage tv-stage-semi"','class="tv-stage tv-stage-semi tv-stage-compact"');
+  const line=reveal&&d.winnerId?`<p class="tv-stage-result"><strong>${escapeHtml(qName(d.winnerId))}</strong> ${escapeHtml(advanceText)}.</p>`:`<p class="small finale-duel-hidden-result">The result will be revealed after the lip sync.</p>`;
+  return `<div class="tv-stage-wrap">${stage}${line}</div>`;
 }
 
 function renderFinalePart2(){
   const finale=prepareFinale();
   const finalDuel=finale.finalDuel;
-  const songLine=finalDuel.song?`<p>Final song: <strong>${escapeHtml(finalDuel.song.title)}</strong> by ${escapeHtml(finalDuel.song.artist)}</p>`:'';
-  const strategyRows=finalDuelScoreRows(finalDuel);
   const isAllWinnersFinale=finale.format==='all_winners';
-  setHTML(`<main class="screen">
-    <section class="hero">${finalePageBadge(3,'Final Lip Sync')}${bigMomentHeader('One final performance...','THE FINAL LIP SYNC','crown')}<h1>${escapeHtml(qName(finalDuel.queenIds[0]))} vs ${escapeHtml(qName(finalDuel.queenIds[1]))}</h1><p>The crown comes down to one last performance.</p></section>
-    <section class="card"><h2>The Final Performance</h2>${finaleDuelPortraitVs(finalDuel,{reveal:false})}${songLine}<p class="music-cue">💡💡🎶🎵🎶💡💡</p><div class="commentary-block">${finalLipSyncNarrative(finalDuel)}</div></section>
-    <section class="card important winner-tease"><h2>The Winner Is...</h2><p>The crown is ready. The name comes next.</p></section>
-    <button id="finishSeason">Reveal the Winner</button>
+  setHTML(`<main class="screen tv-finale">
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 3/4 · One final performance</span><h2>Lip sync for the crown</h2></div>
+    ${tvStageVs({ids:finalDuel.queenIds,kicker:isAllWinnersFinale?'For the title of Queen of All Queens':'For the crown',song:finalDuel.song,variant:'crown'})}
+    ${tvFinaleBlock('performance','Performance',`<div class="card"><div class="commentary-block">${finalLipSyncNarrative(finalDuel)}</div></div>${tvFinaleDuelStamp(finalDuel)}`)}
+    <div class="tv-nav"><button id="finishSeason" class="tv-next">Crown the winner</button></div>
   </main>`);
   document.querySelector('#finishSeason').addEventListener('click',()=>{
     gameState.season.finaleStage=FINALE_RESULTS;
     crownWinner();
-    renderSummary();
+    window.scrollTo(0,0);
+    renderWinnerReveal();
   });
 }
 
@@ -1153,16 +1211,19 @@ function renderSummary(){
   const runnerBlock=runnerUps.length?`${finaleSectionHeading('Runner-up')}<div class="grid finale-results-grid">${runnerUps.map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p><span>${finaleRoleBadge('RUNNERUP')}</span></div></article>`).join('')}</div>`:'';
   const finalistBlock=finalistsOnly.length?`${finaleSectionHeading('Finalists')}<div class="grid finale-results-grid">${finalistsOnly.map(q=>`<article class="queen-item finale-result-item">${queenPortraitHtml(q,'md')}<div class="finale-card-body"><strong>${escapeHtml(q.name)}</strong>${finaleArchetypeHtml(q)}${finaleDivider()}<p class="finale-note">${escapeHtml(finaleQueenReason(q))}</p><span>${finaleRoleBadge('FINALIST')}</span></div></article>`).join('')}</div>`:'';
   setHTML(`<main class="screen">
-    <section class="hero finale-results-hero">${finalePageBadge(4,'Season Results')}<div class="finale-winner-kicker">${finaleRoleBadge('WINNER')}</div>${bigMomentHeader('The winner is...',(winner?.name||'Winner'),'crown')}${winner?`<div class="winner-portrait-wrap">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="winner-copy"><strong>Condragulations, ${escapeHtml(winner?.name||'Winner')}.</strong> You are the winner, baby.</p>${winner?`${finaleDivider()}<p class="finale-winner-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}</section>
-    <section class="card finale-results-card"><h2>👑 Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
+    <div class="hero tv-ep-title"><span class="eyebrow">Finale 4/4 · Season results</span><h2>Season results</h2></div>
+    ${typeof tvCrownMomentHtml==='function'?tvCrownMomentHtml(winner):''}
+    ${winner?`<p class="finale-winner-note tv-crown-note">${escapeHtml(finaleWinnerReason(winner))}</p>`:''}
+    <section class="card finale-results-card"><h2>Finalists</h2>${runnerBlock}${finalistBlock}${finaleSeasonFooter()}</section>
     ${allWinnersSummaryBlock()}
     ${postSeasonReception(player)}
-    <section class="card track-record-export-card" id="finalTrackRecordCard"><button type="button" class="track-record-download" id="downloadTrackRecord" title="Download Track Record" aria-label="Download Track Record" data-html2canvas-ignore="true">⬇️ Download</button><h2>Track Record</h2>${historyTable()}</section>
+    <section class="card track-record-export-card" id="finalTrackRecordCard"><div class="tv-tr-actions" data-html2canvas-ignore="true"><button type="button" id="openRecapFinal" class="secondary">${typeof icon==='function'?icon('tv'):''}Season recap</button><button type="button" class="track-record-download" id="downloadTrackRecord" title="Download Track Record" aria-label="Download Track Record">${typeof icon==='function'?icon('download'):''}Download</button></div><h2>Track Record</h2>${historyTable()}</section>
     ${typeof seasonLipstickChoicesTable==='function'?seasonLipstickChoicesTable():''}
     ${iconicLipSyncsTable()}
-    <div class="button-row"><button id="newGame">New season</button>${allWinnersInvitationEligible()?'<button id="allWinnersInvite" class="primary">Queen of All Queens Awaits</button>':''}${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
+    <div class="button-row tv-nav"><button id="newGame" class="tv-next">New season</button>${allWinnersInvitationEligible()?'<button id="allWinnersInvite" class="primary">Queen of All Queens Awaits</button>':''}${allStarsInvitationEligible()?'<button id="allStarsInvite" class="primary">All Stars Calling</button>':''}</div>
   </main>`);
   document.querySelector('#newGame').addEventListener('click',()=>{clearSave(); resetState(); renderSeasonInvitation();});
+  ['#openRecapFinal'].forEach(sel=>document.querySelector(sel)?.addEventListener('click',()=>{window.scrollTo(0,0);renderSeasonRecap({summary:true});}));
   document.querySelector('#allWinnersInvite')?.addEventListener('click',renderAllWinnersInvite);
   document.querySelector('#allStarsInvite')?.addEventListener('click',renderAllStarsInvite);
   document.querySelector('#downloadTrackRecord')?.addEventListener('click',downloadFinalTrackRecord);

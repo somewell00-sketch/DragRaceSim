@@ -1,6 +1,24 @@
 // Auto-split from the old js/data.js. Edit this file to expand lipSyncComments.
 window.GAME_DATA = window.GAME_DATA || {};
 window.GAME_DATA.lipSyncComments = {
+  // v31.5: said when a queen who has already survived a lip sync is back in the bottom.
+  // {name} = the queen, {n} = lip syncs she has won, {times} = "once" / "twice" / "3 times"
+  "survivor": {
+    "win": [
+      "{name} has been here before, and it shows: she survives {times} and counting.",
+      "Never send {name} to the bottom. She has now won {n} lip syncs.",
+      "{name} treats the bottom like her second home. Another survival.",
+      "The lip sync assassin strikes again. {name} is still standing.",
+      "{name} knows this stage better than anyone. That experience won the night."
+    ],
+    "lose": [
+      "{name} had survived {times}, but tonight the stage asked for one more miracle.",
+      "Even an assassin runs out of songs. {name} falls after {n} wins.",
+      "{name} came in with {n} lip sync wins on her record. Tonight, it was not enough.",
+      "The survivor finally meets her match."
+    ],
+    "tag": "Lip sync survivor"
+  },
   "overall": {
     "legendaryClose": [
       "That entered the history books.",

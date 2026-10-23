@@ -8,14 +8,27 @@ function entrancePersonalityLabel(q){
 }
 
 function entranceLine(q){
-  const lines=[
+  // v31.5: the same lines as before, now grouped by tone. Shy, sweet and reserved queens no longer
+  // walk in with "Sup, bitches?"; real queens' catchphrases are rare easter eggs.
+  const neutralLines=[
     `Hope the werkroom has insurance, because ${q.name} just arrived.`,
     `New season, new mug, same delusion.`,
+    `I watched every season. So I know exactly what not to do.`,
+    `I brought snacks. And drama.`,
+    `I walked in and the room got gayer.`,
+    `Come on, simulator, let's get sickening!`,
+    `Wait... did the user just run this script?`,
+    `I feel like my whole life is just JSON data.`,
+    `Is anyone else hearing the background music loop?`,
+    `My code is glitching, I need a quick hotfix.`,
+    `Are we just variables in someone's pet project?`,
+    `I can literally feel the player hovering over the choice buttons.`
+  ];
+  const boldLines=[
     `I came to serve face, body, and a little emotional damage.`,
     `The other queens are cute. I'm the finale.`,
     `Sorry I'm late. I was busy being iconic.`,
     `New queen, who dis? Oh, the winner.`,
-    `I watched every season. So I know exactly what not to do.`,
     `Every season has a villain. This season has a winner.`,
     `Sup, bitches?`,
     `Hi, I'm the problem.`,
@@ -25,13 +38,12 @@ function entranceLine(q){
     `Oh, you're all still here?`,
     `I'm not late. You're all just early.`,
     `Plot twist: I'm the winner.`,
-    `I brought snacks. And drama.`,
-    `I walked in and the room got gayer.`,
     `If I'm too much, go find less.`,
-    `Your fave could never. Actually, these girls could never even afford this.`,
+    `Your fave could never. Actually, these girls could never even afford this.`
+  ];
+  const easterEggs=[
     `Hieee!`,
     `Not a soul can clock.`,
-    `Come on, simulator, let's get sickening!`,
     `Hi, boys! I'm home!`,
     `Check your lipstick before you come for me.`,
     `Looook over there!`,
@@ -45,23 +57,23 @@ function entranceLine(q){
     `The library is officially open.`,
     `Ding dang dong!`,
     `The body is beautiful.`,
-    `Are you ready to rock?`,
-    `Wait... did the user just run this script?`,
-    `I feel like my whole life is just JSON data.`,
-    `Is anyone else hearing the background music loop?`,
-    `My code is glitching, I need a quick hotfix.`,
-    `Are we just variables in someone's pet project?`,
-    `I can literally feel the player hovering over the choice buttons.`
+    `Are you ready to rock?`
   ];
+  const extra=gameState.data?.entranceLines||{};
+  const persId=String(q?.personalityId || q?.personality || '').toLowerCase();
+  const soft=/^(shy|reserved|humble|sweet|kind)$/.test(persId);
+  if(Math.random()<(Number(extra.easterEggChance)||0.05))return sample(easterEggs);
+  const lines=soft?[...neutralLines.filter(l=>!/\bdrama\b|too much/i.test(l)),...(extra.soft||[]),...(extra.byPersonality?.[persId]||[])]:[...neutralLines,...boldLines,...(extra.byPersonality?.[persId]||[])];
 
   const attrs = q?.attributes || {};
   const personality = String(q?.personalityId || q?.personality || '').toLowerCase();
   const type = String(q?.type || '').toLowerCase();
   
   let pool = [...lines];
+  const attrPush = soft ? () => {} : (...xs) => pool.push(...xs);
 
   if ((attrs.cunt || 0) >= 9) {
-    pool.push(
+    attrPush(
       `Crown me now, or watch me take it later.`,
       `I don't compete. I dominate.`,
       `Some queens are born stars. I was born a supernova.`,
@@ -72,11 +84,11 @@ function entranceLine(q){
       `I am the main event. You're just the smoke from the stage effect.`,
       `Don't look at me like that, I know I'm completely irresistible.`,
       `The world revolves around me, and this studio is no exception.`,
-      `If I were you, I’d start filling out the application for next season.`,
+      `If I were you, I'd start filling out the application for next season.`,
       `I don't follow rules, I'm the reason they have to write them.`,
       `First place is officially taken.`,
-      `I don't compete, babe. I dictate.`,
-      `This is going to hurt.`,
+      `Rules? I am the rulebook, darling.`,
+      `Brace yourselves. I come in waves.`,
       `I am the main event. Period.`,
       `Irresistible, right? I know.`,
       `Start filling out the next season app.`,
@@ -87,7 +99,7 @@ function entranceLine(q){
 
 
   if ((attrs.runway || 0) >= 8 || (attrs.makeup || 0) >= 8) {
-    pool.push(
+    attrPush(
       `Face: beat. Body: correct. Crown: future.`,
       `I don't do fashion. I do art.`,
       `They asked for looks. I brought an exhibition.`,
@@ -98,7 +110,7 @@ function entranceLine(q){
       `My heels are higher than your expectations.`,
       `Designers don't dress me. I dress them.`,
       `I look like money. And I sound like a winner.`,
-      `This look? You’d need an expensive filter just to copy it.`,
+      `This look? You'd need an expensive filter just to copy it.`,
       `The tailoring is so flawless it probably hurts your feelings.`,
       `Straight from high fashion down to this factory floor.`,
       `If my outfit could talk, it would tell you to go change.`,
@@ -112,18 +124,18 @@ function entranceLine(q){
       `High fashion just entered the room.`,
       `Take a picture, it lasts longer.`,
       `Serving exactly what you can't.`,
-      `The visual impact is heavy, I know.`,
+      `The lighting guy just quit. He can't top me.`,
       `Don't touch, it's art!`,
       `The fabric is exclusive. The mug is sacred.`,
       `My style stats are so high they broke the integer limit.`,
-      `I’m not just a queen, I’m an optimized dataset.`,
+      `I'm not just a queen, I'm an optimized dataset.`,
       `The description text for my look is absolute poetry.`,
       `My aesthetic variables are perfectly tuned.`
     );
   }
 
   if ((attrs.acting || 0) >= 9) {
-    pool.push(
+    attrPush(
       `Every queen has a story. Mine is legendary.`,
       `Some queens perform. I transform.`,
       `The stage is my home. And I'm back to redecorate.`,
@@ -142,25 +154,25 @@ function entranceLine(q){
       `Drama? I invented it.`,
       `And... action!`,
       `Places, everyone.`,
-      `I don't do side-character energy. Clear the set.`,
-      `Hold your reactions for camera one, girls.`,
+      `Roll camera. The lead has arrived.`,
+      `Somebody get my good side. Both of them.`,
       `The script was getting a bit dry. I'm here to rewrite it.`,
       `I love the background extras they cast this year. Very realistic.`
     );
   }
 
   if ((attrs.lipSync || 0) >= 9) {
-    pool.push(
+    attrPush(
       `Tips in the garter, girls! Let's go!`,
       `Music up, egos down!`,
       `Clear the floor, the headliner is here.`,
       `Who's ready for the night shift?`,
       `Don't let me catch any of you in the bottom.`,
       `You girls look like you're waiting for a slow ballad.`,
-      `I’ve survived rowdy crowds at 4 AM, you girls are a walk in the park.`,
+      `I've survived rowdy crowds at 4 AM, you girls are a walk in the park.`,
       `I came to leave permanent scuff marks on this floor.`,
       `If you can't drop into a split right now, don't even look at me.`,
-      `Save your energy for the lipsync, sweeties. You’re gonna need it.`,
+      `Save your energy for the lipsync, sweeties. You're gonna need it.`,
       `I devour stages for breakfast. What are you girls gonna do? A little twirl?`,
       `The bass is dropping, and your track records are in danger.`,
       `Is the sound system ready? Because I don't do background music.`,
@@ -174,8 +186,8 @@ function entranceLine(q){
   }
 
   if ((attrs.dance || 0) >= 9) {
-    pool.push(
-      `Five, six, seven, eight—let’s go!`,
+    attrPush(
+      `Five, six, seven, eight—let's go!`,
       `And... stretch.`,
       `Watch the feet, girls.`,
       `Don't trip on my extension.`,
@@ -185,19 +197,19 @@ function entranceLine(q){
       `Clear the floor, I need room for my lines.`,
       `You girls look a bit stiff. Need me to choreograph your exit?`,
       `Hope you brought knee pads, the floor work is gonna be brutal.`,
-      `I don’t walk runways, I leap through them.`,
+      `I don't walk runways, I leap through them.`,
       `Fix your posture, girls. The masterclass just started.`,
-      `I’m hitting every single beat. Try to keep up.`,
+      `I'm hitting every single beat. Try to keep up.`,
       `The center stage is taken. Find your places in the background.`,
       `My body does things your silhouette could never dream of.`
     );
   }
 
   if ((attrs.comedy || 0) >= 9) {
-    pool.push(
-      `Don’t laugh at the outfit, it took three rolls of tape.`,
+    attrPush(
+      `Don't laugh at the outfit, it took three rolls of tape.`,
       `Aaaand... I already want to go home.`,
-      `Oh. It’s... you guys. Fun.`,
+      `Oh. It's... you guys. Fun.`,
       `Did I miss the casting for the pretty girls?`,
       `Ta-da! God saved the clown.`,
       `My wig is sweating. Please don't look.`,
@@ -207,7 +219,7 @@ function entranceLine(q){
       `My credit score is lower than your heels, but at least I'm funny!`,
       `Is it warm in here or is that just the secondhand embarrassment?`,
       `I came, I saw, I forgot my lyrics. Let's do this!`,
-      `One disaster at a time, ladies. Today I’m yours.`,
+      `One disaster at a time, ladies. Today I'm yours.`,
       `I'm not saying the standard is low, but I actually feel confident.`,
       `Help?`,
       `My bad.`,
@@ -226,7 +238,7 @@ function entranceLine(q){
     );
   }
 
-  if (/shady|competitive|villain|calculating|fearless|savage/.test(personality)) {
+  if (/shady|competitive|villain|calculating|fearless|savage|sarcastic|hotheaded|strategic/.test(personality)) {
     pool.push(
       `Don't try me.`,
       `Lock your bags, girls.`,
@@ -239,7 +251,7 @@ function entranceLine(q){
       `You guys ready to lose?`,
       `I already keep track of your weaknesses.`,
       `Next!`,
-      `Oh. It's... you guys.`,
+      `Wow. The casting budget went where, exactly?`,
       `Don't even bother looking at me.`,
       `I'm not shady. Just right.`,
       `Who allowed this lineup?`,
@@ -251,18 +263,18 @@ function entranceLine(q){
   }
 
   if (/fashion|glamour|diva|runway|model/.test(personality) || /fashion/.test(type)) {
-    pool.push(
+    attrPush(
       `Couture only.`,
-      `This look? Custom.`,
-      `Look, but don't touch.`,
+      `Couture, not costume. Learn the difference.`,
+      `Admire from a safe distance, please.`,
       `I smell fast-fashion. Terrifying.`,
       `Where is my red carpet?`,
       `You tried. Adorable.`,
       `I am the runway. You're traffic.`,
-      `Take a picture, it lasts longer.`,
-      `High fashion just entered.`,
+      `Screenshot it, darling. It's a collector's item.`,
+      `The runway has been waiting for me.`,
       `The category is: rich.`,
-      `Flawless. Next question?`,
+      `Is it fashion? It's always fashion.`,
       `Pure sophistication. Look it up.`,
       `Don't get too close to the fabric.`,
       `Excuse me, expensive coming through.`,
@@ -272,8 +284,8 @@ function entranceLine(q){
 
   if (/funny|comedy|camp|silly|clown|goofy/.test(personality)) {
     pool.push(
-      `Ta-da! God saved the clown.`,
-      `My wig is sweating.`,
+      `Comedy is my cardio, and I'm already sweating.`,
+      `I brought jokes. Lower your expectations accordingly.`,
       `Held together by tape and a prayer.`,
       `Is there catering in the back?`,
       `Lashes committing crimes. As usual.`,
@@ -285,12 +297,12 @@ function entranceLine(q){
       `Can I start over?`,
       `I'm lost. Where's the exit?`,
       `Oops. My bad.`,
-      `Cancel my contract.`,
+      `My agent told me to be normal. I fired her.`,
       `Is that your actual hair? Cute.`
     );
   }
 
-  if (/confident|boss|alpha|dominat|winner/.test(personality)) {
+  if (/confident|boss|alpha|dominat|winner|ambitious/.test(personality)) {
     pool.push(
       `Mine.`,
       `The game starts now.`,
@@ -298,15 +310,15 @@ function entranceLine(q){
       `I don't ask for room. I occupy.`,
       `You're just subletting my space.`,
       `I am the standard. Stretch for it.`,
-      `Bow down. Or don't, I'll still win.`,
-      `First place is officially taken.`,
-      `I don't compete, babe. I dictate.`,
+      `Kneel or don't. The crown already knows my name.`,
+      `Silver suits you girls. Really.`,
+      `Confidence isn't a phase. It's my brand.`,
       `The blueprint has arrived.`,
       `Don't blink.`,
-      `Crown me. Thanks.`,
-      `I am the main event. Period.`,
-      `Irresistible, right? I know.`,
-      `Next question?`,
+      `Just tell me where to stand for the coronation.`,
+      `Opening act? Please. I'm the headliner.`,
+      `Say it with me: iconic.`,
+      `Any questions? No? Good.`,
       `My RNG roll was blessed before the match started.`,
       `You girls are just generic NPC background filler.`,
       `I didn't come to play, I came to top the leaderboard.`,
@@ -315,7 +327,7 @@ function entranceLine(q){
     );
   }
 
-  if (/sweet|nice|kind|warm|soft/.test(personality)) {
+  if (/sweet|nice|kind|warm|soft|humble|charming|shy/.test(personality)) {
     pool.push(
       `Hi, beauties!`,
       `Did anyone bring cookies?`,
@@ -334,7 +346,7 @@ function entranceLine(q){
     );
   }
 
-  if (/mysterious|quiet|dark|edgy|alternative/.test(personality)) {
+  if (/mysterious|quiet|dark|edgy|alternative|reserved|eccentric/.test(personality)) {
     pool.push(
       `Welcome to my chaos.`,
       `My silence has already swallowed your ego.`,
@@ -361,6 +373,10 @@ function entranceTournamentBracketClass(q){
 }
 
 function renderEntrance(){
+  // v31.5 round 2: the entrance in progress is remembered, so "Next queen" keeps the same bracket/half
+  // (marking a bracket entrance as seen changes the season status, which used to drop back to all queens)
+  const active=gameState.season?.activeEntrance;
+  if(active){return renderEntranceScreen(active.label,active.text,active.startLabel,gameState.queens.filter(q=>active.ids.includes(q.id)));}
   const prem=gameState.season?.premiere;
   const tournamentIds=typeof currentTournamentEntranceIds==='function'?currentTournamentEntranceIds():null;
   const premiereIds=typeof currentPremiereEntranceIds==='function'?currentPremiereEntranceIds():null;
@@ -385,7 +401,51 @@ function renderEntrance(){
   }
   if(tournamentIds && typeof markTournamentEntranceSeen==='function')markTournamentEntranceSeen();
   else gameState.season.status='playing';
+  gameState.season.activeEntrance={label:partLabel,text:partText,startLabel,ids:entranceQueens.map(q=>q.id)};
   saveGame();
-  setHTML(`<main class="screen"><section class="hero entrance-hero"><p class="eyebrow">The queens are entering</p><h2>${escapeHtml(partLabel)}</h2><p>${escapeHtml(partText)}</p></section><section class="grid entrance-grid">${entranceQueens.map(q=>`<article class="card entrance-card${entranceTournamentBracketClass(q)}"><div class="entrance-head">${queenPortraitHtml(q,'lg')}<div class="entrance-copy"><h3>${queenDisplayName(q)}</h3><p>${queenPersonaTypeHtml(q)}</p></div></div><p class="entrance-quote">“${entranceLine(q)}”</p></article>`).join('')}</section><button id="firstEpisode">Start ${escapeHtml(startLabel)}</button></main>`);
-  document.querySelector('#firstEpisode').addEventListener('click',()=>{generateEpisode(); renderWorkroom();});
+  return renderEntranceScreen(partLabel,partText,startLabel,entranceQueens);
+}
+function renderEntranceScreen(partLabel,partText,startLabel,entranceQueens){
+  const script=entranceScriptFor(partLabel, entranceQueens);
+  const shownIds=script.order.slice(0,script.shown);
+  const allIn=script.shown>=script.order.length;
+  const cards=shownIds.map((id,i)=>{
+    const q=gameState.queens.find(x=>x.id===id); if(!q)return '';
+    const first=i===0?`<p class="entrance-first small">${escapeHtml(script.firstLine||'First queen in the werkroom.')}</p>`:'';
+    const reacts=(script.reactions[id]||[]).length?`<ul class="entrance-reactions small">${script.reactions[id].map(t=>`<li>${escapeHtml(t)}</li>`).join('')}</ul>`:'';
+    return `<article class="card entrance-card${entranceTournamentBracketClass(q)}"><div class="entrance-head">${queenPortraitHtml(q,'lg')}<div class="entrance-copy"><h3>${queenDisplayName(q)}</h3><p>${queenPersonaTypeHtml(q)}</p></div></div>${first}<p class="entrance-quote">“${escapeHtml(script.lines[id]||'')}”</p>${reacts}</article>`;
+  }).join('');
+  const controls=allIn
+    ? `<div class="tv-nav"><button id="firstEpisode" class="tv-next">Start ${escapeHtml(startLabel)}</button></div>`
+    : `<div class="button-row tv-nav"><button class="ghost" id="allQueens">Everyone in</button><button id="nextQueen" class="tv-next">Next queen (${script.shown}/${script.order.length})</button></div>`;
+  setHTML(`<main class="screen"><section class="hero entrance-hero"><p class="eyebrow">The queens are entering</p><h2>${escapeHtml(partLabel)}</h2><p>${escapeHtml(partText)}</p></section><section class="grid entrance-grid">${cards}</section>${controls}</main>`);
+  document.querySelector('#firstEpisode')?.addEventListener('click',()=>{delete gameState.season.activeEntrance; generateEpisode(); renderWorkroom();});
+  document.querySelector('#nextQueen')?.addEventListener('click',()=>{script.shown=Math.min(script.order.length,script.shown+1); saveGame(); window.__preserveScrollY=window.scrollY; renderEntrance(); const last=[...document.querySelectorAll('.entrance-card')].pop(); requestAnimationFrame(()=>last?.scrollIntoView({block:'nearest'}));});
+  document.querySelector('#allQueens')?.addEventListener('click',()=>{script.shown=script.order.length; saveGame(); renderEntrance();});
+}
+// v31.5: the queens walk in one at a time. Order, lines and reactions are decided once and saved,
+// so reloading the page shows the same entrance.
+function entranceScriptFor(key, queens){
+  const season=gameState.season;
+  season.entranceScripts=season.entranceScripts||{};
+  const ids=queens.map(q=>q.id);
+  let sc=season.entranceScripts[key];
+  if(sc && sc.order.length===ids.length && sc.order.every(id=>ids.includes(id)))return sc;
+  const extra=gameState.data?.entranceLines||{};
+  const order=shuffle([...ids]);
+  const lines={}, reactions={};
+  const affinity=(from,to)=>Number(gameState.relationships?.[from]?.[to]?.affinity)||0;
+  order.forEach((id,i)=>{
+    const q=gameState.queens.find(x=>x.id===id);
+    // no two queens say the same line in one entrance
+    let line='';for(let t=0;t<12;t++){line=fillTemplate(entranceLine(q),{name:q.name});if(!Object.values(lines).includes(line))break;}
+    lines[id]=line;
+    if(i===0)return;
+    const inRoom=order.slice(0,i).map(r=>gameState.queens.find(x=>x.id===r)).filter(Boolean);
+    const picks=[...inRoom].sort((a,b)=>Math.abs(affinity(b.id,id))-Math.abs(affinity(a.id,id))).slice(0,i>2&&Math.random()<0.4?2:1);
+    reactions[id]=picks.map(r=>{const af=affinity(r.id,id);const tone=af>=25?'warm':af<=-20?'shade':'neutral';return fillTemplate(sample(extra.reactions?.[tone]||extra.reactions?.neutral||['{reactor} says hi.']),{reactor:r.name,name:q.name});});
+  });
+  sc={order,lines,reactions,shown:1,firstLine:sample(extra.firstIn||['First queen in the werkroom.'])};
+  season.entranceScripts[key]=sc;
+  return sc;
 }

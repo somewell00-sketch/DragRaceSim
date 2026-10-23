@@ -106,28 +106,15 @@ function formatPlayerNameInSocialText(text){
   let html=escapeHtml(text||'');
   if(player?.name){
     const name=escapeHtml(player.name);
-    html=html.split(name).join(`<strong>${name} <span class="player-crown" title="Your queen">👑</span></strong>`);
+    html=html.split(name).join(`<strong>${name} <span class="player-crown" title="Your queen">${typeof icon==='function'?icon('crown'):'👑'}</span></strong>`);
   }
   return html;
 }
 
 function smackdownStrategyOptionsHtml(){
   const player=gameState.queens.find(q=>q.id===gameState.playerQueenId);
-  const reveals=player?.inventory?.reveals||0;
-  const strategies=[
-    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
-    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','Dance the House Down','Attack the rhythm and try to own the stage.'],
-    ['stunts','🤸 Stunts & Tricks','Go for big physical moments.'],
-    ['save_reveal','👗 Reveal During the Climax','Hold the reveal until the song hits its biggest moment.'],
-    ['reveal_early','✨ Reveal Early','Shock the judges quickly.'],
-    ['multiple_reveals','💎 Multiple Reveals','Throw every trick at the stage.'],
-    ['play_safe','😌 Play It Safe','Keep it clean and controlled.']
-  ];
-  return `<div class="options">${strategies.map(([id,label,desc])=>{
-    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
-    return choiceButtonHtml({id,attr:'data-smack-strategy',label,desc,disabled});
-  }).join('')}</div><p class="small">Reveals available: ${reveals}</p>`;
+  // v31.6: shared list (all strategies use the Lip Sync attribute). Overshadow / Match her energy need a single opponent.
+  return lipSyncStrategyButtonsHtml({q:player,attr:'data-smack-strategy',variant:'short',exclude:['overshadow','match_energy','signature_move']});
 }
 function renderLalaparuzaStrategyChoice(){
   setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader('Lip Sync Smackdown','LALAPARUZA','danger','The queens must lip sync for their survival.')}</div>${lalaparuzaIntroContext()}<div class="card important decision-card"><h3>Your lip sync strategy</h3><p>Choose how you will fight before the bracket begins.</p>${smackdownStrategyOptionsHtml()}</div></section>${queenSidebar()}</main>`);
@@ -165,7 +152,7 @@ function playerNeedsTalentChoice(ep){
 function talentContentBlock(ep){
   const talents=ep.challengeContent?.talents||[];
   if(!talents.length)return '';
-  return `<div class="card"><h3>Talent Show Lineup</h3><div class="talent-grid">${talents.map(t=>{const type=String(t.talent.type||'performance').toLowerCase(); const icon=talentTypeIcon(type); const isPlayer=t.queenId===gameState.playerQueenId; return `<article class="queen-item talent-card ${isPlayer?'player-card':''}"><strong>${escapeHtml(t.queenName)}${isPlayer?' <span class="player-crown" title="Your queen">👑</span>':''}</strong><span class="talent-name">${icon} ${escapeHtml(t.talent.name||t.talent)}</span><span class="badge arc">${escapeHtml(type)}</span></article>`;}).join('')}</div></div>`;
+  return `<div class="card"><h3>Talent Show Lineup</h3><div class="talent-grid">${talents.map(t=>{const type=String(t.talent.type||'performance').toLowerCase(); const icon=typeof emojiIcon==='function'?emojiIcon(talentTypeIcon(type)):talentTypeIcon(type); const isPlayer=t.queenId===gameState.playerQueenId; return `<article class="queen-item talent-card ${isPlayer?'player-card':''}"><strong>${escapeHtml(t.queenName)}${isPlayer?` <span class="player-crown" title="Your queen">${typeof window.icon==='function'?window.icon('crown'):'👑'}</span>`:''}</strong><span class="talent-name">${icon} ${escapeHtml(t.talent.name||t.talent)}</span><span class="badge arc">${escapeHtml(type)}</span></article>`;}).join('')}</div></div>`;
 }
 function lockPlayerTalentChoice(type){
   const ep=gameState.currentEpisode;
@@ -328,6 +315,37 @@ function renderTeamFormationStep(){
     document.querySelector('#autoFormation')?.addEventListener('click',()=>{const pickOrder=[]; const teams=autoAssignAllTeams(ep.structure,active,'captains',{captainIds,pickOrder}); tf.pickOrder=pickOrder; finalizeCurrentEpisodeTeams(teams,true); renderWorkroom();});
     return;
   }
+  if(method==='free_choice' && active.some(q=>q.id===gameState.playerQueenId)){
+    // v31.6: the player picks her own partner(s); queens who dislike her say no
+    const pid=gameState.playerQueenId;
+    const mine=(tf.playerTeam&&tf.playerTeam.length)?tf.playerTeam.slice():[pid];
+    const need=sizes[0]||2;
+    const willing=id=>(Number(gameState.relationships?.[id]?.[pid]?.affinity)||0)>-20;
+    if(mine.length<need){
+      const pool=active.filter(q=>!mine.includes(q.id)).sort((a,b)=>(Number(gameState.relationships?.[b.id]?.[pid]?.affinity)||0)-(Number(gameState.relationships?.[a.id]?.[pid]?.affinity)||0));
+      const label=ep.structure?.id==='duos'?'Choose your partner':'Choose your teammates';
+      const rows=pool.map(q=>{const ok=willing(q.id);return `<button class="option pickFree" data-id="${q.id}" ${ok?'':'disabled aria-disabled="true"'}><span class="choice-emoji">${typeof moodIconHtml==='function'?moodIconHtml(q.id):''}</span><span class="choice-copy"><strong>${escapeHtml(q.name)}</strong><span class="small">${ok?escapeHtml(q.type||''):'Not working with you this week.'}</span></span></button>`;}).join('');
+      setHTML(`${header}<div class="card decision-card"><h3>${label}</h3><p>The queens split up on their own. Pick who you want next to you${need>2?` (${mine.length}/${need})`:''}. Queens who can't stand you will say no.</p>${mine.length>1?`<p class="small">Your team so far: ${mine.map(id=>escapeHtml(qName(id))).join(', ')}</p>`:''}<div class="options">${rows}</div><div class="tv-nav">${autoButton}</div></div>${footer}`);
+      bindCommon(()=>showHistory(renderTeamFormationStep));
+      document.querySelectorAll('.pickFree').forEach(btn=>btn.addEventListener('click',()=>{tf.playerTeam=[...mine,btn.dataset.id];saveGame();renderTeamFormationStep();}));
+      document.querySelector('#autoFormation')?.addEventListener('click',()=>{finalizeCurrentEpisodeTeams(autoAssignAllTeams(ep.structure,active,'free_choice',{}),true);renderWorkroom();});
+      return;
+    }
+    // the rest of the cast splits up by affinity around the player's team
+    const groups=[mine,...sizes.slice(1).map(()=>[])];
+    let pool=shuffle(active.filter(q=>!mine.includes(q.id)));
+    for(let gi=1;gi<groups.length;gi++){
+      while(groups[gi].length<sizes[gi] && pool.length){
+        let pick;
+        if(!groups[gi].length)pick=pool.shift();
+        else{pick=pool.slice().sort((a,b)=>groups[gi].reduce((s2,id)=>s2+relationshipScoreBetween(id,b.id),0)-groups[gi].reduce((s2,id)=>s2+relationshipScoreBetween(id,a.id),0))[0];pool=pool.filter(q=>q.id!==pick.id);}
+        groups[gi].push(pick.id);
+      }
+    }
+    while(pool.length)groups[groups.length-1].push(pool.shift().id);
+    finalizeCurrentEpisodeTeams(teamsFromIdGroups(groups,ep.structure),false);
+    return renderWorkroom();
+  }
   finalizeCurrentEpisodeTeams(autoAssignAllTeams(ep.structure,active,method,{captainIds:tf.captainIds}),true);
   renderWorkroom();
 }
@@ -387,8 +405,8 @@ function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false,reveal=
   if(gameState.currentEpisode)gameState.currentEpisode.song=d.song;
   const songTitle=escapeHtml(d.song?.title||'Lip Sync Song');
   const artist=d.song?.artist?`by ${escapeHtml(d.song.artist)}`:'';
-  const hero=`<div class="hero" style="text-align:center;">${bigMomentHeader('The music starts...', final?'LIP SYNC FOR YOUR LIFE':'LIP SYNC SMACKDOWN', final?'danger':'win')}<h2>${songTitle}</h2>${artist?`<p style="text-align:center !important; max-width:100%;">${artist}</p>`:''}<h3 class="music-cue spotlight-cue" style="text-align:center !important; width:100%; display:block;">💡 💡 ${lalaparuzaSongIcons(d.song)} 💡 💡</h3></div>`;
-  const battle=`<div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">💡 💡 ${lalaparuzaSongIcons(d.song)} 💡 💡</h3>${typeof lipSyncResultPortraits==='function'?lipSyncResultPortraits(result):''}<div class="commentary-block">${typeof lipSyncNarrative==='function'?lipSyncNarrative(result):`<p>${escapeHtml(d.resultText||'The lip sync is decided.')}</p>`}</div></div>`;
+  const hero=`<div class="hero tv-ls-hero">${bigMomentHeader('The music starts...', final?'LIP SYNC FOR YOUR LIFE':'LIP SYNC SMACKDOWN', final?'danger':'win')}<h2>${songTitle}</h2>${artist?`<p>${artist}</p>`:''}<h3 class="music-cue spotlight-cue">${lalaparuzaSongIcons(d.song)}</h3></div>`;
+  const battle=`<div class="card music-card lipsync-battle-card"><h3 class="music-cue spotlight-cue">${lalaparuzaSongIcons(d.song)}</h3>${typeof lipSyncResultPortraits==='function'?lipSyncResultPortraits(result):''}<div class="commentary-block">${typeof lipSyncNarrative==='function'?lipSyncNarrative(result):`<p>${escapeHtml(d.resultText||'The lip sync is decided.')}</p>`}</div></div>`;
   let decision='';
   if(final){
     decision=(typeof lipSyncDecisionCards==='function'?lipSyncDecisionCards(result):`<div class="card important"><p><strong>${escapeHtml(qName(d.winnerId))}</strong>, shantay you stay.</p><p><strong>${escapeHtml(qName(d.loserId))}</strong>, sashay away.</p></div>`)
@@ -396,7 +414,7 @@ function smackdownLipSyncResultCard(d,{final=false,returnSmackdown=false,reveal=
   }else{
     const winner=gameState.queens.find(q=>q.id===d.winnerId);
     const loser=gameState.queens.find(q=>q.id===d.loserId);
-    const loserLine=returnSmackdown?'You are out of the smackdown.':'I’m sorry, my dear. You will have to lip sync again for your life.';
+    const loserLine=returnSmackdown?'You are out of the smackdown.':'I\'m sorry, my dear. You will have to lip sync again for your life.';
     decision=`<div class="card lipsync-ru-card important"><h3>RuPaul</h3><p>${typeof rupaulDecisionIntro==='function'?escapeHtml(rupaulDecisionIntro()):'I made my decision...'}</p></div>
       ${typeof impactQueenCard==='function'?impactQueenCard(winner,returnSmackdown?'ADVANCE':'SAFE',returnSmackdown?'Condragulations!':'You are safe.',returnSmackdown?'shantay':'shantay',returnSmackdown?'<p>You advance to the next round.</p>':'<p>You won this lip sync.</p>'):`<div class="card important"><p><strong>${escapeHtml(qName(d.winnerId))}</strong> ${returnSmackdown?'advances.':'is safe.'}</p></div>`}
       ${typeof impactQueenCard==='function'?impactQueenCard(loser,returnSmackdown?'OUT':'STILL IN DANGER',returnSmackdown?"I'm sorry my dear.":loserLine,returnSmackdown?'sashay':'safe',returnSmackdown?'<p>This is not your moment, now sashay away.</p>':''):`<div class="card"><p><strong>${escapeHtml(qName(d.loserId))}</strong> ${escapeHtml(returnSmackdown?"I'm sorry my dear. This is not your moment, now sashay away.":loserLine)}</p></div>`}`;
@@ -458,22 +476,7 @@ function autoAdvanceSmackdownStep(fn,delay=900){
   window.setTimeout(()=>{ try{ fn(); }catch(e){ console.error(e); } },delay);
 }
 function strategyButtonsForQueen(q,song,prefix){
-  const reveals=q?.inventory?.reveals||0;
-  const strategies=[
-    ['emotion','❤️ Sell the Emotion','Lead with vulnerability and make every beat feel personal.'],
-    ['sell_lyrics','🎭 Sell the Lyrics','Use face, timing, and intention to make the song feel written for you.'],
-    ['dance','Dance the House Down','Attack the rhythm and try to own the whole stage.'],
-    ['stunts','🤸 Stunts & Tricks','Go for big physical moments. It could be iconic or messy.'],
-    ['save_reveal','👗 Save the Reveal for the Climax','Hold the reveal until the song hits its biggest moment.'],
-    ['reveal_early','✨ Reveal Early','Shock the judges quickly and hope the energy carries through.'],
-    ['multiple_reveals','💎 Multiple Reveals','Throw everything at the wall and pray it sticks.'],
-    ['overshadow','⚠️ Overshadow Your Opponent','High risk: steal the spotlight. If it lands, you gain score and your opponent loses score. If it fails, production clocks you as desperate.'],
-    ['play_safe','😌 Play It Safe','Keep it clean and controlled, but risk being forgettable.']
-  ];
-  return `<div class="strategy-pick" data-queen="${q.id}"><p class="small">Reveals available: ${reveals}</p><div class="options">${strategies.map(([id,label,desc])=>{
-    const disabled=(['save_reveal','reveal_early','multiple_reveals'].includes(id)&&reveals<=0)?'disabled':'';
-    return choiceButtonHtml({id,attr:'data-strategy',label,desc,disabled});
-  }).join('')}</div></div>`;
+  return `<div class="strategy-pick" data-queen="${q.id}">${lipSyncStrategyButtonsHtml({q,song,attr:'data-strategy',exclude:['match_energy','signature_move']})}</div>`;
 }
 function strategyRevealLine(q,song,strategyId){
   return '';
@@ -670,7 +673,7 @@ function renderReturnSmackdownResult(result){
     ? `<strong>${winnerName}</strong> is crowned ${escapeHtml(title)}.`
     : `<strong>${winnerName}</strong> has earned her way back into the race.`;
   const heroCopy=isReunion?'The eliminated queens battle for one last title. No one returns to the competition.':'The battle for a place back in the race is decided.';
-  const winnerCard=`<div class="card important lala-final-card smackdown-winner-card"><span class="badge win smackdown-winner-badge">${winnerBadge}</span><h3>${finalHeading}</h3>${winner?`<div class="winner-portrait-wrap smackdown-winner-portrait">${queenPortraitHtml(winner,'xl','winner-portrait')}</div>`:''}<p class="smackdown-winner-copy">${finalCopy}</p></div>`;
+  const winnerCard=`<div class="card important lala-final-card smackdown-winner-card"><h3>${finalHeading}</h3>${winner?tvWinnerSpotlight(winner,winnerBadge):`<span class="badge win smackdown-winner-badge">${winnerBadge}</span>`}<p class="smackdown-winner-copy">${finalCopy}</p></div>`;
   setHTML(`<main class="layout"><section class="screen"><div class="hero">${bigMomentHeader(title,isReunion?'REUNION':'RETURN TWIST','danger',heroCopy)}</div>${rows}${winnerCard}<button id="continueAfterReturnSmackdown">${isReunion?'Continue':'Continue to the next episode'}</button></section>${queenSidebar()}</main>`);
   bindCommon(()=>showHistory(()=>renderReturnSmackdownResult(result)));
   document.querySelector('#continueAfterReturnSmackdown')?.addEventListener('click',()=>{gameState.currentEpisode=null; saveGame(); if(result.reunionOnly || result.type==='reunion_smackdown'){ if(typeof renderFinale==='function')renderFinale(); else routeAfterLoad(); } else {generateEpisode(); renderWorkroom();}});
@@ -813,6 +816,7 @@ function returnAnnouncementCard(){
   return `<div class="card important return-twist-card"><span class="badge">${escapeHtml(reason)}</span><h3>${title}</h3><p><strong>${joined}</strong> ${verb} re-entered the race.</p></div>`;
 }
 function renderWorkroom(){
+  if(gameState.currentEpisode)gameState.currentEpisode.feedStage='workroom';
   const ep=gameState.currentEpisode;
   if(!ep){generateEpisode(); return renderWorkroom();}
   if(ep.teamFormation?.pending && typeof renderTeamFormationStep==='function')return renderTeamFormationStep();
@@ -854,33 +858,153 @@ const workroomPulse = [
   const snatchBlock=(ep.challengeType==='snatchgame' && ep.snatchCharacters?.length)
     ? `<div class="card"><h3>Snatch Game Characters</h3><div class="snatch-grid">${ep.snatchCharacters.map(c=>`<div class="snatch-card"><strong>${escapeHtml(c.queenName)}</strong><span>${escapeHtml(c.character)}</span></div>`).join('')}</div></div>`
     : '';
+  // v31.5 Part B: BRIEF / WORKROOM / YOUR MOVE blocks, with all the content that was on this screen.
+  const tvBlock=(id,title,inner)=>`<section class="tv-block" data-block="${id}"><h3 class="tv-bt">${title}</h3><div class="tv-bc">${inner}</div></section>`;
+  const activeCount=(gameState.queens||[]).filter(q=>!q.isEliminated).length;
+  const teamsList=ep.teams?.length?`<div class="card"><h3>Teams</h3><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}${typeof teamChemistryLabel==='function'&&t.queenIds.length>1?` <span class="tv-team-chem">Chemistry: ${teamChemistryLabel(t,ep)}</span>`:''}</li>`).join('')}</ul></div>`:'';
+  const relBeats=(()=>{const cb=typeof relationshipArcCallback==='function'?relationshipArcCallback('workroom'):'';const rb=typeof relationshipStoryBeats==='function'?relationshipStoryBeats('workroom'):'';return (cb||rb)?`<h4>Relationships</h4><ul class="relationship-beats tv-beats">${cb}${rb}</ul>`:'';})();
   setHTML(`<main class="layout"><section class="screen">
-    <div class="hero">
-      <span class="badge">Episode ${ep.number}</span>
+    <div class="hero tv-ep-title">
+      <span class="eyebrow">Episode ${ep.number} · ${escapeHtml(ep.challengeName)} · ${escapeHtml(ep.structure?.label||'Solo challenge')} · ${activeCount}/${(gameState.queens||[]).length} queens</span>
       <h2>${escapeHtml(ep.themeName)}</h2>
-      <p>${escapeHtml(ep.challengeName)} • ${escapeHtml(ep.structure?.label||'Solo challenge')} • Runway: ${escapeHtml(ep.runwayCategory)}</p>
-      <p>${escapeHtml(ep.themeNotes||'')}</p>
-      <div class="guest-judge-callout"><span>Guest Judge</span><strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong><em>${escapeHtml(ep.guestJudge?.note||'Ready for the show.')}</em></div>
-      
     </div>
-    ${returnBlock}
-    ${teamFormationBlock(ep)}
-    <div class="card">
+    ${tvBlock('brief','Brief',`
+      ${String(challengeContentBlock(ep)||'').includes(escapeHtml(ep.themeNotes||'@@'))?'':`<p class="tv-prompt">${escapeHtml(ep.themeNotes||'')}</p>`}
+      <p class="tv-runway"><span class="badge">Runway</span> <strong>${escapeHtml(ep.runwayCategory)}</strong></p>
+      <div class="guest-judge-callout"><span>Guest Judge</span><strong>${escapeHtml(ep.guestJudge?.name||'Guest Judge')}</strong><em>${escapeHtml(ep.guestJudge?.note||'Ready for the show.')}</em></div>
+      ${typeof judgesExpectationBarHtml==='function'?judgesExpectationBarHtml():''}
+      ${returnBlock}
+      ${teamFormationBlock(ep)}
+      ${teamsList}
+      ${challengeContentBlock(ep)}
+      ${talentContentBlock(ep)}
+      ${snatchBlock}`)}
+    ${tvBlock('workroom','Workroom',`<div class="card">
       <h3>Workroom</h3>
       <p>${miniChallengeWorkroomLine(ep)}</p>
       <h4>Story Beats</h4>
-      <ul>${workroomPulse}</ul>
-      ${ep.teams?.length?`<h4>Teams</h4><ul class="episode-team-list">${ep.teams.map((t,i)=>`<li class="episode-team-line team-line-${i%8}"><strong>${escapeHtml(t.name)}</strong>: ${t.queenIds.map(id=>{const q=gameState.queens.find(q=>q.id===id); return q?queenTeamNameHtml(q):'';}).filter(Boolean).join(', ')}</li>`).join('')}</ul>`:''}${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
-    </div>
-    ${challengeContentBlock(ep)}
-    ${talentContentBlock(ep)}
-    ${snatchBlock}
-    <div id="decisionStep"></div>
-    <div class="card subtle"><button id="skipWorkroom" class="secondary">Go to Main Stage</button><p class="small">Skip the remaining Workroom choices. No extra preparation bonus will be applied, and the judges may read that passivity later.</p></div>
+      <ul class="tv-beats">${workroomPulse}</ul>
+      ${relBeats}
+      ${ep.npcChoiceNotes?`<h4>What the other queens are doing</h4><ul>${ep.npcChoiceNotes.slice(0,6).map(n=>`<li>${escapeHtml(n)}</li>`).join('')}</ul>`:''}
+    </div>`)}
+    ${tvBlock('move','Your move',workroomOneScreenHtml())}
   </section>${queenSidebar()}</main>`);
+  tvDecorateBeats();
+  const tvStepWatch=new MutationObserver(()=>tvUpdateWorkroomSteps());
+  const ds=document.querySelector('#decisionStep'); if(ds)tvStepWatch.observe(ds,{childList:true,subtree:true});
   bindCommon(()=>showHistory(renderWorkroom));
-  renderWorkroomChoice();
-  bindSkipWorkroom();
+  bindWorkroomOneScreen();
+}
+// v31.6: the whole Workroom on one screen. One row per choice, the selected option explains itself,
+// last week's picks come preselected, effects apply when you go to the Main Stage.
+function wrDefaultPicks(){
+  const last=gameState.season?.lastWorkroomPicks||{};
+  const ok=(id,map)=>id&&map[id]?id:null;
+  return {workroom:ok(last.workroom,WORKROOM_CHOICES)||'friendly',prep:ok(last.prep,PREP_CHOICES)||'rehearse',approach:ok(last.approach,CHALLENGE_APPROACHES)||'safe',target:last.target||null};
+}
+function wrPicks(){const ep=gameState.currentEpisode;ep.wrPicks=ep.wrPicks||wrDefaultPicks();return ep.wrPicks;}
+function wrPlayerTooTired(){const p=gameState.queens.find(q=>q.id===gameState.playerQueenId);return Math.round(p?.energy??100)<30;}
+function wrPreviewChips(kind,id,targetId){
+  const chip=(k,a,good)=>({k,a,good});
+  const t=targetId?gameState.queens.find(q=>q.id===targetId):null;
+  if(kind==='workroom'){
+    if(id==='spotlight')return [chip('Spotlight','▲',true),chip('Some queens','▼',false)];
+    if(id==='friendly')return [chip('3 queens','▲',true)];
+  }
+  if(kind==='prep'){
+    if(id==='ask_help'){const aff=Number(gameState.relationships?.[targetId]?.[gameState.playerQueenId]?.affinity)||0;return aff<=-25?[chip('She may say no','▼',false)]:[chip('Challenge',aff>=40?'▲▲':'▲',true),chip(t?.name||'Her','▲',true)];}
+    if(id==='sabotage')return [chip(t?.name||'Her','▼▼',false),chip('Could backfire','▼',false)];
+  }
+  const map=kind==='workroom'?WORKROOM_CHOICES:kind==='prep'?PREP_CHOICES:CHALLENGE_APPROACHES;
+  const base=typeof playerEffectChips==='function'?playerEffectChips(map[id]?.effects||{},null):[];
+  if(kind==='approach'){
+    // v31.6: all three help the challenge; what changes is how far the result can swing
+    const odds={safe:{k:'Challenge · steady',tone:'up'},risk:{k:'Challenge · big swing',tone:'gold'},unexpected:{k:'Challenge · wild swing',tone:'down'}}[id];
+    return base.map(c=>c.k==='Challenge'&&odds?{...c,a:'▲',k:odds.k,tone:odds.tone,good:true}:c);
+  }
+  return base;
+}
+function wrRowHtml(kind,title,map,sel){
+  const tired=wrPlayerTooTired();
+  const picks=wrPicks();
+  const pills=Object.entries(map).map(([id,o])=>{
+    const dis=kind==='prep'&&id==='rehearse'&&tired;
+    return `<button type="button" class="wr-o${id===sel?' on':''}" data-wr-kind="${kind}" data-wr-id="${id}" aria-pressed="${id===sel}"${dis?' disabled':''}>${escapeHtml(o.label)}</button>`;
+  }).join('');
+  const o=map[sel]||{};
+  let extra='';
+  if(kind==='prep'){
+    if(tired)extra+=`<p class="small warning">You're too exhausted to rehearse more.</p>`;
+    if(o.needsTarget){
+      const targets=getUntuckedTargets().filter(q=>{const ids=gameState.currentEpisode?.participantIds;return !ids?.length||ids.includes(q.id);});
+      if(!targets.some(q=>q.id===picks.target))picks.target=targets[0]?.id||null;
+      extra+=`<div class="wr-t"><span>${sel==='sabotage'?'Target':'Ask'}</span><select id="wrTarget" class="sel">${targets.map(q=>`<option value="${q.id}"${q.id===picks.target?' selected':''}>${escapeHtml(q.name)} — ${escapeHtml(typeof relationshipMoodTier==='function'?(()=>{const r=gameState.relationships?.[q.id]?.[gameState.playerQueenId];return MOOD_LABEL[relationshipMoodTier(r?.affinity,r?.respect)];})():playerRelationshipLabel(q.id))}</option>`).join('')}</select></div>`;
+    }
+  }
+  const chips=wrPreviewChips(kind,sel,picks.target);
+  return `<div class="wr-row" data-wr-row="${kind}"><span class="wr-k">${title}</span><div class="wr-body"><div class="wr-opts">${pills}</div>${extra}<p class="wr-d">${escapeHtml(o.description||'')}${chips.length&&typeof effectChipsHtml==='function'?effectChipsHtml(chips):''}</p></div></div>`;
+}
+function workroomOneScreenHtml(){
+  const p=wrPicks();
+  if(p.prep==='rehearse'&&wrPlayerTooTired())p.prep='rest';
+  return `<div class="wr" id="wrOne">${wrRowHtml('workroom','First move',WORKROOM_CHOICES,p.workroom)}${wrRowHtml('prep','Preparation',PREP_CHOICES,p.prep)}${wrRowHtml('approach','Approach',CHALLENGE_APPROACHES,p.approach)}</div>
+    <div class="tv-nav wr-nav"><button id="wrGo" class="tv-next">Go to Main Stage</button></div>`;
+}
+function bindWorkroomOneScreen(){
+  const root=document.querySelector('#wrOne');if(!root)return;
+  const rerender=()=>{const box=document.querySelector('[data-block="move"] .tv-bc');if(box){box.innerHTML=workroomOneScreenHtml();bindWorkroomOneScreen();}};
+  root.querySelectorAll('[data-wr-kind]').forEach(b=>b.addEventListener('click',()=>{if(b.disabled)return;wrPicks()[b.dataset.wrKind]=b.dataset.wrId;saveGame?.();rerender();}));
+  document.querySelector('#wrTarget')?.addEventListener('change',e=>{wrPicks().target=e.target.value;rerender();});
+  document.querySelector('#wrGo')?.addEventListener('click',()=>commitWorkroomOneScreen());
+}
+function commitWorkroomOneScreen(){
+  const ep=gameState.currentEpisode;const p=wrPicks();
+  if(ep.workroomComplete&&ep.placements?.length)return renderRunway();
+  ep.feedStage='workroom';
+  const w=WORKROOM_CHOICES[p.workroom];
+  ep.workroomChoice=w.label;
+  if(typeof applyWorkroomChoice==='function')applyWorkroomChoice(w);else applyPlayerEffects(w.effects,w.text);
+  let prepId=p.prep;if(prepId==='rehearse'&&wrPlayerTooTired())prepId='rest';
+  const c=PREP_CHOICES[prepId];
+  if(c.needsTarget&&p.target){
+    const target=gameState.queens.find(q=>q.id===p.target);
+    ep.prepChoice=`${c.label}: ${target?.name||'another queen'}`;
+    if(c.isSabotage&&typeof applySabotageAttempt==='function')applySabotageAttempt(p.target);
+    else if(typeof applyTargetedPrepChoice==='function')applyTargetedPrepChoice(c,target);
+    else applyPlayerEffects(c.effects,c.text,p.target);
+  }else if(c.needsTarget){ep.prepChoice='No special preparation';}
+  else{ep.prepChoice=c.label;applyPlayerEffects(c.effects,c.text);}
+  const a=CHALLENGE_APPROACHES[p.approach];
+  ep.challengeApproach=a.label;
+  ep.workroomComplete=true;
+  applyPlayerEffects(a.effects,a.text);
+  ep.playerChallengeRisk=a.risk;
+  gameState.season.lastWorkroomPicks={workroom:p.workroom,prep:prepId,approach:p.approach,target:p.target};
+  calculateEpisodeResults({risk:a.risk});
+  window.scrollTo(0,0);
+  renderRunway();
+}
+// v31.5 Part B: which of the three Workroom steps is on screen
+function tvUpdateWorkroomSteps(){
+  const h=(document.querySelector('#decisionStep h3')?.textContent||'').toLowerCase();
+  const step=/first move/.test(h)?1:/prep/.test(h)?2:(h?3:0);
+  document.querySelectorAll('#tvSteps .tv-step').forEach(el=>{const n=+el.dataset.step;el.classList.toggle('on',n===step);el.classList.toggle('done',step&&n<step);});
+}
+// v31.5 Part B: story beat type icon (drama / moment / bond), next to the text
+function tvDecorateBeats(){
+  if(typeof icon!=='function')return;
+  document.querySelectorAll('.tv-beats > li:not(.small):not(.relationship-beat)').forEach(li=>{
+    if(li.querySelector(':scope > .ic'))return;
+    const body=document.createElement('span');while(li.firstChild)body.appendChild(li.firstChild);li.appendChild(body);
+    const t=li.textContent.toLowerCase();
+    const kind=/alliance|ally|friend|support|hug|bond|sister|together|trust|help/.test(t)?['link','b-bond']:/fight|tension|shade|argu|storm|drama|snap|spiral|clash|confront|jealous|mess|betray|cold|glare|read/.test(t)?['flame','b-drama']:['sparkle','b-moment'];
+    li.insertAdjacentHTML('afterbegin',icon(kind[0],kind[1]));
+  });
+  document.querySelectorAll('.relationship-beats > li .badge').forEach(b=>{
+    const tag=b.textContent.trim().toLowerCase();
+    const n={rivalry:'flame',alliance:'link',truce:'dove',closer:'hearts',colder:'mood-shade'}[tag];
+    if(n && !b.querySelector('.ic'))b.insertAdjacentHTML('afterbegin',icon(n));
+  });
 }
 function bindSkipWorkroom(){
   const btn=document.querySelector('#skipWorkroom');
@@ -907,7 +1031,7 @@ function choiceEmoji(id){
   }[id] || '•';
 }
 function optionButton(id, dataAttr, obj, extraAttrs=''){
-  return `<button class="option" ${dataAttr}="${id}" ${extraAttrs}><span class="choice-emoji" aria-hidden="true">${choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
+  return `<button class="option" ${dataAttr}="${id}" ${extraAttrs}><span class="choice-emoji" aria-hidden="true">${typeof emojiIcon==='function'?emojiIcon(choiceEmoji(id)):choiceEmoji(id)}</span><span class="choice-copy"><strong>${escapeHtml(obj.label)}</strong><span class="small">${escapeHtml(obj.description||'')}</span></span></button>`;
 }
 function targetSelectHtml(id='targetSelect'){
   let targets=getUntuckedTargets();
@@ -915,7 +1039,7 @@ function targetSelectHtml(id='targetSelect'){
     const ids=gameState.currentEpisode?.participantIds;
     if(ids?.length) targets=targets.filter(q=>ids.includes(q.id));
   }
-  return `<label>Choose a queen<select id="${id}">${targets.map(q=>`<option value="${q.id}">${escapeHtml(q.name)} — ${escapeHtml(playerRelationshipLabel(q.id))}</option>`).join('')}</select></label>`;
+  return `<label>Choose a queen<select id="${id}">${targets.map(q=>`<option value="${q.id}">${escapeHtml(q.name)} — ${escapeHtml(typeof relationshipMoodTier==='function'?(()=>{const r=gameState.relationships?.[q.id]?.[gameState.playerQueenId];return MOOD_LABEL[relationshipMoodTier(r?.affinity,r?.respect)];})():playerRelationshipLabel(q.id))}</option>`).join('')}</select></label>`;
 }
 function renderWorkroomChoice(){
   document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>First move in the Workroom</h3><p>How do you want to enter this episode socially?</p><div class="options">${Object.entries(WORKROOM_CHOICES).map(([id,o])=>optionButton(id,'data-workroom',o)).join('')}</div></div>`;
@@ -933,7 +1057,7 @@ function renderPreparationChoice(){
   const tooExhausted=stamina<30;
   const prepButtons=Object.entries(PREP_CHOICES).map(([id,o])=>optionButton(id,'data-prep',o,(id==='rehearse'&&tooExhausted)?'disabled aria-disabled="true"':'')).join('');
   const exhaustedMsg=tooExhausted?`<p class="small warning">You're too exhausted to rehearse more.</p>`:'';
-  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p><div class="small"><strong>Stamina</strong><br>${stamina} / 100</div>${exhaustedMsg}<div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
+  document.querySelector('#decisionStep').innerHTML=`<div class="card decision-card"><h3>Preparation</h3><p>Your prep affects this episode and your long-term image.</p>${(()=>{if(typeof prepWeekLabel!=='function'||typeof challengeDefinitionForEpisode!=='function')return '';const w=prepWeekLabel(challengeDefinitionForEpisode(gameState.currentEpisode));return `<div class="tv-week tv-week-${w.key}"><b>${escapeHtml(w.title)}</b><span>${escapeHtml(w.text)}</span></div>`;})()}<div class="small"><strong>Stamina</strong><br>${stamina} / 100</div>${exhaustedMsg}<div class="options">${prepButtons}</div><div id="prepTarget"></div></div>`;
   document.querySelectorAll('[data-prep]').forEach(btn=>btn.addEventListener('click',()=>{
     const id=btn.dataset.prep;
     if(id==='rehearse' && tooExhausted)return;

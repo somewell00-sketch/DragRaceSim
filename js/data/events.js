@@ -1831,7 +1831,7 @@ window.GAME_DATA.events = [
   {
     "id": "michelle_eyeshadow_fallout_alt",
     "type": "judging",
-    "text": "Michelle squints and suggests the chosen lip color washes out the queen’s complexion.",
+    "text": "Michelle squints and suggests the chosen lip color washes out the queen's complexion.",
     "score": -1
   },
   {
@@ -1907,7 +1907,7 @@ window.GAME_DATA.events = [
   {
     "id": "rupaul_chuckle_confidence_alt",
     "type": "judging",
-    "text": "RuPaul beams slightly, noting that the queen’s posture commanded the entire room.",
+    "text": "RuPaul beams slightly, noting that the queen's posture commanded the entire room.",
     "score": 1
   },
   {

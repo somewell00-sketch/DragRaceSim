@@ -8,8 +8,83 @@ const LIP_SYNC_STRATEGIES={
   reveal_early:{label:'Reveal Early',text:'She reveals early and tries to ride that first wave of shock.'},
   multiple_reveals:{label:'Multiple Reveals',text:'She layers reveal after reveal, hoping the spectacle lands.'},
   play_safe:{label:'Play It Safe',text:'She keeps it clean, controlled, and low-risk.'},
-  overshadow:{label:'Overshadow Your Opponent',text:'She tries to steal focus from her opponent. High risk, high reward.'}
+  overshadow:{label:'Overshadow Your Opponent',text:'She tries to steal focus from her opponent. High risk, high reward.'},
+  comedy:{label:'Comedy Lip Sync',text:'She plays the song for laughs and makes the panel her audience.'},
+  play_to_audience:{label:'Play to the Audience',text:'She performs for the crowd more than for the judges.'},
+  signature_move:{label:'Signature Move',text:'She saves the move she has been hiding all season for this song.'},
+  match_energy:{label:'Match Her Energy',text:'She reads her opponent and answers every move.'}
 };
+// v31.6: every strategy has a profile. All of them use the Lip Sync attribute; the others add their own skill.
+// fit: how the song energy suits it · risk: how wide the result can swing · cost: what it spends.
+const LIP_SYNC_PROFILES={
+  emotion:{family:'skill',attrs:{lipSync:.40,acting:.40,cunt:.20},fit:{low:1,medium:.2,high:-1},risk:'low'},
+  sell_lyrics:{family:'skill',attrs:{lipSync:.40,cunt:.35,acting:.25},fit:{low:.4,medium:.6,high:0},risk:'low'},
+  dance:{family:'skill',attrs:{lipSync:.70,cunt:.30},fit:{low:-1,medium:0,high:1},risk:'medium',energy:-8},
+  stunts:{family:'show',attrs:{lipSync:.80,cunt:.20},fit:{low:-1.2,medium:0,high:1},risk:'high',energy:-12},
+  multiple_reveals:{family:'show',attrs:{lipSync:.45,runway:.40,makeup:.15},fit:{low:-.4,medium:.2,high:.6},risk:'high',reveals:2},
+  overshadow:{family:'show',attrs:{lipSync:.45,cunt:.55},fit:{low:-.4,medium:0,high:.4},risk:'high'},
+  save_reveal:{family:'resource',attrs:{lipSync:.45,runway:.40,cunt:.15},fit:{low:0,medium:.5,high:.5},risk:'medium',reveals:1},
+  reveal_early:{family:'resource',attrs:{lipSync:.50,runway:.35,cunt:.15},fit:{low:-.3,medium:.2,high:.5},risk:'medium',reveals:1},
+  play_safe:{family:'safe',attrs:{lipSync:.70,cunt:.30},fit:{low:0,medium:0,high:0},risk:'minimal'},
+  comedy:{family:'skill',attrs:{lipSync:.40,acting:.35,cunt:.25},fit:{low:-1.2,medium:.6,high:.3},risk:'medium'},
+  play_to_audience:{family:'skill',attrs:{lipSync:.50,cunt:.50},fit:{low:0,medium:.2,high:.4},risk:'medium',judges:-.4},
+  signature_move:{family:'show',attrs:{lipSync:.80,cunt:.20},fit:{low:-.5,medium:.3,high:.8},risk:'medium',oncePerSeason:true},
+  match_energy:{family:'skill',attrs:{lipSync:.55,cunt:.25,acting:.20},fit:{low:0,medium:.3,high:.3},risk:'low'}
+};
+const LIP_SYNC_RISK_SPREAD={minimal:.5,low:.9,medium:1.6,high:2.8};
+const LIP_SYNC_OUTCOMES=['iconic','clean','slip','disaster'];
+const LS_LAST_OUTCOME=new Map();
+function lipSyncSongEnergy(song){const e=String(song?.energy||'medium').toLowerCase();return ['low','medium','high'].includes(e)?e:'medium';}
+function lipSyncFitLabel(strategy,song){const v=LIP_SYNC_PROFILES[strategy]?.fit?.[lipSyncSongEnergy(song)]||0;return v>=.8?'great':v>=.3?'good':v>-.3?'ok':'poor';}
+function lipSyncStrategySkill(strategy,q){
+  const prof=LIP_SYNC_PROFILES[strategy]||LIP_SYNC_PROFILES.sell_lyrics;
+  const a=q?.attributes||{};
+  return Object.entries(prof.attrs).reduce((t,[k,w])=>t+(Number(a[k])||0)*w,0);
+}
+function lipSyncStrategyAvailable(strategy,q){
+  const prof=LIP_SYNC_PROFILES[strategy];if(!prof)return false;
+  if(prof.reveals && (q?.inventory?.reveals||0)<prof.reveals)return false;
+  if(prof.oncePerSeason && q?.signatureMoveUsed)return false;
+  return true;
+}
+function lipSyncExpectedValue(strategy,song,q){
+  const prof=LIP_SYNC_PROFILES[strategy]||LIP_SYNC_PROFILES.sell_lyrics;
+  return lipSyncStrategySkill(strategy,q)+(prof.fit?.[lipSyncSongEnergy(song)]||0)+(prof.judges||0)+(lipSyncStrategyAvailable(strategy,q)?0:-2.5);
+}
+function lipSyncStrategyOutcome(strategy, song, q, opts={}){
+  const spend=!!opts.spend;
+  const prof=LIP_SYNC_PROFILES[strategy]||LIP_SYNC_PROFILES.sell_lyrics;
+  const energy=lipSyncSongEnergy(song);
+  const events=[];
+  let base=lipSyncStrategySkill(strategy,q)+(prof.fit?.[energy]||0)+(prof.judges||0);
+  // spending reveals; without enough reveals the plan falls apart
+  if(prof.reveals){
+    const have=q?.inventory?.reveals||0;
+    if(have<prof.reveals){base-=2.5;events.push('no_reveal');}
+    else if(spend && q.inventory){q.inventory.reveals=have-prof.reveals;}
+  }
+  if(prof.oncePerSeason){if(q?.signatureMoveUsed && spend){base-=2;}else if(q){if(spend)q.signatureMoveUsed=true;events.push('signature');}}
+  // tired queens lose a little in physical strategies
+  if((prof.energy||0)<0 && (Number(q?.energy)||80)<35)base-=.6;
+  const spread=LIP_SYNC_RISK_SPREAD[prof.risk]||1;
+  let value=base+(Math.random()*2-1)*spread*1.6;
+  if(strategy==='signature_move' && (q?.attributes?.lipSync||0)>=8 && !events.includes('no_reveal'))value=Math.max(value,8.4+Math.random()*1.2);
+  let outcome=value>=9?'iconic':value>=6.8?'clean':value>=5?'slip':'disaster';
+  if(prof.risk==='minimal'){ if(outcome==='disaster')outcome='slip'; if(outcome==='iconic' && value<9.6)outcome='clean'; }
+  const band={iconic:[9,10],clean:[6.8,8.9],slip:[5,6.7],disaster:[2.6,4.9]}[outcome];
+  const score=Math.round(clamp(value,band[0],band[1])*10)/10;
+  // things that happen on stage
+  const r=Math.random();
+  if(strategy==='stunts' && outcome==='disaster')events.push('fall');
+  if(['save_reveal','reveal_early','multiple_reveals'].includes(strategy) && outcome==='disaster' && !events.includes('no_reveal'))events.push('stuck_reveal');
+  if(['dance','stunts','signature_move'].includes(strategy) && outcome==='iconic')events.push('death_drop');
+  if(strategy==='emotion' && outcome==='iconic' && r<.5)events.push('ru_moved');
+  if(strategy==='comedy' && (outcome==='iconic'||outcome==='clean') && r<.6)events.push('panel_laughs');
+  if(r>.93 && !['play_safe'].includes(strategy))events.push(outcome==='iconic'||outcome==='clean'?'wig_under_wig':'wig_fall');
+  const o={strategy,score,value:Math.round(value*10)/10,outcome,fit:lipSyncFitLabel(strategy,song),risk:prof.risk,events};
+  if(q?.id)LS_LAST_OUTCOME.set(q.id,o);
+  return o;
+}
 function lipSyncMovesFromStrategy(strategy, song){
   const high=song?.energy==='high';
   const map={
@@ -21,55 +96,20 @@ function lipSyncMovesFromStrategy(strategy, song){
     reveal_early:{start:'explosive',middle:'judges',finale:'emotional',strategy},
     multiple_reveals:{start:'explosive',middle:'acrobatics',finale:'reveal',strategy},
     play_safe:{start:'controlled',middle:'face',finale:'emotional',strategy},
-    overshadow:{start:'explosive',middle:'judges',finale:high?'stunt':'emotional',strategy}
+    overshadow:{start:'explosive',middle:'judges',finale:high?'stunt':'emotional',strategy},
+    comedy:{start:'lyrics',middle:'face',finale:'emotional',strategy},
+    play_to_audience:{start:'explosive',middle:'face',finale:'emotional',strategy},
+    signature_move:{start:'controlled',middle:'acrobatics',finale:'stunt',strategy},
+    match_energy:{start:'controlled',middle:'judges',finale:'emotional',strategy}
   };
   return map[strategy]||map.sell_lyrics;
 }
 function lipSyncStrategyLabel(strategy){return LIP_SYNC_STRATEGIES[strategy]?.label||'Sell the Lyrics';}
 function lipSyncStrategyText(strategy){return LIP_SYNC_STRATEGIES[strategy]?.text||'She tries to sell the song.';}
-function lipSyncStrategyScore(strategy, song, q){
-  // v20: return a 0–10 score for this specific performance choice.
-  // This is the "lip sync performance of the week" component, separate from base ability.
-  // Song tone now lightly rewards or punishes strategy fit without changing the lip sync system.
-  const energy=(song?.energy||'medium').toLowerCase();
-  const toneModifiers={
-    high:{dance:0.8,stunts:0.8,overshadow:0.4,emotion:-0.6},
-    medium:{},
-    low:{emotion:0.8,sell_lyrics:0.8,dance:-0.6,stunts:-1.0}
-  };
-  const toneMod=toneModifiers[energy]?.[strategy]||0;
-  const high=energy==='high';
-  const reveals=q.inventory?.reveals||0;
-  const a=q.attributes||{};
-  const clamp10=v=>clamp(v,0,10);
-  switch(strategy){
-    case 'emotion':
-      return clamp10(6.2 + toneMod + (a.acting||0)*0.28 + (a.cunt||0)*0.18 + rand(-1.0,1.4));
-    case 'sell_lyrics':
-      return clamp10(5.1 + toneMod + (a.cunt||0)*0.26 + (a.acting||0)*0.22 + rand(-1.0,1.2));
-    case 'dance':
-      return clamp10(5.0 + toneMod + (a.lipSync||0)*0.32 + (a.cunt||0)*0.10 + rand(-1.2,1.6));
-    case 'stunts':
-      return clamp10(4.4 + toneMod + (a.lipSync||0)*0.30 + rand(-2.8,3.4));
-    case 'save_reveal':
-      if(reveals<=0) return clamp10(3.2 + rand(-1.0,0.8));
-      q.inventory.reveals=Math.max(0,reveals-1);
-      return clamp10((high?5.7:5.2) + (a.runway||0)*0.28 + (a.cunt||0)*0.10 + rand(-1.6,2.0));
-    case 'reveal_early':
-      if(reveals<=0) return clamp10(3.4 + rand(-1.0,0.8));
-      q.inventory.reveals=Math.max(0,reveals-1);
-      return clamp10(4.8 + (a.runway||0)*0.18 + (a.cunt||0)*0.08 + rand(-1.8,1.4));
-    case 'multiple_reveals':
-      if(reveals<=0) return clamp10(2.8 + rand(-1.0,0.8));
-      q.inventory.reveals=Math.max(0,reveals-2);
-      return clamp10(5.0 + (a.runway||0)*0.22 + (a.cunt||0)*0.10 + rand(-3.0,3.2));
-    case 'play_safe':
-      return clamp10(4.8 + (a.lipSync||0)*0.16 + rand(-0.7,0.7));
-    case 'overshadow':
-      return clamp10(4.5 + toneMod + (a.cunt||0)*0.22 + (a.lipSync||0)*0.18 + rand(-2.6,2.8));
-    default:
-      return clamp10(4.8 + rand(-1,1));
-  }
+function lipSyncStrategyScore(strategy, song, q, opts={}){
+  // v31.6: returns the 0–10 performance of this strategy; the full outcome (iconic/clean/slip/disaster,
+  // song fit, stage events) is kept for the result screen.
+  return lipSyncStrategyOutcome(strategy, song, q, opts).score;
 }
 const RISK_LABEL={safe:'Played it safe',risk:'Went all in',unexpected:'Did something unexpected'};
 function getCritiqueText(placement, challengeId, risk, success){
@@ -79,9 +119,10 @@ function getCritiqueText(placement, challengeId, risk, success){
   const approachTexts=data.byApproach?.[risk]?.[success?'success':'fail']||[];
   const generic=data.generic?.[bucket]||[];
   const parts=[];
-  const a=sample(challengeTexts); if(a)parts.push(a);
-  const b=sample(approachTexts); if(b)parts.push(b);
-  const c=sample(generic); if(c)parts.push(c);
+  const pick=typeof freshCritiquePick==='function'?freshCritiquePick:sample; // v31.5: no repeats, no history lines in episode 1-2
+  const a=pick(challengeTexts); if(a)parts.push(a);
+  const b=pick(approachTexts); if(b)parts.push(b);
+  const c=pick(generic); if(c)parts.push(c);
   return parts.join(' ');
 }
 
@@ -1229,6 +1270,17 @@ function judgingEventScore(ep,q){
   const event=ensureJudgingEventForQueen(ep,q);
   return event ? Number(event.score)||0 : 0;
 }
+function prepContextFactors(challenge){
+  const rw=Number(challenge?.runwayWeight);
+  const w=Number.isFinite(rw)?rw:0.15;
+  return {runwayWeight:w, runway:clamp(w/0.3,0.35,1.2), performance:clamp((1-w)/0.8,0.75,1.1)};
+}
+function prepWeekLabel(challenge){
+  const w=prepContextFactors(challenge).runwayWeight;
+  if(w>=0.3)return {key:'big',title:'Big runway week',text:'The look carries real weight in this challenge.'};
+  if(w>=0.2)return {key:'mid',title:'Balanced week',text:'The challenge and the runway both count.'};
+  return {key:'low',title:'Runway barely counts',text:'This week is about the challenge itself.'};
+}
 function calculateEpisodeResults(playerChoices={}){
   const ep=gameState.currentEpisode;
   ensureAllQueenV14Stats();
@@ -1296,10 +1348,15 @@ if (q.id === gameState.playerQueenId) {
 const choiceMultiplier =
   q.id === gameState.playerQueenId ? 1.45 : 1.60;
 
+// v31.6: prep choices are contextual. Runway effects scale with how much the runway counts in this
+// challenge (Snatch Game 0.10 → x0.35 ... Ball 0.40 → x1.2); positive challenge prep does the opposite.
+const prepCtx=prepContextFactors(challenge);
+const perfEffect=Number(effectSource.performance||0);
+const runwayEffect=Number(effectSource.runway||0);
 const choiceBonus =
   Math.round(
-    (((effectSource.performance || 0) +
-      (effectSource.runway || 0)) * choiceMultiplier) * 10
+    (((perfEffect>0?perfEffect*prepCtx.performance:perfEffect) +
+      runwayEffect*prepCtx.runway) * choiceMultiplier) * 10
   ) / 10;
     const teamBonus=(ep.judgingMode==='team' && typeof teamAffinityBonus==='function')?teamAffinityBonus(q.id,ep):0;
     const challengeCore=ballRunway ? runway : base+runway*challenge.runwayWeight;
@@ -1618,7 +1675,7 @@ function resolveLipSync(playerMoves=null, options={}){
       else moves.strategy='play_safe';
     }
 
-    const weeklyPerformance=lipSyncStrategyScore(moves.strategy, song, q); // 40%
+    const weeklyPerformance=lipSyncStrategyScore(moves.strategy, song, q, {spend:true}); // 40%
     const ability=clamp((q.attributes.lipSync||0)*0.82 + (q.attributes.cunt||0)*0.18,0,10); // 40%
     const momentumScore=clamp(((q.momentum||0)+2)*2.5,0,10); // -2..+2 -> 0..10, 10%
     const productionScore=clamp(((q.publicScores?.production||0)+30)/6,0,10); // soft production scale, 10%
@@ -1652,17 +1709,19 @@ const penaltyTable = [
   2.40
 ];
 
-let priorLipSyncPenalty =
-  penaltyTable[Math.min(priorLipSyncs, penaltyTable.length - 1)];
-
-const lip = q.attributes.lipSync;
-
-if (lip >= 9)
-    priorLipSyncPenalty *= 1.15;
-
-if (lip <= 5)
-    priorLipSyncPenalty *= 0.90;
+// v31.5: no more score penalty for having lip synced before. It punished exactly the queens the
+// "lip sync assassin" arc celebrates (strongest for lipSync >= 9). Repeat bottoms are already
+// weighed by historyScore (a BTM counts as 0). Surviving now earns a tag and a survivor narration.
+// penaltyTable is kept for reference only.
+let priorLipSyncPenalty = 0;
+const priorLipSyncWins = q.statistics.lipSyncWins || 0;
+// v31.6: the room behind her. Friends screaming from the side of the stage help a little; enemies hurt a little.
+const supporters=(gameState.queens||[]).filter(o=>!o.isEliminated && o.id!==q.id && !duelIds.includes(o.id));
+const fans=supporters.filter(o=>(Number(gameState.relationships?.[o.id]?.[q.id]?.affinity)||0)>=40);
+const haters=supporters.filter(o=>(Number(gameState.relationships?.[o.id]?.[q.id]?.affinity)||0)<=-40);
+const roomSupport=clamp((fans.length-haters.length)*0.12,-0.4,0.4);
    const baseScore10=Math.round(clamp(
+  roomSupport +
   weeklyPerformance*0.35 +
   ability*0.35 +
   historyScore*0.15 +
@@ -1684,19 +1743,44 @@ if (lip <= 5)
       momentumScore:Math.round(momentumScore*10)/10,
       productionScore:Math.round(productionScore*10)/10,
       bottomPenalty:priorLipSyncPenalty,
+      priorLipSyncWins,
+      priorLipSyncs,
+      roomSupport,
+      supporterIds:fans.map(o=>o.id),
       strategyEffect:null,
+      lsOutcome:LS_LAST_OUTCOME.get(q.id)?.outcome||null,
+      lsFit:LS_LAST_OUTCOME.get(q.id)?.fit||null,
+      lsEvents:LS_LAST_OUTCOME.get(q.id)?.events||[],
       moves
     };
+  });
+  // v31.6: costs and stage events of the chosen strategy
+  rawResults.forEach(r=>{
+    const q=bottom.find(x=>x.id===r.queenId);if(!q)return;
+    const prof=LIP_SYNC_PROFILES[r.moves?.strategy]||{};
+    if(prof.energy && typeof q.energy==='number')q.energy=clamp(q.energy+prof.energy,0,100);
+    if((r.lsEvents||[]).includes('fall') && typeof q.energy==='number')q.energy=clamp(q.energy-15,0,100);
+    if(r.moves?.strategy==='play_to_audience' && q.publicScores){q.publicScores.fans=(q.publicScores.fans||0)+(r.lsOutcome==='iconic'||r.lsOutcome==='clean'?3:1);}
+    if((r.lsEvents||[]).includes('ru_moved')){r.score10=Math.round(clamp(r.score10+0.2,0,10)*10)/10;r.score=r.score10;}
+  });
+  // match her energy: answers the opponent. Good when the opponent is strong, wasted when she is weak.
+  rawResults.forEach(r=>{
+    if(r.moves?.strategy!=='match_energy')return;
+    const opp=rawResults.find(o=>o.queenId!==r.queenId);if(!opp)return;
+    const delta=(opp.weeklyPerformance>=8.5?0.6:opp.weeklyPerformance>=6.8?0.3:-0.2);
+    r.score10=Math.round(clamp(r.score10+delta,0,10)*10)/10;r.score=r.score10;
+    r.strategyEffect={type:'match_energy',delta};
   });
 
   rawResults.forEach(r=>{
     if(r.moves?.strategy!=='overshadow') return;
     const opponent=rawResults.find(o=>o.queenId!==r.queenId);
     if(!opponent) return;
-    const success=r.weeklyPerformance>=7;
+    const success=r.lsOutcome?(r.lsOutcome==='iconic'||r.lsOutcome==='clean'):r.weeklyPerformance>=7;
     if(success){
-      const bonus=r.weeklyPerformance>=9?0.9:0.6;
-      const opponentPenalty=r.weeklyPerformance>=9?0.9:0.6;
+      const big=r.lsOutcome?r.lsOutcome==='iconic':r.weeklyPerformance>=9;
+      const bonus=big?0.9:0.6;
+      const opponentPenalty=big?0.9:0.6;
       r.score10=Math.round(clamp(r.score10+bonus,0,10)*10)/10;
       r.score=r.score10;
       opponent.score10=Math.round(clamp(opponent.score10-opponentPenalty,0,10)*10)/10;
@@ -1704,7 +1788,7 @@ if (lip <= 5)
       r.strategyEffect={type:'overshadow',success:true,bonus,opponentPenalty};
       opponent.strategyEffect=opponent.strategyEffect||{type:'overshadowed',sourceQueenId:r.queenId,penalty:opponentPenalty};
     } else {
-      const penalty=r.weeklyPerformance<5.1?1.0:0.6;
+      const penalty=(r.lsOutcome?r.lsOutcome==='disaster':r.weeklyPerformance<5.1)?1.0:0.6;
       r.score10=Math.round(clamp(r.score10-penalty,0,10)*10)/10;
       r.score=r.score10;
       r.productionScore=Math.round(clamp(r.productionScore-0.5,0,10)*10)/10;
